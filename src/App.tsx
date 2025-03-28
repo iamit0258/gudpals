@@ -42,39 +42,46 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// Wrap the app content in a function component
+const AppContent = () => {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <Toaster />
+        <Sonner />
+        <Routes>
+          {/* Public routes */}
+          <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/verify" element={<Verify />} />
+          
+          {/* Feature routes */}
+          <Route path="/learn" element={<Learn />} />
+          <Route path="/games" element={<Games />} />
+          <Route path="/sessions" element={<Sessions />} />
+          <Route path="/profile" element={<Profile />} />
+          
+          {/* Protected routes example */}
+          {/* <Route path="/settings" element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          } /> */}
+          
+          {/* 404 route */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
+  );
+};
+
 const App = () => {
   return (
     <React.StrictMode>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <BrowserRouter>
-            <AuthProvider>
-              <Toaster />
-              <Sonner />
-              <Routes>
-                {/* Public routes */}
-                <Route path="/" element={<Index />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/verify" element={<Verify />} />
-                
-                {/* Feature routes */}
-                <Route path="/learn" element={<Learn />} />
-                <Route path="/games" element={<Games />} />
-                <Route path="/sessions" element={<Sessions />} />
-                <Route path="/profile" element={<Profile />} />
-                
-                {/* Protected routes example */}
-                {/* <Route path="/settings" element={
-                  <ProtectedRoute>
-                    <Settings />
-                  </ProtectedRoute>
-                } /> */}
-                
-                {/* 404 route */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </AuthProvider>
-          </BrowserRouter>
+          <AppContent />
         </TooltipProvider>
       </QueryClientProvider>
     </React.StrictMode>
