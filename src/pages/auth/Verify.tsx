@@ -2,105 +2,116 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuth } from "@/context/AuthContext";
-import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft } from "lucide-react";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { 
+  InputOTP, 
+  InputOTPGroup, 
+  InputOTPSlot 
 } from "@/components/ui/input-otp";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/AuthContext";
+import { ArrowLeft } from "lucide-react";
 
 const Verify = () => {
   const [otp, setOtp] = useState("");
-  const [timer, setTimer] = useState(30);
-  const [isResending, setIsResending] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
-  const { verifyOTP, sendOTP } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [countdown, setCountdown] = useState(30);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const { verifyOTP, sendOTP } = useAuth();
   
+  // Get the phone number and registration flag from location state
   const phoneNumber = location.state?.phoneNumber || "";
   const isRegistration = location.state?.isRegistration || false;
   
+  // Start countdown for resend OTP
+  useEffect(() => {
+    let timer: number;
+    if (countdown > 0) {
+      timer = window.setTimeout(() => setCountdown(countdown - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [countdown]);
+  
+  // If no phone number in state, redirect to login
   useEffect(() => {
     if (!phoneNumber) {
-      navigate("/login");
+      navigate("/login", { replace: true });
+    }
+  }, [phoneNumber, navigate]);
+  
+  const handleVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (otp.length !== 6) {
+      toast({
+        title: "Invalid OTP",
+        description: "Please enter the 6-digit OTP sent to your phone",
+        variant: "destructive",
+      });
       return;
     }
     
-    let interval: NodeJS.Timeout;
-    if (timer > 0) {
-      interval = setInterval(() => {
-        setTimer((prev) => prev - 1);
-      }, 1000);
-    }
+    setIsSubmitting(true);
     
-    return () => clearInterval(interval);
-  }, [timer, phoneNumber, navigate]);
-  
-  const handleResendOTP = async () => {
-    setIsResending(true);
     try {
-      await sendOTP(phoneNumber);
-      setTimer(30);
+      await verifyOTP(phoneNumber, otp);
+      
       toast({
-        title: "OTP Sent",
-        description: "A new verification code has been sent to your phone",
+        title: "Verification successful",
       });
+      
+      // Check if we have signup data with activity info
+      const signupData = sessionStorage.getItem("dhayan_signup_data");
+      
+      if (signupData) {
+        try {
+          const data = JSON.parse(signupData);
+          if (data.redirectPath && data.activityName) {
+            // Redirect to the original activity page with registration success state
+            navigate(data.redirectPath, { 
+              state: { 
+                registered: true,
+                activityName: data.activityName 
+              } 
+            });
+            return;
+          }
+        } catch (error) {
+          console.error("Error parsing signup data:", error);
+        }
+      }
+      
+      // Default redirect to home page
+      navigate("/");
     } catch (error) {
       toast({
-        title: "Error sending OTP",
-        description: "Please try again later",
+        title: "Verification failed",
+        description: "The OTP you entered is incorrect. Please try again.",
         variant: "destructive",
       });
     } finally {
-      setIsResending(false);
+      setIsSubmitting(false);
     }
   };
   
-  const handleVerify = async () => {
-    if (otp.length !== 6) return;
+  const handleResendOTP = async () => {
+    if (countdown > 0) return;
     
-    setIsVerifying(true);
     try {
-      await verifyOTP(phoneNumber, otp);
+      await sendOTP(phoneNumber);
+      setCountdown(30);
       toast({
-        title: "Verification Successful",
-        description: "You have been logged in successfully",
+        title: "OTP Resent",
+        description: "A new OTP has been sent to your phone",
       });
-      
-      // Check if there's registration data and redirect accordingly
-      const signupData = sessionStorage.getItem("dhayan_signup_data");
-      if (signupData && isRegistration) {
-        try {
-          const data = JSON.parse(signupData);
-          sessionStorage.removeItem("dhayan_signup_data");
-          
-          // Redirect to the specified path or home
-          navigate(data.redirectPath || "/", { 
-            state: { 
-              registered: true,
-              activityName: data.activityName
-            }
-          });
-        } catch (error) {
-          console.error("Error parsing registration data:", error);
-          navigate("/");
-        }
-      } else {
-        navigate("/");
-      }
     } catch (error) {
       toast({
-        title: "Verification Failed",
-        description: "Incorrect OTP. Please try again.",
+        title: "Failed to resend OTP",
+        description: "Please try again later",
         variant: "destructive",
       });
-    } finally {
-      setIsVerifying(false);
     }
   };
   
@@ -110,69 +121,73 @@ const Verify = () => {
         <Button
           variant="ghost"
           className="mb-4"
-          onClick={() => navigate("/login")}
+          onClick={() => navigate(-1)}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Login
+          Back
         </Button>
         
         <Card>
           <CardHeader>
             <CardTitle className="text-center">Verify Your Phone</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-center text-sm text-dhayan-gray">
-              We've sent a 6-digit verification code to <br />
-              <span className="font-semibold text-dhayan-gray-dark">{phoneNumber}</span>
+          <CardContent>
+            <form onSubmit={handleVerify} className="space-y-4">
+              <p className="text-center text-sm text-dhayan-gray mb-6">
+                Enter the 6-digit code sent to
+                <br />
+                <span className="font-semibold text-dhayan-purple-dark">{phoneNumber}</span>
+              </p>
+              
+              <div className="flex justify-center my-6">
+                <InputOTP maxLength={6} value={otp} onChange={setOtp}>
+                  <InputOTPGroup>
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                    <InputOTPSlot index={3} />
+                    <InputOTPSlot index={4} />
+                    <InputOTPSlot index={5} />
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
+              
+              <Button
+                type="submit"
+                className="w-full bg-dhayan-purple hover:bg-dhayan-purple-dark text-white"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <span className="animate-pulse">Verifying...</span>
+                ) : (
+                  "Verify & Continue"
+                )}
+              </Button>
+            </form>
+          </CardContent>
+          <CardFooter className="flex flex-col">
+            <p className="text-sm text-center text-dhayan-gray">
+              Didn't receive the code?{" "}
+              <button
+                type="button"
+                className={`font-semibold ${
+                  countdown > 0
+                    ? "text-dhayan-gray cursor-not-allowed"
+                    : "text-dhayan-purple cursor-pointer"
+                }`}
+                onClick={handleResendOTP}
+                disabled={countdown > 0}
+              >
+                {countdown > 0 ? `Resend in ${countdown}s` : "Resend OTP"}
+              </button>
             </p>
             
-            <div className="flex justify-center my-4">
-              <InputOTP
-                maxLength={6}
-                value={otp}
-                onChange={(value) => setOtp(value)}
-                render={({ slots }) => (
-                  <InputOTPGroup>
-                    {slots.map((slot, i) => (
-                      <InputOTPSlot key={i} {...slot} index={i} />
-                    ))}
-                  </InputOTPGroup>
-                )}
-              />
-            </div>
-            
-            <Button 
-              className="w-full bg-dhayan-purple hover:bg-dhayan-purple-dark text-white"
-              onClick={handleVerify}
-              disabled={otp.length !== 6 || isVerifying}
-            >
-              {isVerifying ? (
-                <>
-                  <span className="animate-pulse">Verifying...</span>
-                </>
-              ) : (
-                "Verify & Continue"
-              )}
-            </Button>
-            
-            <div className="text-center mt-4">
-              <p className="text-sm text-dhayan-gray">Didn't receive code?</p>
-              {timer > 0 ? (
-                <p className="text-sm text-dhayan-gray-dark">
-                  Resend in <span className="font-semibold">{timer}s</span>
-                </p>
-              ) : (
-                <Button
-                  variant="link"
-                  className="text-dhayan-purple p-0 h-auto"
-                  onClick={handleResendOTP}
-                  disabled={isResending}
-                >
-                  {isResending ? "Sending..." : "Resend Code"}
-                </Button>
-              )}
-            </div>
-          </CardContent>
+            {isRegistration && (
+              <p className="text-xs text-center text-dhayan-gray mt-4">
+                By verifying your phone, you're creating a new account and agreeing to our Terms of Service and Privacy Policy.
+              </p>
+            )}
+          </CardFooter>
         </Card>
       </div>
     </div>

@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { activityService, ActivityType } from "@/services/activityService";
 
 // Define the User type
 export interface User {
@@ -23,7 +24,7 @@ interface AuthContextType {
   signOut: () => void;
   updateProfile: (data: Partial<User>) => Promise<void>;
   isAuthenticated: boolean;
-  registerForActivity: (activityType: string, activityName: string, redirectPath: string) => void;
+  registerForActivity: (activityType: ActivityType, activityName: string, redirectPath: string) => void;
 }
 
 // Create the context
@@ -71,17 +72,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user]);
 
   // Handle activity registration
-  const registerForActivity = (activityType: string, activityName: string, redirectPath: string) => {
+  const registerForActivity = (activityType: ActivityType, activityName: string, redirectPath: string) => {
     if (user) {
       // If user is logged in, register them directly
-      // In a real app, this would make an API call
-      toast({
-        title: "Registration Successful",
-        description: `You've been registered for ${activityName}`,
-      });
-      
-      // Navigate to the activity page
-      navigate(redirectPath);
+      activityService.registerForActivity(user, activityType, activityName)
+        .then(() => {
+          toast({
+            title: "Registration Successful",
+            description: `You've been registered for ${activityName}`,
+          });
+          
+          // Navigate to the activity page with registered state
+          navigate(redirectPath, { 
+            state: { 
+              registered: true,
+              activityName
+            } 
+          });
+        })
+        .catch((error) => {
+          console.error("Registration error:", error);
+          toast({
+            title: "Registration Failed",
+            description: "Something went wrong. Please try again.",
+            variant: "destructive",
+          });
+        });
     } else {
       // If not logged in, redirect to registration page
       navigate("/register", { 

@@ -1,99 +1,110 @@
 
 import React from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import MobileLayout from "@/components/layout/MobileLayout";
-import { Card, CardContent } from "@/components/ui/card";
-import { Users, Star, Trophy } from "lucide-react";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Gamepad2, Users, Clock } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/AuthContext";
 
 const Games = () => {
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { registerForActivity } = useAuth();
+  
+  // Check if user just registered for an activity
+  React.useEffect(() => {
+    if (location.state?.registered && location.state?.activityName) {
+      toast({
+        title: "Registration Successful",
+        description: `You've been registered for ${location.state.activityName}`,
+      });
+      
+      // Remove the state to prevent showing the toast again on refresh
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location, toast, navigate]);
+  
   const games = [
     {
       id: 1,
-      title: "Tambola (Housie)",
-      players: "25+ playing now",
+      title: "Virtual Tambola",
+      description: "Join a fun game of housie with friends online.",
+      players: 42,
+      schedule: "Daily, 5:00 PM - 6:00 PM",
       image: "/placeholder.svg",
-      featured: true,
+      category: "Social",
     },
     {
       id: 2,
       title: "Memory Match",
-      players: "12+ playing now",
+      description: "Test your memory with this classic card game.",
+      players: 123,
+      schedule: "Play anytime",
       image: "/placeholder.svg",
-      featured: false,
+      category: "Brain Training",
     },
     {
       id: 3,
-      title: "Word Search",
-      players: "18+ playing now",
+      title: "Word Puzzle",
+      description: "Solve word puzzles to improve vocabulary.",
+      players: 76,
+      schedule: "New puzzles daily",
       image: "/placeholder.svg",
-      featured: false,
-    },
-    {
-      id: 4,
-      title: "Sudoku",
-      players: "30+ playing now",
-      image: "/placeholder.svg",
-      featured: false,
+      category: "Learning",
     },
   ];
+
+  const handleGameRegister = (game: any) => {
+    registerForActivity(
+      "game",
+      game.title,
+      "/games"
+    );
+  };
 
   return (
     <MobileLayout>
       <div className="p-4 space-y-6">
-        <h1 className="text-2xl font-bold text-dhayan-purple-dark">Games & Entertainment</h1>
+        <h1 className="text-2xl font-bold text-dhayan-purple-dark">Games & Activities</h1>
         
-        {/* Featured Game */}
-        <Card className="bg-gradient-to-r from-dhayan-purple to-dhayan-purple-dark text-white overflow-hidden">
-          <div className="relative h-40">
-            <img 
-              src="/placeholder.svg" 
-              alt="Tambola Live Game" 
-              className="w-full h-full object-cover opacity-30"
-            />
-            <div className="absolute inset-0 p-4 flex flex-col justify-between">
-              <div className="flex justify-between items-start">
-                <div>
-                  <span className="bg-white text-dhayan-purple-dark text-xs px-2 py-1 rounded-full font-medium">LIVE NOW</span>
-                  <h2 className="text-xl font-bold mt-2">Tambola Friday Special</h2>
-                </div>
-                <Star className="h-6 w-6 fill-yellow-300 text-yellow-300" />
-              </div>
-              <div className="flex justify-between items-end">
-                <div className="flex items-center">
-                  <Users className="h-4 w-4 mr-1" />
-                  <span className="text-sm">45+ players</span>
-                </div>
-                <div className="flex items-center bg-white/20 rounded-full px-3 py-1">
-                  <Trophy className="h-4 w-4 mr-1" />
-                  <span className="text-sm">₹500 Prize</span>
+        <div className="space-y-4">
+          {games.map((game) => (
+            <Card key={game.id} className="overflow-hidden">
+              <div className="relative h-32">
+                <img 
+                  src={game.image} 
+                  alt={game.title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute top-2 right-2 bg-dhayan-purple text-white text-xs px-2 py-1 rounded-full">
+                  {game.category}
                 </div>
               </div>
-            </div>
-          </div>
-        </Card>
-        
-        {/* All Games */}
-        <div>
-          <h2 className="text-lg font-medium mb-3">All Games</h2>
-          <div className="grid grid-cols-2 gap-4">
-            {games.map((game) => (
-              <Card key={game.id} className="overflow-hidden">
-                <div className="aspect-square relative">
-                  <img 
-                    src={game.image} 
-                    alt={game.title} 
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
-                    <h3 className="text-white font-medium">{game.title}</h3>
-                    <div className="flex items-center text-white/80 text-xs">
-                      <Users className="h-3 w-3 mr-1" />
-                      {game.players}
-                    </div>
-                  </div>
+              <CardContent className="p-4">
+                <h3 className="font-semibold text-lg">{game.title}</h3>
+                <p className="text-sm text-dhayan-gray mt-1">{game.description}</p>
+                
+                <div className="flex items-center mt-3 text-xs text-dhayan-gray-dark">
+                  <Users className="h-3.5 w-3.5 mr-1" />
+                  <span className="mr-3">{game.players} players</span>
+                  <Clock className="h-3.5 w-3.5 mr-1" />
+                  <span>{game.schedule}</span>
                 </div>
-              </Card>
-            ))}
-          </div>
+              </CardContent>
+              <CardFooter className="p-4 pt-0">
+                <Button 
+                  className="w-full bg-dhayan-purple hover:bg-dhayan-purple-dark text-white"
+                  onClick={() => handleGameRegister(game)}
+                >
+                  <Gamepad2 className="h-4 w-4 mr-2" />
+                  Play Now
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
         </div>
       </div>
     </MobileLayout>
