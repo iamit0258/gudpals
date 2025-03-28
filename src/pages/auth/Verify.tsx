@@ -23,6 +23,7 @@ const Verify = () => {
   const { toast } = useToast();
   
   const phoneNumber = location.state?.phoneNumber || "";
+  const isRegistration = location.state?.isRegistration || false;
   
   useEffect(() => {
     if (!phoneNumber) {
@@ -70,7 +71,28 @@ const Verify = () => {
         title: "Verification Successful",
         description: "You have been logged in successfully",
       });
-      navigate("/");
+      
+      // Check if there's registration data and redirect accordingly
+      const signupData = sessionStorage.getItem("dhayan_signup_data");
+      if (signupData && isRegistration) {
+        try {
+          const data = JSON.parse(signupData);
+          sessionStorage.removeItem("dhayan_signup_data");
+          
+          // Redirect to the specified path or home
+          navigate(data.redirectPath || "/", { 
+            state: { 
+              registered: true,
+              activityName: data.activityName
+            }
+          });
+        } catch (error) {
+          console.error("Error parsing registration data:", error);
+          navigate("/");
+        }
+      } else {
+        navigate("/");
+      }
     } catch (error) {
       toast({
         title: "Verification Failed",

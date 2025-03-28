@@ -1,9 +1,32 @@
+
 import React from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import MobileLayout from "@/components/layout/MobileLayout";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, Clock } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/AuthContext";
 
 const Sessions = () => {
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { registerForActivity } = useAuth();
+  
+  // Check if user just registered for an activity
+  React.useEffect(() => {
+    if (location.state?.registered && location.state?.activityName) {
+      toast({
+        title: "Registration Successful",
+        description: `You've been registered for ${location.state.activityName}`,
+      });
+      
+      // Remove the state to prevent showing the toast again on refresh
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location, toast, navigate]);
+  
   const upcomingSessions = [
     {
       id: 1,
@@ -33,6 +56,14 @@ const Sessions = () => {
       image: "/placeholder.svg",
     },
   ];
+
+  const handleSessionRegister = (session: any) => {
+    registerForActivity(
+      "session",
+      session.title,
+      "/sessions"
+    );
+  };
 
   return (
     <MobileLayout>
@@ -66,6 +97,12 @@ const Sessions = () => {
                       <Clock className="h-4 w-4 ml-3 mr-1" />
                       <span>{session.time}</span>
                     </div>
+                    <Button 
+                      className="w-full mt-3 bg-dhayan-purple text-white hover:bg-dhayan-purple-dark"
+                      onClick={() => handleSessionRegister(session)}
+                    >
+                      Register
+                    </Button>
                   </CardContent>
                 </div>
               </Card>

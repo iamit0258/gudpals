@@ -23,6 +23,7 @@ interface AuthContextType {
   signOut: () => void;
   updateProfile: (data: Partial<User>) => Promise<void>;
   isAuthenticated: boolean;
+  registerForActivity: (activityType: string, activityName: string, redirectPath: string) => void;
 }
 
 // Create the context
@@ -34,6 +35,7 @@ export const AuthContext = createContext<AuthContextType>({
   signOut: () => {},
   updateProfile: async () => {},
   isAuthenticated: false,
+  registerForActivity: () => {},
 });
 
 // Custom hook to use the auth context
@@ -67,6 +69,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem("dhayan_user", JSON.stringify(user));
     }
   }, [user]);
+
+  // Handle activity registration
+  const registerForActivity = (activityType: string, activityName: string, redirectPath: string) => {
+    if (user) {
+      // If user is logged in, register them directly
+      // In a real app, this would make an API call
+      toast({
+        title: "Registration Successful",
+        description: `You've been registered for ${activityName}`,
+      });
+      
+      // Navigate to the activity page
+      navigate(redirectPath);
+    } else {
+      // If not logged in, redirect to registration page
+      navigate("/register", { 
+        state: { 
+          from: redirectPath,
+          activityType,
+          activityName
+        } 
+      });
+    }
+  };
 
   // Mock OTP sending function
   const sendOTP = async (phoneNumber: string): Promise<void> => {
@@ -154,6 +180,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signOut,
         updateProfile,
         isAuthenticated: !!user,
+        registerForActivity,
       }}
     >
       {children}

@@ -12,6 +12,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/auth/Login";
 import Verify from "./pages/auth/Verify";
+import Register from "./pages/auth/Register";
 import Profile from "./pages/profile/Profile";
 import Learn from "./pages/learn/Learn";
 import Games from "./pages/games/Games";
@@ -54,6 +55,7 @@ const AppContent = () => {
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
           <Route path="/verify" element={<Verify />} />
+          <Route path="/register" element={<Register />} />
           
           {/* Feature routes */}
           <Route path="/learn" element={<Learn />} />
