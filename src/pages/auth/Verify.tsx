@@ -124,7 +124,13 @@ const Verify = () => {
               onClick={handleVerify}
               disabled={otp.length !== 6 || isVerifying}
             >
-              {isVerifying ? "Verifying..." : "Verify & Continue"}
+              {isVerifying ? (
+                <>
+                  <span className="animate-pulse">Verifying...</span>
+                </>
+              ) : (
+                "Verify & Continue"
+              )}
             </Button>
             
             <div className="text-center mt-4">
