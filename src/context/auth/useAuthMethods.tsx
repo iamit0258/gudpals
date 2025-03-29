@@ -4,7 +4,8 @@ import { User } from "./types";
 
 type SetUserFunction = React.Dispatch<React.SetStateAction<User | null>>;
 
-interface ToastInterface {
+// Update ToastInterface to match the actual shape used by the toast function
+export interface ToastInterface {
   toast: (props: {
     title: string;
     description?: string;
@@ -83,7 +84,6 @@ export const useAuthMethods = (
     navigate("/");
   };
 
-  // Update user profile
   const updateProfile = async (data: Partial<User>): Promise<void> => {
     if (!user) return Promise.reject(new Error("No authenticated user"));
     

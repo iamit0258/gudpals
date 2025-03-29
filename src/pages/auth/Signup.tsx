@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Phone, ArrowLeft } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/auth"; // Updated import path
 
 const Signup = () => {
   const [phoneNumber, setPhoneNumber] = useState("");

@@ -1,5 +1,5 @@
 
-import { User } from "@/context/AuthContext";
+import { User } from "@/context/auth/types";
 
 // Define the activity registration type
 export interface ActivityRegistration {

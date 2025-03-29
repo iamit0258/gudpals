@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/input-otp";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/auth"; // Updated import path
 import { ArrowLeft, InfoIcon } from "lucide-react";
 
 const Verify = () => {

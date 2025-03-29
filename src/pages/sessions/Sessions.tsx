@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import MobileLayout from "@/components/layout/MobileLayout";
@@ -6,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/auth";
 
 const Sessions = () => {
   const { toast } = useToast();
@@ -14,7 +13,6 @@ const Sessions = () => {
   const location = useLocation();
   const { registerForActivity } = useAuth();
   
-  // Check if user just registered for an activity
   React.useEffect(() => {
     if (location.state?.registered && location.state?.activityName) {
       toast({
@@ -22,7 +20,6 @@ const Sessions = () => {
         description: `You've been registered for ${location.state.activityName}`,
       });
       
-      // Remove the state to prevent showing the toast again on refresh
       navigate(location.pathname, { replace: true });
     }
   }, [location, toast, navigate]);

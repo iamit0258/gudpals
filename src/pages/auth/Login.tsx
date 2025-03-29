@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/auth"; // Updated import path
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Phone, User, ArrowRight } from "lucide-react";
 import { Progress } from "@/components/ui/progress";

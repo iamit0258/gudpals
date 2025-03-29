@@ -26,6 +26,6 @@ export interface AuthContextType {
   ) => void;
 }
 
-// Re-export ActivityType from the service for convenience
+// Re-export ActivityType from the service for convenience - fixed with export type
 import { ActivityType } from "@/services/activityService";
-export { ActivityType };
+export type { ActivityType };
