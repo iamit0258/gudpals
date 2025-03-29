@@ -34,7 +34,7 @@ const Games = () => {
       description: "Join a fun game of housie with friends online.",
       players: 42,
       schedule: "Daily, 5:00 PM - 6:00 PM",
-      image: "/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1606167668584-78701c57f13d?q=80&w=300&auto=format&fit=crop",
       category: "Social",
     },
     {
@@ -43,7 +43,7 @@ const Games = () => {
       description: "Test your memory with this classic card game.",
       players: 123,
       schedule: "Play anytime",
-      image: "/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?q=80&w=300&auto=format&fit=crop",
       category: "Brain Training",
     },
     {
@@ -52,7 +52,7 @@ const Games = () => {
       description: "Solve word puzzles to improve vocabulary.",
       players: 76,
       schedule: "New puzzles daily",
-      image: "/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1628815113969-0509784aeede?q=80&w=300&auto=format&fit=crop",
       category: "Learning",
     },
   ];

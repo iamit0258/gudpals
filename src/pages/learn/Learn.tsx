@@ -34,7 +34,7 @@ const Learn = () => {
       description: "Learn essential skills for navigating the digital world.",
       students: 156,
       duration: "4 weeks (self-paced)",
-      image: "/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=300&auto=format&fit=crop",
       category: "Technology",
     },
     {
@@ -43,7 +43,7 @@ const Learn = () => {
       description: "Get comfortable using smartphones for everyday tasks.",
       students: 203,
       duration: "2 weeks (2 hours/week)",
-      image: "/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?q=80&w=300&auto=format&fit=crop",
       category: "Technology",
     },
     {
@@ -52,7 +52,7 @@ const Learn = () => {
       description: "Learn how to stay safe and protect your information online.",
       students: 128,
       duration: "3 weeks (self-paced)",
-      image: "/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?q=80&w=300&auto=format&fit=crop",
       category: "Safety",
     },
   ];

@@ -35,7 +35,7 @@ const Sessions = () => {
       time: "8:00 AM - 9:00 AM",
       date: "Today",
       category: "Yoga",
-      image: "/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1616699002805-0741e1e4a9c5?q=80&w=300&auto=format&fit=crop",
     },
     {
       id: 2,
@@ -44,7 +44,7 @@ const Sessions = () => {
       time: "4:00 PM - 5:00 PM",
       date: "Today",
       category: "Wellness",
-      image: "/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1474418397713-2f1081735d92?q=80&w=300&auto=format&fit=crop",
     },
     {
       id: 3,
@@ -53,7 +53,7 @@ const Sessions = () => {
       time: "10:00 AM - 11:00 AM",
       date: "Tomorrow",
       category: "Fitness",
-      image: "/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=300&auto=format&fit=crop",
     },
   ];
 
