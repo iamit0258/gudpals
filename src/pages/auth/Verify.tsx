@@ -2,20 +2,22 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { 
   InputOTP, 
   InputOTPGroup, 
   InputOTPSlot 
 } from "@/components/ui/input-otp";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, InfoIcon } from "lucide-react";
 
 const Verify = () => {
   const [otp, setOtp] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [countdown, setCountdown] = useState(30);
+  const [showHelpDialog, setShowHelpDialog] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -130,14 +132,25 @@ const Verify = () => {
         <Card>
           <CardHeader>
             <CardTitle className="text-center">Verify Your Phone</CardTitle>
+            <CardDescription className="text-center text-dhayan-gray">
+              Enter the verification code sent to your phone
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleVerify} className="space-y-4">
-              <p className="text-center text-sm text-dhayan-gray mb-6">
-                Enter the 6-digit code sent to
-                <br />
-                <span className="font-semibold text-dhayan-purple-dark">{phoneNumber}</span>
-              </p>
+              <div className="flex items-center justify-between mb-6">
+                <p className="text-sm text-dhayan-gray">
+                  Code sent to: <span className="font-semibold text-dhayan-purple-dark">{phoneNumber}</span>
+                </p>
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setShowHelpDialog(true)}
+                >
+                  <InfoIcon className="h-4 w-4 mr-1" /> Help
+                </Button>
+              </div>
               
               <div className="flex justify-center my-6">
                 <InputOTP maxLength={6} value={otp} onChange={setOtp}>
@@ -190,6 +203,33 @@ const Verify = () => {
           </CardFooter>
         </Card>
       </div>
+      
+      {/* Help Dialog */}
+      <Dialog open={showHelpDialog} onOpenChange={setShowHelpDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>How OTP Verification Works</DialogTitle>
+            <DialogDescription>
+              <div className="mt-4 space-y-3">
+                <p>
+                  <strong>For this demo application:</strong> Any 6-digit number will work as a valid OTP. In a real application, a unique OTP would be sent to your phone via SMS.
+                </p>
+                <p>
+                  The OTP verification process:
+                </p>
+                <ol className="list-decimal pl-5 space-y-2">
+                  <li>Enter any 6 digits in the boxes above</li>
+                  <li>Click "Verify & Continue"</li>
+                  <li>You'll be automatically redirected after successful verification</li>
+                </ol>
+                <p className="text-xs mt-4 text-dhayan-gray">
+                  Note: In a production environment, we would integrate with an SMS service like Twilio to send real verification codes to your phone.
+                </p>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
