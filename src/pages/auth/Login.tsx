@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -6,10 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useAuth } from "@/context/auth"; // Updated import path
+import { useAuth } from "@/context/auth";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Phone, User, ArrowRight } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
 
 const Login = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -21,7 +19,6 @@ const Login = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if phone number is 10 digits
     setIsValidPhone(phoneNumber.length === 10 && /^\d{10}$/.test(phoneNumber));
   }, [phoneNumber]);
 
@@ -42,11 +39,10 @@ const Login = () => {
     try {
       await sendOTP("+91" + phoneNumber);
       
-      // Store remember me preference
       if (rememberMe) {
-        localStorage.setItem("dhayan_remember_phone", phoneNumber);
+        localStorage.setItem("gudpals_remember_phone", phoneNumber);
       } else {
-        localStorage.removeItem("dhayan_remember_phone");
+        localStorage.removeItem("gudpals_remember_phone");
       }
       
       navigate("/verify", { state: { phoneNumber: "+91" + phoneNumber } });
@@ -65,33 +61,23 @@ const Login = () => {
     }
   };
 
-  // Load remembered phone number if available
   useEffect(() => {
-    const rememberedPhone = localStorage.getItem("dhayan_remember_phone");
+    const rememberedPhone = localStorage.getItem("gudpals_remember_phone");
     if (rememberedPhone) {
       setPhoneNumber(rememberedPhone);
       setRememberMe(true);
     }
   }, []);
 
-  // Calculate password strength (for future email/password implementation)
-  const getPasswordStrength = (password: string) => {
-    if (!password) return 0;
-    let strength = 0;
-    if (password.length >= 8) strength += 25;
-    if (/[A-Z]/.test(password)) strength += 25;
-    if (/[0-9]/.test(password)) strength += 25;
-    if (/[^A-Za-z0-9]/.test(password)) strength += 25;
-    return strength;
-  };
-
   return (
     <div className="min-h-screen bg-dhayan-purple-light/20 flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-dhayan-purple-dark">
-            <span className="text-dhayan-purple">ग्</span> GUDPALS
-          </h1>
+          <img 
+            src="/lovable-uploads/f39713ff-dd36-4a15-af77-677c3b4a8e67.png" 
+            alt="GUDPALS Logo" 
+            className="h-24 mx-auto mb-2"
+          />
           <p className="text-dhayan-gray mt-2">Login to access your GUDPALS account</p>
         </div>
         

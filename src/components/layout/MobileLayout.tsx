@@ -25,11 +25,13 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
 
   return (
     <div className="flex flex-col min-h-screen max-w-md mx-auto bg-background">
-      <header className="py-4 px-4 flex items-center justify-between bg-white border-b">
+      <header className="py-3 px-4 flex items-center justify-between bg-white border-b">
         <Link to="/" className="flex items-center">
-          <h1 className="text-xl font-bold text-dhayan-purple-dark">
-            <span className="text-dhayan-purple">ग्</span> GUDPALS
-          </h1>
+          <img 
+            src="/lovable-uploads/f39713ff-dd36-4a15-af77-677c3b4a8e67.png" 
+            alt="GUDPALS Logo" 
+            className="h-10"
+          />
         </Link>
       </header>
 

@@ -8,20 +8,25 @@ const WelcomeBanner = () => {
   return (
     <div className="relative">
       <div
-        className="h-48 bg-gradient-to-r from-dhayan-purple to-dhayan-purple-dark"
+        className="h-56 bg-gradient-to-r from-dhayan-purple to-dhayan-purple-dark flex items-center justify-center"
         style={{
           borderBottomLeftRadius: "30px",
           borderBottomRightRadius: "30px",
         }}
       >
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center text-white p-4">
-            <h1 className="text-3xl font-bold mb-2">नमस्ते!</h1>
-            <p className="text-lg mb-4">Welcome to GUDPALS</p>
-            <p className="text-sm opacity-90">
-              Your companion for a happy and active life
-            </p>
+        <div className="text-center text-white p-4">
+          <div className="flex justify-center mb-4">
+            <img 
+              src="/lovable-uploads/f39713ff-dd36-4a15-af77-677c3b4a8e67.png" 
+              alt="GUDPALS Logo" 
+              className="h-24"
+            />
           </div>
+          <h1 className="text-3xl font-bold mb-2">नमस्ते!</h1>
+          <p className="text-lg">Welcome to GUDPALS</p>
+          <p className="text-sm opacity-90 mt-1">
+            DEDICATED TO YOUR HEALTH
+          </p>
         </div>
       </div>
 
