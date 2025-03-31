@@ -26,8 +26,8 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-t-dhayan-purple border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="mt-4 text-dhayan-gray">Loading...</p>
+          <div className="w-16 h-16 border-4 border-t-gudpals-green border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="mt-4 text-gudpals-gray">Loading...</p>
         </div>
       </div>
     );
