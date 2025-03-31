@@ -1,26 +1,16 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
-
 const WelcomeBanner = () => {
-  return (
-    <div className="relative">
-      <div
-        className="h-56 bg-gradient-to-r from-dhayan-purple to-dhayan-purple-dark flex items-center justify-center"
-        style={{
-          borderBottomLeftRadius: "30px",
-          borderBottomRightRadius: "30px",
-        }}
-      >
+  return <div className="relative">
+      <div className="h-56 bg-gradient-to-r from-dhayan-purple to-dhayan-purple-dark flex items-center justify-center" style={{
+      borderBottomLeftRadius: "30px",
+      borderBottomRightRadius: "30px"
+    }}>
         <div className="text-center text-white p-4">
           <div className="flex justify-center mb-4">
-            <img 
-              src="/lovable-uploads/f39713ff-dd36-4a15-af77-677c3b4a8e67.png" 
-              alt="GUDPALS Logo" 
-              className="h-24"
-            />
+            <img alt="GUDPALS Logo" src="/lovable-uploads/12db0c22-76d8-426b-bf57-88391dc2543e.png" className="h-30 object-cover" />
           </div>
           <h1 className="text-3xl font-bold mb-2">नमस्ते!</h1>
           <p className="text-lg">Welcome to GUDPALS</p>
@@ -45,8 +35,6 @@ const WelcomeBanner = () => {
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>;
 };
-
 export default WelcomeBanner;
