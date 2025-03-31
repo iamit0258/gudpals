@@ -31,9 +31,9 @@ export default {
         foreground: "hsl(var(--foreground))",
         dhayan: {
           purple: {
-            light: "#E5DEFF",
-            DEFAULT: "#9b87f5",
-            dark: "#6E59A5",
+            light: "#E5F4EA",
+            DEFAULT: "#349166",
+            dark: "#236945",
           },
           gray: {
             light: "#F1F0FB",
