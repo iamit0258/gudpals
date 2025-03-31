@@ -65,7 +65,7 @@ const Index = () => {
     {
       icon: Heart,
       name: "Loyalty Program",
-      description: "Dhayan membership benefits",
+      description: "GUDPALS membership benefits",
       path: "/loyalty",
       color: "bg-dhayan-pink",
     },

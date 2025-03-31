@@ -17,7 +17,7 @@ const WelcomeBanner = () => {
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white p-4">
             <h1 className="text-3xl font-bold mb-2">नमस्ते!</h1>
-            <p className="text-lg mb-4">Welcome to Dhayan</p>
+            <p className="text-lg mb-4">Welcome to GUDPALS</p>
             <p className="text-sm opacity-90">
               Your companion for a happy and active life
             </p>

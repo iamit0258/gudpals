@@ -90,9 +90,9 @@ const Login = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold text-dhayan-purple-dark">
-            <span className="text-dhayan-purple">ध्यान</span> Dhayan
+            <span className="text-dhayan-purple">ग्</span> GUDPALS
           </h1>
-          <p className="text-dhayan-gray mt-2">Login to access your Dhayan account</p>
+          <p className="text-dhayan-gray mt-2">Login to access your GUDPALS account</p>
         </div>
         
         <Card className="shadow-md">
@@ -182,7 +182,7 @@ const Login = () => {
 
         <div className="mt-4 text-center">
           <p className="text-sm text-dhayan-gray">
-            New to Dhayan?{" "}
+            New to GUDPALS?{" "}
             <Button 
               variant="link" 
               className="p-0 h-auto text-dhayan-purple"

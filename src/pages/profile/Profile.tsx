@@ -48,7 +48,7 @@ const Profile = () => {
               <div>
                 <h2 className="text-xl font-semibold">{user.displayName || "User"}</h2>
                 <p className="text-dhayan-gray">{user.email}</p>
-                <p className="text-sm mt-1 text-dhayan-purple">Dhayan Member since 2023</p>
+                <p className="text-sm mt-1 text-dhayan-purple">GUDPALS Member since 2023</p>
               </div>
             </div>
           </CardContent>

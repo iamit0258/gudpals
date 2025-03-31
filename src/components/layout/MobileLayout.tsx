@@ -28,7 +28,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
       <header className="py-4 px-4 flex items-center justify-between bg-white border-b">
         <Link to="/" className="flex items-center">
           <h1 className="text-xl font-bold text-dhayan-purple-dark">
-            <span className="text-dhayan-purple">ध्यान</span> Dhayan
+            <span className="text-dhayan-purple">ग्</span> GUDPALS
           </h1>
         </Link>
       </header>
