@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { 
@@ -32,7 +31,7 @@ const Index = () => {
       name: "Digital Literacy",
       description: "Learn digital skills",
       path: "/learn",
-      color: "bg-dhayan-orange",
+      color: "bg-dhayan-green-light",
     },
     {
       icon: Shield,

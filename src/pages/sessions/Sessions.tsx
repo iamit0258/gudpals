@@ -172,7 +172,7 @@ const Sessions = () => {
   return (
     <MobileLayout>
       <div className="p-4 space-y-6">
-        <h1 className="text-2xl font-bold text-dhayan-purple-dark">Your Sessions</h1>
+        <h1 className="text-2xl font-bold text-dhayan-green-DEFAULT">Your Sessions</h1>
         
         <div className="space-y-2">
           <h2 className="text-lg font-medium">Upcoming Sessions</h2>
@@ -192,7 +192,7 @@ const Sessions = () => {
                     </div>
                     <CardContent className="w-2/3 p-3">
                       <div className="mb-1">
-                        <span className="text-xs bg-dhayan-purple-light text-dhayan-purple-dark px-2 py-0.5 rounded-full">
+                        <span className="text-xs bg-dhayan-green-light text-dhayan-green-DEFAULT px-2 py-0.5 rounded-full">
                           {session.category}
                         </span>
                       </div>
@@ -205,7 +205,7 @@ const Sessions = () => {
                         <span>{session.time}</span>
                       </div>
                       <Button 
-                        className="w-full mt-3 bg-dhayan-purple text-white hover:bg-dhayan-purple-dark"
+                        className="w-full mt-3 bg-dhayan-green-DEFAULT text-white hover:bg-opacity-90"
                         onClick={() => handleSessionRegister(session)}
                       >
                         Register
