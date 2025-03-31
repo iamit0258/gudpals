@@ -9,7 +9,104 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      activities: {
+        Row: {
+          activity_type: string
+          category: string
+          created_at: string
+          description: string | null
+          end_time: string | null
+          id: string
+          image_url: string | null
+          instructor: string | null
+          start_time: string | null
+          title: string
+        }
+        Insert: {
+          activity_type: string
+          category: string
+          created_at?: string
+          description?: string | null
+          end_time?: string | null
+          id?: string
+          image_url?: string | null
+          instructor?: string | null
+          start_time?: string | null
+          title: string
+        }
+        Update: {
+          activity_type?: string
+          category?: string
+          created_at?: string
+          description?: string | null
+          end_time?: string | null
+          id?: string
+          image_url?: string | null
+          instructor?: string | null
+          start_time?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+          last_login_at: string
+          phone_number: string | null
+          photo_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id: string
+          last_login_at?: string
+          phone_number?: string | null
+          photo_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          last_login_at?: string
+          phone_number?: string | null
+          photo_url?: string | null
+        }
+        Relationships: []
+      }
+      registrations: {
+        Row: {
+          activity_id: string
+          id: string
+          registered_at: string
+          user_id: string
+        }
+        Insert: {
+          activity_id: string
+          id?: string
+          registered_at?: string
+          user_id: string
+        }
+        Update: {
+          activity_id?: string
+          id?: string
+          registered_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registrations_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "activities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
