@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -16,9 +17,6 @@ import Profile from "./pages/profile/Profile";
 import Learn from "./pages/learn/Learn";
 import Games from "./pages/games/Games";
 import Sessions from "./pages/sessions/Sessions";
-
-// Create the client outside of the component
-const queryClient = new QueryClient();
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -42,50 +40,54 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Wrap the app content in a function component
+// Create the app content component
 const AppContent = () => {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <Toaster />
-        <Sonner />
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/verify" element={<Verify />} />
-          <Route path="/register" element={<Register />} />
-          
-          {/* Feature routes */}
-          <Route path="/learn" element={<Learn />} />
-          <Route path="/games" element={<Games />} />
-          <Route path="/sessions" element={<Sessions />} />
-          <Route path="/profile" element={<Profile />} />
-          
-          {/* Protected routes example */}
-          {/* <Route path="/settings" element={
-            <ProtectedRoute>
-              <Settings />
-            </ProtectedRoute>
-          } /> */}
-          
-          {/* 404 route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </AuthProvider>
-    </BrowserRouter>
+    <>
+      <Toaster />
+      <Sonner />
+      <Routes>
+        {/* Public routes */}
+        <Route path="/" element={<Index />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/verify" element={<Verify />} />
+        <Route path="/register" element={<Register />} />
+        
+        {/* Feature routes */}
+        <Route path="/learn" element={<Learn />} />
+        <Route path="/games" element={<Games />} />
+        <Route path="/sessions" element={<Sessions />} />
+        <Route path="/profile" element={<Profile />} />
+        
+        {/* Protected routes example */}
+        {/* <Route path="/settings" element={
+          <ProtectedRoute>
+            <Settings />
+          </ProtectedRoute>
+        } /> */}
+        
+        {/* 404 route */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </>
   );
 };
 
+// Create the query client outside of the component
+const queryClient = new QueryClient();
+
+// Main App component
 const App = () => {
   return (
-    <React.StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <AppContent />
-        </TooltipProvider>
-      </QueryClientProvider>
-    </React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <AppContent />
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 };
 
