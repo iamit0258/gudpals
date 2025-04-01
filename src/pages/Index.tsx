@@ -71,7 +71,7 @@ const Index = () => {
               <Card className="h-full transition-transform hover:scale-105">
                 <CardContent className="p-4 flex flex-col items-center text-center">
                   <div className={`w-12 h-12 rounded-full ${service.color} flex items-center justify-center mb-3`}>
-                    <service.icon className="h-6 w-6 text-dhayan-purple-dark" />
+                    <service.icon className="h-6 w-6 text-dhayan-purple" />
                   </div>
                   <h3 className="font-medium text-lg">{service.name}</h3>
                   <p className="text-sm text-muted-foreground">{service.description}</p>
