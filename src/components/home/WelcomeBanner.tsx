@@ -1,18 +1,18 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
 const WelcomeBanner = () => {
   return <div className="relative">
-      <div className="h-56 bg-gradient-to-r from-gudpals-green to-gudpals-green-dark flex items-center justify-center" style={{
+      <div className="h-56 bg-gradient-to-r from-dhayan-purple to-dhayan-purple-dark flex items-center justify-center" style={{
       borderBottomLeftRadius: "30px",
       borderBottomRightRadius: "30px"
     }}>
         <div className="text-center text-white p-4">
           <div className="flex justify-center mb-4">
-            <img alt="GUDPALS Logo" src="/lovable-uploads/adc8237f-5b88-421f-9ac5-6c272ec9eddc.png" className="h-32 object-contain" />
+            <img alt="GUDPALS Logo" src="/lovable-uploads/12db0c22-76d8-426b-bf57-88391dc2543e.png" className="h-30 object-cover" />
           </div>
+          <h1 className="text-3xl font-bold mb-2">नमस्ते!</h1>
           <p className="text-lg">Welcome to GUDPALS</p>
           <p className="text-sm opacity-90 mt-1">
             DEDICATED TO YOUR HEALTH
@@ -29,7 +29,7 @@ const WelcomeBanner = () => {
                 Help us personalize your experience
               </p>
             </div>
-            <Button className="bg-gudpals-green hover:bg-gudpals-green-dark text-white">
+            <Button className="bg-dhayan-purple hover:bg-dhayan-purple-dark text-white">
               Get Started <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           </div>
