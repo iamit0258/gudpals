@@ -12,7 +12,7 @@ export interface ActivityRegistration {
 }
 
 // Define the activity types
-export type ActivityType = "session" | "game" | "learning" | "other";
+export type ActivityType = "session" | "game" | "learning" | "other" | "product" | "connection";
 
 // Mock database for activities (will be replaced by Supabase)
 const mockActivityDb: Record<string, ActivityRegistration[]> = {};
