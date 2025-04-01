@@ -8,9 +8,9 @@ const WelcomeBanner = () => {
       borderBottomLeftRadius: "30px",
       borderBottomRightRadius: "30px"
     }}>
-        <div className="text-center text-white p-4">
+        <div className="text-center text-white p-4 px-px py-[10px]">
           <div className="flex justify-center mb-4">
-            <img alt="GUDPALS Logo" src="/lovable-uploads/12db0c22-76d8-426b-bf57-88391dc2543e.png" className="h-24" />
+            <img alt="GUDPALS Logo" className="h-28" src="/lovable-uploads/e225dd9d-c4f8-499f-b935-63c2242bbf2d.png" />
           </div>
           <h1 className="text-3xl font-bold mb-2">नमस्ते!</h1>
           <p className="text-lg">Welcome to GUDPALS</p>
