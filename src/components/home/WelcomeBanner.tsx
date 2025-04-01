@@ -10,7 +10,7 @@ const WelcomeBanner = () => {
     }}>
         <div className="text-center text-white p-4">
           <div className="flex justify-center mb-4">
-            <img alt="GUDPALS Logo" src="/lovable-uploads/12db0c22-76d8-426b-bf57-88391dc2543e.png" className="h-26" />
+            <img alt="GUDPALS Logo" src="/lovable-uploads/12db0c22-76d8-426b-bf57-88391dc2543e.png" className="h-24" />
           </div>
           <h1 className="text-3xl font-bold mb-2">नमस्ते!</h1>
           <p className="text-lg">Welcome to GUDPALS</p>
