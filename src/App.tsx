@@ -14,8 +14,8 @@ import Login from "./pages/auth/Login";
 import Verify from "./pages/auth/Verify";
 import Register from "./pages/auth/Register";
 import Profile from "./pages/profile/Profile";
-import Learn from "./pages/learn/Learn";
-import Games from "./pages/games/Games";
+import Friends from "./pages/friends/Friends";
+import Products from "./pages/products/Products";
 import Sessions from "./pages/sessions/Sessions";
 
 // Protected route component
@@ -54,8 +54,8 @@ const AppContent = () => {
         <Route path="/register" element={<Register />} />
         
         {/* Feature routes */}
-        <Route path="/learn" element={<Learn />} />
-        <Route path="/games" element={<Games />} />
+        <Route path="/friends" element={<Friends />} />
+        <Route path="/products" element={<Products />} />
         <Route path="/sessions" element={<Sessions />} />
         <Route path="/profile" element={<Profile />} />
         

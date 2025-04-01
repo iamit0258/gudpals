@@ -2,9 +2,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { 
-  Users, PlayCircle, Brain, Shield, 
-  Gamepad2, Coffee, Briefcase, Heart,
-  Map
+  Users, PlayCircle, Brain, 
+  Gamepad2, Coffee, Briefcase, 
+  Map, Package
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import MobileLayout from "@/components/layout/MobileLayout";
@@ -24,28 +24,21 @@ const Index = () => {
       icon: Users,
       name: "Yoga Classes",
       description: "Virtual yoga and wellness",
-      path: "/yoga",
+      path: "/sessions",
       color: "bg-dhayan-green",
     },
     {
       icon: Brain,
       name: "Digital Literacy",
       description: "Learn digital skills",
-      path: "/learn",
+      path: "/friends",
       color: "bg-dhayan-green-light",
-    },
-    {
-      icon: Shield,
-      name: "Safety",
-      description: "Security tips and workshops",
-      path: "/safety",
-      color: "bg-dhayan-pink",
     },
     {
       icon: Gamepad2,
       name: "Tambola",
       description: "Play housie with friends",
-      path: "/games",
+      path: "/activities",
       color: "bg-dhayan-purple-light",
     },
     {
@@ -63,10 +56,10 @@ const Index = () => {
       color: "bg-dhayan-orange",
     },
     {
-      icon: Heart,
-      name: "Loyalty Program",
-      description: "GUDPALS membership benefits",
-      path: "/loyalty",
+      icon: Package,
+      name: "Products",
+      description: "Elderly-friendly items",
+      path: "/products",
       color: "bg-dhayan-pink",
     },
     {

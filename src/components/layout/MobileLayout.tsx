@@ -1,16 +1,20 @@
+
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Calendar, Book, GamepadIcon, User } from "lucide-react";
+import { Home, Calendar, Users, Package, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+
 interface MobileLayoutProps {
   children: React.ReactNode;
   hideNavigation?: boolean;
 }
+
 const MobileLayout: React.FC<MobileLayoutProps> = ({
   children,
   hideNavigation = false
 }) => {
   const location = useLocation();
+  
   const navItems = [{
     name: "Home",
     path: "/",
@@ -20,21 +24,21 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
     path: "/sessions",
     icon: Calendar
   }, {
-    name: "Learn",
-    path: "/learn",
-    icon: Book
+    name: "Friends",
+    path: "/friends",
+    icon: Users
   }, {
-    name: "Games",
-    path: "/games",
-    icon: GamepadIcon
+    name: "Products",
+    path: "/products",
+    icon: Package
   }, {
     name: "Profile",
     path: "/profile",
     icon: User
   }];
+
   return <div className="flex flex-col min-h-screen max-w-md mx-auto bg-background">
       
-
       <main className="flex-1 overflow-auto pb-16">
         {children}
       </main>
@@ -54,4 +58,5 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
         </nav>}
     </div>;
 };
+
 export default MobileLayout;
