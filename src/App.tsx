@@ -17,6 +17,11 @@ import Profile from "./pages/profile/Profile";
 import Friends from "./pages/friends/Friends";
 import Products from "./pages/products/Products";
 import Sessions from "./pages/sessions/Sessions";
+import DigitalLiteracy from "./pages/digitalLiteracy/DigitalLiteracy";
+import Activities from "./pages/activities/Activities";
+import Employment from "./pages/employment/Employment";
+import Travel from "./pages/travel/Travel";
+import Settings from "./pages/settings/Settings";
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -58,13 +63,11 @@ const AppContent = () => {
         <Route path="/products" element={<Products />} />
         <Route path="/sessions" element={<Sessions />} />
         <Route path="/profile" element={<Profile />} />
-        
-        {/* Protected routes example */}
-        {/* <Route path="/settings" element={
-          <ProtectedRoute>
-            <Settings />
-          </ProtectedRoute>
-        } /> */}
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/digitalLiteracy" element={<DigitalLiteracy />} />
+        <Route path="/activities" element={<Activities />} />
+        <Route path="/employment" element={<Employment />} />
+        <Route path="/travel" element={<Travel />} />
         
         {/* 404 route */}
         <Route path="*" element={<NotFound />} />

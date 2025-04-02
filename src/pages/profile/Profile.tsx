@@ -1,10 +1,11 @@
 
 import React from "react";
+import { Link } from "react-router-dom";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Settings, LogOut, Calendar, Award, Heart } from "lucide-react";
+import { Settings, LogOut, Calendar, Award, Heart, MessageSquare } from "lucide-react";
 import { useAuth } from "@/context/auth";
 
 const Profile = () => {
@@ -30,6 +31,7 @@ const Profile = () => {
     { icon: Calendar, label: "My Sessions", link: "/sessions" },
     { icon: Heart, label: "Health & Wellness", link: "/wellness" },
     { icon: Award, label: "Rewards & Points", link: "/rewards" },
+    { icon: MessageSquare, label: "My Messages", link: "/messages" },
     { icon: Settings, label: "Settings", link: "/settings" },
   ];
 
@@ -49,6 +51,13 @@ const Profile = () => {
                 <h2 className="text-xl font-semibold">{user.displayName || "User"}</h2>
                 <p className="text-dhayan-gray">{user.email}</p>
                 <p className="text-sm mt-1 text-dhayan-purple">GUDPALS Member since 2023</p>
+                <Link 
+                  to="/settings"
+                  className="inline-flex items-center text-xs mt-2 text-dhayan-purple hover:underline"
+                >
+                  <Settings className="h-3 w-3 mr-1" />
+                  Edit Profile
+                </Link>
               </div>
             </div>
           </CardContent>
@@ -60,13 +69,13 @@ const Profile = () => {
               <ul>
                 {menuItems.map((item, index) => (
                   <li key={index}>
-                    <a 
-                      href={item.link} 
+                    <Link 
+                      to={item.link} 
                       className="flex items-center p-4 hover:bg-gray-50 transition-colors"
                     >
                       <item.icon className="h-5 w-5 mr-3 text-dhayan-purple" />
                       <span>{item.label}</span>
-                    </a>
+                    </Link>
                     {index < menuItems.length - 1 && <div className="h-[1px] bg-gray-100 mx-4" />}
                   </li>
                 ))}
