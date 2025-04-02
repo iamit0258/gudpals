@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Users, MapPin, MessageCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/auth";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import NearbyFriends from "@/components/friends/NearbyFriends";
 
 const Friends = () => {
   const { toast } = useToast();
@@ -65,59 +67,71 @@ const Friends = () => {
 
   return (
     <MobileLayout>
-      <div className="p-4 space-y-6">
-        <h1 className="text-2xl font-bold text-dhayan-purple-dark">Nearby Friends</h1>
-        <p className="text-sm text-dhayan-gray">Connect with other GUDPALS users near you</p>
+      <div className="p-4">
+        <h1 className="text-2xl font-bold text-dhayan-purple-dark mb-4">Connect</h1>
         
-        <div className="space-y-4">
-          {friends.map((friend) => (
-            <Card key={friend.id} className="overflow-hidden">
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0">
-                    <img 
-                      src={friend.image} 
-                      alt={friend.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex justify-between items-start">
-                      <h3 className="font-semibold text-lg">{friend.name}</h3>
-                      <span className="bg-dhayan-purple-light text-dhayan-purple text-xs px-2 py-1 rounded-full">
-                        {friend.interests}
-                      </span>
+        <Tabs defaultValue="list" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsTrigger value="list">Friend List</TabsTrigger>
+            <TabsTrigger value="nearby">Nearby</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="list" className="space-y-4">
+            {friends.map((friend) => (
+              <Card key={friend.id} className="overflow-hidden">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0">
+                      <img 
+                        src={friend.image} 
+                        alt={friend.name}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
-                    <p className="text-sm text-dhayan-gray mt-1">{friend.description}</p>
-                    
-                    <div className="flex items-center mt-2 text-xs text-dhayan-gray-dark">
-                      <MapPin className="h-3.5 w-3.5 mr-1" />
-                      <span className="mr-3">{friend.distance}</span>
-                      <Users className="h-3.5 w-3.5 mr-1" />
-                      <span>{friend.joinedDate}</span>
+                    <div className="flex-1">
+                      <div className="flex justify-between items-start">
+                        <h3 className="font-semibold text-lg">{friend.name}</h3>
+                        <span className="bg-dhayan-purple-light text-dhayan-purple text-xs px-2 py-1 rounded-full">
+                          {friend.interests}
+                        </span>
+                      </div>
+                      <p className="text-sm text-dhayan-gray mt-1">{friend.description}</p>
+                      
+                      <div className="flex items-center mt-2 text-xs text-dhayan-gray-dark">
+                        <MapPin className="h-3.5 w-3.5 mr-1" />
+                        <span className="mr-3">{friend.distance}</span>
+                        <Users className="h-3.5 w-3.5 mr-1" />
+                        <span>{friend.joinedDate}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-              <CardFooter className="p-4 pt-0 flex gap-2">
-                <Button 
-                  className="flex-1 bg-dhayan-purple hover:bg-dhayan-purple-dark text-white"
-                  onClick={() => handleConnect(friend)}
-                >
-                  <Users className="h-4 w-4 mr-2" />
-                  Connect
-                </Button>
-                <Button 
-                  variant="outline"
-                  className="flex-1 border-dhayan-purple text-dhayan-purple hover:bg-dhayan-purple/10"
-                >
-                  <MessageCircle className="h-4 w-4 mr-2" />
-                  Message
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
+                </CardContent>
+                <CardFooter className="p-4 pt-0 flex gap-2">
+                  <Button 
+                    className="flex-1 bg-dhayan-purple hover:bg-dhayan-purple-dark text-white"
+                    onClick={() => handleConnect(friend)}
+                  >
+                    <Users className="h-4 w-4 mr-2" />
+                    Connect
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    className="flex-1 border-dhayan-purple text-dhayan-purple hover:bg-dhayan-purple/10"
+                  >
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    Message
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </TabsContent>
+          
+          <TabsContent value="nearby">
+            <div className="bg-gradient-to-b from-[#0b1726] to-[#0d4370] -mx-4 -mt-4 px-4 pt-4 pb-8 min-h-[calc(100vh-140px)] rounded-b-3xl">
+              <NearbyFriends />
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </MobileLayout>
   );
