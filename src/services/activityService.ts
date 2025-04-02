@@ -1,4 +1,3 @@
-
 import { User } from "@/context/auth/types";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -12,7 +11,7 @@ export interface ActivityRegistration {
 }
 
 // Define the activity types
-export type ActivityType = "session" | "game" | "learning" | "other" | "product" | "connection";
+export type ActivityType = "session" | "game" | "learning" | "other" | "product" | "connection" | "course" | "activity" | "job" | "trip";
 
 // Mock database for activities (will be replaced by Supabase)
 const mockActivityDb: Record<string, ActivityRegistration[]> = {};
