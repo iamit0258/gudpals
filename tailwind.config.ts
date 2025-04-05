@@ -20,7 +20,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Nunito", "sans-serif"],
+        sans: ["Inter", "sans-serif"],
         heading: ["Poppins", "sans-serif"],
       },
       colors: {
@@ -32,21 +32,26 @@ export default {
         dhayan: {
           purple: {
             light: "#E5F4EA",
-            DEFAULT: "#349166",
-            dark: "#236945",
+            DEFAULT: "#16A38D",
+            dark: "#0F7A69",
           },
           gray: {
-            light: "#F1F0FB",
+            light: "#F8F9FB",
             DEFAULT: "#8E9196",
             dark: "#403E43",
           },
           yellow: "#FEF7CD",
           green: {
-            light: "#F2FCE2",
-            DEFAULT: "#349166",
+            light: "#E8FFF9",
+            DEFAULT: "#16A38D",
           },
           orange: "#FEC6A1",
           pink: "#FFDEE2",
+          teal: {
+            light: "#E8FFF9",
+            DEFAULT: "#16A38D",
+            dark: "#0F7A69",
+          }
         },
         primary: {
           DEFAULT: "hsl(var(--primary))",
@@ -105,11 +110,21 @@ export default {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-10px)" },
         },
+        pulse: {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.5" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         float: "float 6s ease-in-out infinite",
+        pulse: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+      },
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+        'hero-pattern': "url('/lovable-uploads/b78f8817-5779-40f3-9465-25106becedc0.png')",
       },
     },
   },

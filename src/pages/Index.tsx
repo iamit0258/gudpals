@@ -6,65 +6,82 @@ import { Card, CardContent } from "@/components/ui/card";
 import MobileLayout from "@/components/layout/MobileLayout";
 import FeaturedSessions from "@/components/home/FeaturedSessions";
 import WelcomeBanner from "@/components/home/WelcomeBanner";
+import { useLanguage } from "@/context/language/LanguageContext";
 
 const Index = () => {
-  const services = [{
-    icon: PlayCircle,
-    name: "Live Sessions",
-    description: "Join interactive live sessions",
-    path: "/sessions",
-    color: "bg-dhayan-purple"
-  }, {
-    icon: Brain,
-    name: "Digital Literacy",
-    description: "Learn smartphone and online skills",
-    path: "/digitalLiteracy",
-    color: "bg-dhayan-green-light"
-  }, {
-    icon: Coffee,
-    name: "Activities",
-    description: "Arts, crafts and social gatherings",
-    path: "/activities",
-    color: "bg-dhayan-yellow"
-  }, {
-    icon: Briefcase,
-    name: "Employment",
-    description: "Part-time and flexible opportunities",
-    path: "/employment",
-    color: "bg-dhayan-orange"
-  }, {
-    icon: Map,
-    name: "Travel Plans",
-    description: "Senior-friendly trips and tours",
-    path: "/travel",
-    color: "bg-dhayan-green"
-  }];
+  const { t } = useLanguage();
+
+  const services = [
+    {
+      icon: PlayCircle,
+      name: t("live_sessions"),
+      description: t("join_interactive"),
+      path: "/sessions",
+      color: "bg-gradient-to-br from-teal-400 to-primary"
+    }, 
+    {
+      icon: Brain,
+      name: t("digital_literacy"),
+      description: t("learn_smartphone"),
+      path: "/digitalLiteracy",
+      color: "bg-gradient-to-br from-green-200 to-teal-300"
+    }, 
+    {
+      icon: Coffee,
+      name: t("activities"),
+      description: t("arts_crafts"),
+      path: "/activities",
+      color: "bg-gradient-to-br from-amber-200 to-yellow-300"
+    }, 
+    {
+      icon: Briefcase,
+      name: t("employment"),
+      description: t("part_time"),
+      path: "/employment",
+      color: "bg-gradient-to-br from-orange-200 to-amber-300"
+    }, 
+    {
+      icon: Map,
+      name: t("travel_plans"),
+      description: t("senior_friendly"),
+      path: "/travel",
+      color: "bg-gradient-to-br from-emerald-300 to-green-400"
+    }
+  ];
   
-  return <MobileLayout>
+  return (
+    <MobileLayout>
       <WelcomeBanner />
       
-      <section className="px-4 py-6">
-        <h2 className="text-2xl font-bold mb-4">Upcoming Sessions</h2>
+      <section className="px-4 py-8">
+        <h2 className="text-2xl font-bold mb-4">{t("upcoming_sessions")}</h2>
         <FeaturedSessions />
       </section>
 
-      <section className="px-4 py-6 bg-dhayan-purple/5">
-        <h2 className="text-2xl font-bold mb-4">Our Services</h2>
+      <section className="px-4 py-8 bg-gradient-to-b from-secondary/50 to-transparent">
+        <h2 className="text-2xl font-bold mb-6">{t("our_services")}</h2>
         <div className="grid grid-cols-2 gap-4">
-          {services.map(service => <Link to={service.path} key={service.name} className="focus-visible-ring">
-              <Card className="h-full transition-transform hover:scale-105">
+          {services.map(service => (
+            <Link 
+              to={service.path} 
+              key={service.name} 
+              className="focus-visible-ring transform transition-transform duration-300 hover:scale-105"
+            >
+              <Card className="h-full overflow-hidden border-none shadow-md">
                 <CardContent className="p-4 flex flex-col items-center text-center">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${service.color}`}>
-                    <service.icon className="h-5 w-5 text-white" />
+                  <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-3 ${service.color} shadow-md`}>
+                    <service.icon className="h-7 w-7 text-white" />
                   </div>
                   <h3 className="font-medium text-lg">{service.name}</h3>
                   <p className="text-sm text-muted-foreground">{service.description}</p>
                 </CardContent>
               </Card>
-            </Link>)}
+            </Link>
+          ))}
         </div>
       </section>
-    </MobileLayout>;
+    </MobileLayout>
+  );
 };
 
 export default Index;
