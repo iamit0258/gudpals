@@ -17,6 +17,8 @@ import Register from "./pages/auth/Register";
 import Profile from "./pages/profile/Profile";
 import Friends from "./pages/friends/Friends";
 import Products from "./pages/products/Products";
+import ProductDetail from "./pages/products/ProductDetail";
+import Checkout from "./pages/checkout/Checkout";
 import Sessions from "./pages/sessions/Sessions";
 import DigitalLiteracy from "./pages/digitalLiteracy/DigitalLiteracy";
 import Activities from "./pages/activities/Activities";
@@ -62,6 +64,8 @@ const AppContent = () => {
         {/* Feature routes */}
         <Route path="/friends" element={<Friends />} />
         <Route path="/products" element={<Products />} />
+        <Route path="/products/:productId" element={<ProductDetail />} />
+        <Route path="/checkout" element={<Checkout />} />
         <Route path="/sessions" element={<Sessions />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/settings" element={<Settings />} />
