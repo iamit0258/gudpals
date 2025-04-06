@@ -13,17 +13,26 @@ import { Textarea } from "@/components/ui/textarea";
 const mockProducts = {
   "1": {
     id: 1,
-    title: "Senior-Friendly Smartphone",
-    description: "Our specially designed smartphone features large buttons, simplified interface, and enhanced accessibility features. Perfect for seniors who want to stay connected without the complexity of regular smartphones.",
+    title_en: "Senior-Friendly Smartphone",
+    title_hi: "सीनियर-फ्रेंडली स्मार्टफोन",
+    description_en: "Our specially designed smartphone features large buttons, simplified interface, and enhanced accessibility features. Perfect for seniors who want to stay connected without the complexity of regular smartphones.",
+    description_hi: "हमारे विशेष रूप से डिज़ाइन किए गए स्मार्टफोन में बड़े बटन, सरल इंटरफेस और बेहतर पहुंच सुविधाएं हैं। उन वरिष्ठ नागरिकों के लिए आदर्श जो नियमित स्मार्टफोन की जटिलता के बिना जुड़े रहना चाहते हैं।",
     price: 5999,
     rating: 4.8,
     reviews: 156,
-    features: [
+    features_en: [
       "Extra large display and buttons",
       "Simplified interface with essential functions",
       "Emergency SOS button",
       "Long-lasting battery",
       "Hearing aid compatibility"
+    ],
+    features_hi: [
+      "अतिरिक्त बड़ा डिस्प्ले और बटन",
+      "आवश्यक कार्यों के साथ सरल इंटरफेस",
+      "आपातकालीन SOS बटन",
+      "लंबे समय तक चलने वाली बैटरी",
+      "हियरिंग एड कंपैटिबिलिटी"
     ],
     images: [
       "https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=300&auto=format&fit=crop"
@@ -33,17 +42,26 @@ const mockProducts = {
   },
   "2": {
     id: 2,
-    title: "Meditation Cushion Set",
-    description: "Created with seniors in mind, this meditation cushion set provides proper support for longer meditation sessions. The set includes a comfortable seat cushion and a support cushion for your knees.",
+    title_en: "Meditation Cushion Set",
+    title_hi: "ध्यान कुशन सेट",
+    description_en: "Created with seniors in mind, this meditation cushion set provides proper support for longer meditation sessions. The set includes a comfortable seat cushion and a support cushion for your knees.",
+    description_hi: "वरिष्ठ नागरिकों को ध्यान में रखकर बनाया गया, यह ध्यान कुशन सेट लंबे ध्यान सत्रों के लिए उचित समर्थन प्रदान करता है। सेट में एक आरामदायक सीट कुशन और आपके घुटनों के लिए एक सहायक कुशन शामिल है।",
     price: 1499,
     rating: 4.5,
     reviews: 89,
-    features: [
+    features_en: [
       "Ergonomic design for comfortable sitting",
       "Made with eco-friendly materials",
       "Easy to clean covers",
       "Provides proper spine alignment",
       "Available in calming colors"
+    ],
+    features_hi: [
+      "आरामदायक बैठने के लिए एर्गोनोमिक डिज़ाइन",
+      "पर्यावरण के अनुकूल सामग्री से बना",
+      "आसानी से साफ होने वाले कवर",
+      "उचित रीढ़ संरेखण प्रदान करता है",
+      "शांत रंगों में उपलब्ध"
     ],
     images: [
       "https://images.unsplash.com/photo-1545205597-3d9d02c29597?q=80&w=300&auto=format&fit=crop"
@@ -53,17 +71,26 @@ const mockProducts = {
   },
   "3": {
     id: 3,
-    title: "Arthritis-Friendly Utensils",
-    description: "These specially designed utensils make eating easier for those with arthritis or limited hand mobility. The ergonomic handles provide a comfortable grip while the lightweight design reduces strain.",
+    title_en: "Arthritis-Friendly Utensils",
+    title_hi: "गठिया के अनुकूल बर्तन",
+    description_en: "These specially designed utensils make eating easier for those with arthritis or limited hand mobility. The ergonomic handles provide a comfortable grip while the lightweight design reduces strain.",
+    description_hi: "ये विशेष रूप से डिज़ाइन किए गए बर्तन गठिया या सीमित हाथ की गतिशीलता वाले लोगों के लिए खाना आसान बनाते हैं। एर्गोनोमिक हैंडल आरामदायक पकड़ प्रदान करते हैं जबकि हल्के डिज़ाइन तनाव को कम करता है।",
     price: 899,
     rating: 4.9,
     reviews: 203,
-    features: [
+    features_en: [
       "Ergonomic grip design",
       "Lightweight construction",
       "Dishwasher safe",
       "BPA-free materials",
       "Set includes knife, fork, spoon, and adaptive handles"
+    ],
+    features_hi: [
+      "एर्गोनोमिक ग्रिप डिज़ाइन",
+      "हल्का निर्माण",
+      "डिशवॉशर सेफ",
+      "BPA-मुक्त सामग्री",
+      "सेट में चाकू, कांटा, चम्मच और अनुकूली हैंडल शामिल हैं"
     ],
     images: [
       "https://images.unsplash.com/photo-1630324982388-c15f371bf8c2?q=80&w=300&auto=format&fit=crop"
@@ -72,6 +99,34 @@ const mockProducts = {
     inStock: true
   }
 };
+
+// Sample reviews data
+const sampleReviews = [
+  {
+    id: 1,
+    productId: 1,
+    userName: "Priya Sharma",
+    rating: 5,
+    text: "This smartphone is perfect for my father. The buttons are large and easy to press, and the interface is very simple to understand.",
+    date: "2024-03-15"
+  },
+  {
+    id: 2,
+    productId: 1,
+    userName: "Rajesh Kumar",
+    rating: 4,
+    text: "Very good product. Battery life is excellent. The only downside is that it could use a better camera.",
+    date: "2024-02-28"
+  },
+  {
+    id: 3,
+    productId: 2,
+    userName: "Ananya Patel",
+    rating: 5,
+    text: "These meditation cushions are so comfortable. They have helped me maintain my posture during long meditation sessions.",
+    date: "2024-03-10"
+  }
+];
 
 const ProductDetail = () => {
   const { productId } = useParams();
@@ -82,6 +137,8 @@ const ProductDetail = () => {
   const [reviewOpen, setReviewOpen] = useState(false);
   const [rating, setRating] = useState(5);
   const [reviewText, setReviewText] = useState("");
+  const [reviews, setReviews] = useState(sampleReviews);
+  const [showAllReviews, setShowAllReviews] = useState(false);
   
   // In a real app, you would fetch this data
   const product = mockProducts[productId];
@@ -105,10 +162,31 @@ const ProductDetail = () => {
   const handleAddToCart = () => {
     toast({
       title: t("added_to_cart"),
-      description: `${product.title} ${t("added_to_cart_success")}`,
+      description: `${getLocalizedTitle()} ${t("added_to_cart_success")}`,
     });
+
+    // Simulate adding to cart
+    const cartItem = {
+      productId: product.id,
+      title: getLocalizedTitle(),
+      price: product.price,
+      quantity: quantity,
+      image: product.images[0]
+    };
     
-    // In a real app, this would add to cart in database
+    // Store in local storage for demo
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const existingItemIndex = cart.findIndex(item => item.productId === product.id);
+    
+    if (existingItemIndex >= 0) {
+      cart[existingItemIndex].quantity += quantity;
+    } else {
+      cart.push(cartItem);
+    }
+    
+    localStorage.setItem('cart', JSON.stringify(cart));
+    
+    // Navigate after a short delay to show the toast
     setTimeout(() => {
       navigate("/checkout");
     }, 1000);
@@ -119,7 +197,35 @@ const ProductDetail = () => {
       title: t("proceeding_to_checkout"),
       description: t("preparing_order"),
     });
-    navigate("/checkout");
+    
+    // Store order item in local storage
+    const orderItem = {
+      productId: product.id,
+      title: getLocalizedTitle(),
+      price: product.price,
+      quantity: quantity,
+      image: product.images[0],
+      date: new Date().toISOString()
+    };
+    
+    // Store in order history
+    const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
+    orderHistory.push({
+      id: Date.now(),
+      items: [orderItem],
+      total: product.price * quantity,
+      date: new Date().toISOString(),
+      status: 'Completed'
+    });
+    
+    localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
+    
+    navigate("/checkout", { 
+      state: { 
+        buyNow: true, 
+        item: orderItem 
+      } 
+    });
   };
   
   const increaseQuantity = () => {
@@ -135,10 +241,22 @@ const ProductDetail = () => {
   };
 
   const handleSubmitReview = () => {
+    const newReview = {
+      id: reviews.length + 1,
+      productId: product.id,
+      userName: "You", // In a real app, use the user's name
+      rating: rating,
+      text: reviewText,
+      date: new Date().toISOString().split('T')[0]
+    };
+    
+    setReviews([...reviews, newReview]);
+    
     toast({
       title: t("review"),
       description: "Thank you for your review!",
     });
+    
     setReviewOpen(false);
     setReviewText("");
   };
@@ -150,67 +268,26 @@ const ProductDetail = () => {
     maximumFractionDigits: 0
   }).format(product.price);
 
-  // Get the correct translations for product title and features based on language
+  // Get the correct translations for product title based on language
   const getLocalizedTitle = () => {
-    if (language === "hi") {
-      if (product.id === 1) return "सीनियर-फ्रेंडली स्मार्टफोन";
-      if (product.id === 2) return "ध्यान कुशन सेट";
-      if (product.id === 3) return "गठिया के अनुकूल बर्तन";
-    }
-    return product.title;
+    return language === "en" ? product.title_en : product.title_hi;
   };
 
   const getLocalizedFeatures = () => {
-    if (language === "hi") {
-      if (product.id === 1) {
-        return [
-          "अतिरिक्त बड़ा डिस्प्ले और बटन",
-          "आवश्यक कार्यों के साथ सरल इंटरफेस",
-          "आपातकालीन SOS बटन",
-          "लंबे समय तक चलने वाली बैटरी",
-          "हियरिंग एड कंपैटिबिलिटी"
-        ];
-      }
-      if (product.id === 2) {
-        return [
-          "आरामदायक बैठने के लिए एर्गोनोमिक डिज़ाइन",
-          "पर्यावरण के अनुकूल सामग्री से बना",
-          "आसानी से साफ होने वाले कवर",
-          "उचित रीढ़ संरेखण प्रदान करता है",
-          "शांत रंगों में उपलब्ध"
-        ];
-      }
-      if (product.id === 3) {
-        return [
-          "एर्गोनोमिक ग्रिप डिज़ाइन",
-          "हल्का निर्माण",
-          "डिशवॉशर सेफ",
-          "BPA-मुक्त सामग्री",
-          "सेट में चाकू, कांटा, चम्मच और अनुकूली हैंडल शामिल हैं"
-        ];
-      }
-    }
-    return product.features;
+    return language === "en" ? product.features_en : product.features_hi;
   };
 
   const getLocalizedDescription = () => {
-    if (language === "hi") {
-      if (product.id === 1) {
-        return "हमारे विशेष रूप से डिज़ाइन किए गए स्मार्टफोन में बड़े बटन, सरल इंटरफेस और बेहतर पहुंच सुविधाएं हैं। उन वरिष्ठ नागरिकों के लिए आदर्श जो नियमित स्मार्टफोन की जटिलता के बिना जुड़े रहना चाहते हैं।";
-      }
-      if (product.id === 2) {
-        return "वरिष्ठ नागरिकों को ध्यान में रखकर बनाया गया, यह ध्यान कुशन सेट लंबे ध्यान सत्रों के लिए उचित समर्थन प्रदान करता है। सेट में एक आरामदायक सीट कुशन और आपके घुटनों के लिए एक सहायक कुशन शामिल है।";
-      }
-      if (product.id === 3) {
-        return "ये विशेष रूप से डिज़ाइन किए गए बर्तन गठिया या सीमित हाथ की गतिशीलता वाले लोगों के लिए खाना आसान बनाते हैं। एर्गोनोमिक हैंडल आरामदायक पकड़ प्रदान करते हैं जबकि हल्के डिज़ाइन तनाव को कम करता है।";
-      }
-    }
-    return product.description;
+    return language === "en" ? product.description_en : product.description_hi;
   };
+  
+  // Filter reviews for this product
+  const productReviews = reviews.filter(review => review.productId === product.id);
+  const displayReviews = showAllReviews ? productReviews : productReviews.slice(0, 2);
 
   return (
     <MobileLayout>
-      <div className="pb-20">
+      <div className="pb-28">
         <div className="bg-white">
           <div className="p-4">
             <Button variant="ghost" onClick={() => navigate("/products")}>
@@ -282,6 +359,51 @@ const ProductDetail = () => {
               </ul>
             </div>
             
+            {/* Reviews Section */}
+            <div className="mt-6">
+              <div className="flex justify-between items-center">
+                <h3 className="font-medium">{t("reviews")}</h3>
+                {productReviews.length > 2 && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setShowAllReviews(!showAllReviews)}
+                    className="text-xs"
+                  >
+                    {showAllReviews ? "Show Less" : "Show All"}
+                  </Button>
+                )}
+              </div>
+              
+              {displayReviews.length > 0 ? (
+                <div className="mt-2 space-y-3">
+                  {displayReviews.map((review) => (
+                    <Card key={review.id} className="p-3">
+                      <div className="flex justify-between">
+                        <span className="font-medium">{review.userName}</span>
+                        <div className="flex items-center">
+                          {[...Array(5)].map((_, i) => (
+                            <Star 
+                              key={i} 
+                              className={`h-3 w-3 ${
+                                i < review.rating 
+                                  ? "text-yellow-400 fill-yellow-400" 
+                                  : "text-gray-300"
+                              }`} 
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">{review.date}</p>
+                      <p className="text-sm mt-2">{review.text}</p>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500 mt-2">No reviews yet. Be the first to review!</p>
+              )}
+            </div>
+            
             <div className="mt-6 flex items-center">
               <span className="mr-4 font-medium">{t("quantity")}:</span>
               <div className="flex items-center border rounded-md">
@@ -310,7 +432,7 @@ const ProductDetail = () => {
         </div>
         
         {/* Fixed bottom actions */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white p-4 border-t flex gap-3">
+        <div className="fixed bottom-0 left-0 right-0 bg-white p-4 border-t flex gap-3 max-w-md mx-auto">
           <Button
             variant="outline"
             className="flex-1 border-primary text-primary"

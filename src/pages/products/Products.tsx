@@ -30,8 +30,10 @@ const Products = () => {
   const products = [
     {
       id: 1,
-      title: language === "en" ? "Senior-Friendly Smartphone" : "सीनियर-फ्रेंडली स्मार्टफोन",
-      description: language === "en" ? "Large buttons and simple interface for easy navigation." : "बड़े बटन और सरल इंटरफेस के साथ आसान नेविगेशन।",
+      title_en: "Senior-Friendly Smartphone",
+      title_hi: "सीनियर-फ्रेंडली स्मार्टफोन",
+      description_en: "Large buttons and simple interface for easy navigation.",
+      description_hi: "बड़े बटन और सरल इंटरफेस के साथ आसान नेविगेशन।",
       users: 156,
       availability: t("in_stock"),
       image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=300&auto=format&fit=crop",
@@ -40,8 +42,10 @@ const Products = () => {
     },
     {
       id: 2,
-      title: language === "en" ? "Meditation Cushion Set" : "ध्यान कुशन सेट",
-      description: language === "en" ? "Comfortable cushions for your daily meditation practice." : "आपके दैनिक ध्यान अभ्यास के लिए आरामदायक कुशन।",
+      title_en: "Meditation Cushion Set",
+      title_hi: "ध्यान कुशन सेट",
+      description_en: "Comfortable cushions for your daily meditation practice.",
+      description_hi: "आपके दैनिक ध्यान अभ्यास के लिए आरामदायक कुशन।",
       users: 89,
       availability: t("limited_stock"),
       image: "https://images.unsplash.com/photo-1545205597-3d9d02c29597?q=80&w=300&auto=format&fit=crop",
@@ -50,8 +54,10 @@ const Products = () => {
     },
     {
       id: 3,
-      title: language === "en" ? "Arthritis-Friendly Utensils" : "गठिया के अनुकूल बर्तन",
-      description: language === "en" ? "Specially designed for better grip and comfort." : "बेहतर पकड़ और आराम के लिए विशेष रूप से डिज़ाइन किया गया।",
+      title_en: "Arthritis-Friendly Utensils",
+      title_hi: "गठिया के अनुकूल बर्तन",
+      description_en: "Specially designed for better grip and comfort.",
+      description_hi: "बेहतर पकड़ और आराम के लिए विशेष रूप से डिज़ाइन किया गया।",
       users: 203,
       availability: t("in_stock"),
       image: "https://images.unsplash.com/photo-1630324982388-c15f371bf8c2?q=80&w=300&auto=format&fit=crop",
@@ -81,7 +87,7 @@ const Products = () => {
               <div className="relative h-32">
                 <img 
                   src={product.image} 
-                  alt={product.title}
+                  alt={language === "en" ? product.title_en : product.title_hi}
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute top-2 right-2 bg-dhayan-purple text-white text-xs px-2 py-1 rounded-full">
@@ -92,8 +98,12 @@ const Products = () => {
                 </div>
               </div>
               <CardContent className="p-4">
-                <h3 className="font-semibold text-lg">{product.title}</h3>
-                <p className="text-sm text-dhayan-gray mt-1">{product.description}</p>
+                <h3 className="font-semibold text-lg">
+                  {language === "en" ? product.title_en : product.title_hi}
+                </h3>
+                <p className="text-sm text-dhayan-gray mt-1">
+                  {language === "en" ? product.description_en : product.description_hi}
+                </p>
                 
                 <div className="flex items-center mt-3 text-xs text-dhayan-gray-dark">
                   <Users className="h-3.5 w-3.5 mr-1" />

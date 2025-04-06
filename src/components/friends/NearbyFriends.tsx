@@ -1,145 +1,239 @@
 
-import React, { useState } from "react";
+import React from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { MessageCircle, Phone, Video, UserPlus, Check } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Wifi, WifiOff } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/context/language/LanguageContext";
 
-interface ConcentricCirclesProps {
-  isActive: boolean;
-  nearbyUsers?: Array<{
-    id: number;
-    name: string;
-    distance: number; // distance in km or meters
-    position: { x: number; y: number }; // position in the circle (0-100%)
-    image?: string;
-  }>;
+interface Friend {
+  id: string;
+  name: {
+    en: string;
+    hi: string;
+  };
+  image: string;
+  status: "active" | "away" | "offline";
+  distance?: string;
+  lastSeen?: string;
+  isRequestSent?: boolean;
 }
 
-const ConcentricCircles: React.FC<ConcentricCirclesProps> = ({ isActive, nearbyUsers = [] }) => {
-  const { t } = useLanguage();
-  
-  // Mock users for demonstration if no users are provided
-  const demoUsers = [
-    { 
-      id: 1, 
-      name: "Raj Kapoor", 
-      distance: 0.5, 
-      position: { x: 60, y: 35 }, 
-      image: "https://images.unsplash.com/photo-1603415526960-f7e0328c63b1?q=80&w=100&auto=format&fit=crop" 
+const mockFriends: Friend[] = [
+  {
+    id: "1",
+    name: {
+      en: "Sunil Patil",
+      hi: "सुनील पाटिल"
     },
-    { 
-      id: 2, 
-      name: "Parvati Sharma", 
-      distance: 1.8, 
-      position: { x: 30, y: 70 }, 
-      image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=100&auto=format&fit=crop" 
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&q=80",
+    status: "active",
+    distance: "2.3 km"
+  },
+  {
+    id: "2",
+    name: {
+      en: "Anuradha Gupta",
+      hi: "अनुराधा गुप्ता"
     },
-    { 
-      id: 3, 
-      name: "Mohan Singh", 
-      distance: 3.2, 
-      position: { x: 75, y: 65 }, 
-      image: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?q=80&w=100&auto=format&fit=crop" 
+    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&q=80",
+    status: "active",
+    distance: "3.7 km"
+  },
+  {
+    id: "3",
+    name: {
+      en: "Vikas Sharma",
+      hi: "विकास शर्मा"
     },
-  ];
-
-  const usersToShow = nearbyUsers.length > 0 ? nearbyUsers : demoUsers;
-
-  return (
-    <div className={`relative h-[380px] w-full mt-8 ${isActive ? "opacity-100" : "opacity-40"}`}>
-      {/* Outer circle (largest) */}
-      <div className="absolute inset-0 border-2 border-dashed border-dhayan-teal/30 rounded-full"></div>
-      
-      {/* Middle circle */}
-      <div className="absolute inset-[50px] border-none bg-dhayan-teal/5 rounded-full"></div>
-      
-      {/* Inner circle */}
-      <div className="absolute inset-[100px] border-none bg-dhayan-teal/10 rounded-full"></div>
-      
-      {/* Center circle */}
-      <div className="absolute inset-[150px] border-none bg-dhayan-teal/20 rounded-full"></div>
-      
-      {/* You are here icon in the center */}
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-gradient-to-br from-teal-400 to-primary shadow-lg flex items-center justify-center">
-        <span className="text-white text-xs font-medium">{t("you_are_here")}</span>
-      </div>
-
-      {/* Render users only if the beacon is active */}
-      {isActive && usersToShow.map((user) => (
-        <div
-          key={user.id}
-          className="absolute h-10 w-10 rounded-full bg-white shadow-md transform -translate-x-1/2 -translate-y-1/2 border-2 border-dhayan-teal"
-          style={{ 
-            left: `${user.position.x}%`, 
-            top: `${user.position.y}%`,
-          }}
-        >
-          {user.image ? (
-            <img 
-              src={user.image} 
-              alt={user.name} 
-              className="w-full h-full object-cover rounded-full"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-dhayan-teal-light text-dhayan-teal font-bold">
-              {user.name.charAt(0)}
-            </div>
-          )}
-          <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 whitespace-nowrap text-xs bg-white rounded-full px-2 py-0.5 shadow-sm">
-            {user.distance < 1 ? `${(user.distance * 1000).toFixed(0)}m` : `${user.distance.toFixed(1)}km`}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-};
+    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop&q=80",
+    status: "offline",
+    lastSeen: "2h ago"
+  },
+  {
+    id: "4",
+    name: {
+      en: "Priya Singh",
+      hi: "प्रिया सिंह"
+    },
+    image: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&h=400&fit=crop&q=80",
+    status: "away",
+    lastSeen: "30m ago"
+  }
+];
 
 interface NearbyFriendsProps {
   isActive?: boolean;
+  onToggle?: (active: boolean) => void;
 }
 
-const NearbyFriends: React.FC<NearbyFriendsProps> = ({ isActive: initialIsActive = false }) => {
-  const [beaconActive, setBeaconActive] = useState(initialIsActive);
-  const { t } = useLanguage();
+const NearbyFriends: React.FC<NearbyFriendsProps> = ({ 
+  isActive = false, 
+  onToggle = () => {} 
+}) => {
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const [friendList, setFriendList] = React.useState<Friend[]>(mockFriends);
+  const { toast } = useToast();
+  const { t, language } = useLanguage();
+  
+  const handleBeaconToggle = (checked: boolean) => {
+    onToggle(checked);
+    
+    if (checked) {
+      toast({
+        title: t("beacon_activated"),
+        description: t("beacon_active_desc"),
+      });
+    } else {
+      toast({
+        title: t("beacon_deactivated"),
+        description: t("beacon_inactive_desc"),
+      });
+    }
+  };
+  
+  const handleAddFriend = (friendId: string) => {
+    setFriendList(prev => prev.map(friend => 
+      friend.id === friendId 
+        ? { ...friend, isRequestSent: true }
+        : friend
+    ));
+    
+    toast({
+      title: t("friend_request_sent"),
+      description: t("friend_request_desc"),
+    });
+  };
+  
+  const handleChat = (friend: Friend) => {
+    toast({
+      title: t("opening_chat"),
+      description: `${t("chat_with")} ${language === "en" ? friend.name.en : friend.name.hi}`,
+    });
+  };
+  
+  const handleCall = (friend: Friend) => {
+    toast({
+      title: t("calling"),
+      description: `${t("voice_calling")} ${language === "en" ? friend.name.en : friend.name.hi}`,
+    });
+  };
+  
+  const handleVideoCall = (friend: Friend) => {
+    toast({
+      title: t("calling"),
+      description: `${t("video_calling")} ${language === "en" ? friend.name.en : friend.name.hi}`,
+    });
+  };
+  
+  const filteredFriends = friendList.filter(friend => 
+    (language === "en" 
+      ? friend.name.en.toLowerCase().includes(searchQuery.toLowerCase())
+      : friend.name.hi.includes(searchQuery)
+    )
+  );
   
   return (
-    <div className="flex flex-col items-center py-6 px-4">
-      <h2 className="text-2xl font-bold text-center mb-6">{t("light_beacon")}</h2>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Switch 
+            checked={isActive}
+            onCheckedChange={handleBeaconToggle}
+            id="beacon-mode"
+          />
+          <label 
+            htmlFor="beacon-mode" 
+            className="text-sm font-medium cursor-pointer"
+          >
+            {t("location_beacon")}
+          </label>
+        </div>
+        <span className="text-xs text-muted-foreground">
+          {isActive ? t("beacon_visible") : t("beacon_invisible")}
+        </span>
+      </div>
       
-      {/* Toggle switch with styling */}
-      <div className={`flex items-center justify-center py-3 px-6 rounded-full transition-colors ${
-        beaconActive 
-          ? "bg-gradient-to-r from-teal-400 to-primary" 
-          : "bg-gray-400"
-      }`}>
-        {beaconActive ? (
-          <Wifi className="mr-2 text-white" size={20} />
+      <Input
+        placeholder={t("search_friends")}
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="w-full"
+      />
+      
+      <div className="space-y-4">
+        {filteredFriends.length > 0 ? (
+          filteredFriends.map((friend) => (
+            <div 
+              key={friend.id}
+              className="flex items-center justify-between p-4 bg-white rounded-lg border"
+            >
+              <div className="flex items-center">
+                <div className="relative">
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={friend.image} alt={language === "en" ? friend.name.en : friend.name.hi} />
+                    <AvatarFallback>
+                      {language === "en" 
+                        ? friend.name.en.charAt(0) 
+                        : friend.name.hi.charAt(0)
+                      }
+                    </AvatarFallback>
+                  </Avatar>
+                  <span 
+                    className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white ${
+                      friend.status === 'active' 
+                        ? 'bg-green-500' 
+                        : friend.status === 'away' 
+                        ? 'bg-yellow-500' 
+                        : 'bg-gray-300'
+                    }`}
+                  />
+                </div>
+                <div className="ml-3">
+                  <h3 className="font-medium">
+                    {language === "en" ? friend.name.en : friend.name.hi}
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    {friend.status === 'active' 
+                      ? t("active_now") 
+                      : friend.lastSeen
+                    }
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex space-x-1">
+                {friend.isRequestSent ? (
+                  <Button size="icon" variant="ghost" disabled>
+                    <Check className="h-4 w-4 text-green-500" />
+                  </Button>
+                ) : (
+                  <>
+                    <Button size="icon" variant="ghost" onClick={() => handleChat(friend)}>
+                      <MessageCircle className="h-4 w-4 text-primary" />
+                    </Button>
+                    <Button size="icon" variant="ghost" onClick={() => handleCall(friend)}>
+                      <Phone className="h-4 w-4 text-primary" />
+                    </Button>
+                    <Button size="icon" variant="ghost" onClick={() => handleVideoCall(friend)}>
+                      <Video className="h-4 w-4 text-primary" />
+                    </Button>
+                    <Button size="icon" variant="ghost" onClick={() => handleAddFriend(friend.id)}>
+                      <UserPlus className="h-4 w-4 text-primary" />
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+          ))
         ) : (
-          <WifiOff className="mr-2 text-white" size={20} />
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">{t("no_matches_found")}</p>
+          </div>
         )}
-        <span className="text-white font-medium">
-          {beaconActive ? t("beacon_on") : t("beacon_off")}
-        </span>
       </div>
-      
-      <div className="mt-3 mb-8 text-center max-w-xs text-sm text-dhayan-gray-dark">
-        {beaconActive 
-          ? t("beacon_active")
-          : t("beacon_inactive")}
-      </div>
-      
-      <div className="flex items-center justify-center my-4">
-        <Switch 
-          checked={beaconActive} 
-          onCheckedChange={setBeaconActive}
-          className="data-[state=checked]:bg-primary"
-        />
-        <span className="ml-2 font-medium">
-          {beaconActive ? t("visible") : t("hidden")}
-        </span>
-      </div>
-      
-      <ConcentricCircles isActive={beaconActive} />
     </div>
   );
 };
