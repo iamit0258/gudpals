@@ -1,10 +1,10 @@
 
-import React from "react";
+import * as React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, Users, Clock, Filter } from "lucide-react";
+import { Package, Users, Clock, Filter, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/auth";
 import { useLanguage } from "@/context/language/LanguageContext";
@@ -38,6 +38,8 @@ const Products = () => {
       availability: t("in_stock"),
       image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=300&auto=format&fit=crop",
       category: t("electronics"),
+      reviews: 42,
+      rating: 4.6,
       price: "₹5,999"
     },
     {
@@ -50,6 +52,8 @@ const Products = () => {
       availability: t("limited_stock"),
       image: "https://images.unsplash.com/photo-1545205597-3d9d02c29597?q=80&w=300&auto=format&fit=crop",
       category: t("wellness"),
+      reviews: 28,
+      rating: 4.8,
       price: "₹1,499"
     },
     {
@@ -62,6 +66,8 @@ const Products = () => {
       availability: t("in_stock"),
       image: "https://images.unsplash.com/photo-1630324982388-c15f371bf8c2?q=80&w=300&auto=format&fit=crop",
       category: t("kitchen"),
+      reviews: 56,
+      rating: 4.3,
       price: "₹899"
     },
   ];
@@ -109,7 +115,9 @@ const Products = () => {
                   <Users className="h-3.5 w-3.5 mr-1" />
                   <span className="mr-3">{product.users} {t("users")}</span>
                   <Clock className="h-3.5 w-3.5 mr-1" />
-                  <span>{product.availability}</span>
+                  <span className="mr-3">{product.availability}</span>
+                  <Star className="h-3.5 w-3.5 mr-1 text-amber-500" />
+                  <span>{product.rating} ({product.reviews} {t("reviews")})</span>
                 </div>
               </CardContent>
               <CardFooter className="p-4 pt-0">

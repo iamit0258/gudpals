@@ -1,5 +1,5 @@
 
-import React from "react";
+import * as React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,6 +25,7 @@ import Activities from "./pages/activities/Activities";
 import Employment from "./pages/employment/Employment";
 import Travel from "./pages/travel/Travel";
 import Settings from "./pages/settings/Settings";
+import Games from "./pages/games/Games";
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -73,6 +74,7 @@ const AppContent = () => {
         <Route path="/activities" element={<Activities />} />
         <Route path="/employment" element={<Employment />} />
         <Route path="/travel" element={<Travel />} />
+        <Route path="/games" element={<Games />} />
         
         {/* 404 route */}
         <Route path="*" element={<NotFound />} />
@@ -81,23 +83,32 @@ const AppContent = () => {
   );
 };
 
-// Create the query client outside of the component
-const queryClient = new QueryClient();
+// Create a new query client instance
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 // Main App component
 const App = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <BrowserRouter>
-          <LanguageProvider>
-            <AuthProvider>
-              <AppContent />
-            </AuthProvider>
-          </LanguageProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <BrowserRouter>
+            <LanguageProvider>
+              <AuthProvider>
+                <AppContent />
+              </AuthProvider>
+            </LanguageProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </React.StrictMode>
   );
 };
 
