@@ -34,7 +34,7 @@ const WelcomeBanner = () => {
           </div>
           <h1 className="text-3xl font-bold mb-2">{t("namaste")}</h1>
           <p className="text-lg font-medium">{t("welcome")}</p>
-          <p className="text-sm opacity-90 mt-1 font-light tracking-wider">
+          <p className="text-sm text-white opacity-90 mt-1 font-light tracking-wider">
             {t("dedicated")}
           </p>
         </div>
