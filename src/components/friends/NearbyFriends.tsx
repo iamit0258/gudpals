@@ -94,8 +94,12 @@ const ConcentricCircles: React.FC<ConcentricCirclesProps> = ({ isActive, nearbyU
   );
 };
 
-const NearbyFriends: React.FC = () => {
-  const [beaconActive, setBeaconActive] = useState(false);
+interface NearbyFriendsProps {
+  isActive?: boolean;
+}
+
+const NearbyFriends: React.FC<NearbyFriendsProps> = ({ isActive: initialIsActive = false }) => {
+  const [beaconActive, setBeaconActive] = useState(initialIsActive);
   const { t } = useLanguage();
   
   return (
