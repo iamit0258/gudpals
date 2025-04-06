@@ -26,6 +26,7 @@ import Employment from "./pages/employment/Employment";
 import Travel from "./pages/travel/Travel";
 import Settings from "./pages/settings/Settings";
 import Games from "./pages/games/Games";
+import Events from "./pages/events/Events";
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -75,6 +76,7 @@ const AppContent = () => {
         <Route path="/employment" element={<Employment />} />
         <Route path="/travel" element={<Travel />} />
         <Route path="/games" element={<Games />} />
+        <Route path="/events" element={<Events />} />
         
         {/* 404 route */}
         <Route path="*" element={<NotFound />} />

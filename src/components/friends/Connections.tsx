@@ -11,35 +11,50 @@ import { useLanguage } from "@/context/language/LanguageContext";
 const mockConnections = [
   {
     id: "1",
-    name: "सुनील पाटिल",
+    name: {
+      en: "Sunil Patil",
+      hi: "सुनील पाटिल"
+    },
     avatar: "https://i.pravatar.cc/150?img=14",
     status: "online",
     lastSeen: "Active now"
   },
   {
     id: "2",
-    name: "अनुराधा गुप्ता",
+    name: {
+      en: "Anuradha Gupta",
+      hi: "अनुराधा गुप्ता"
+    },
     avatar: "https://i.pravatar.cc/150?img=15",
     status: "online",
     lastSeen: "Active now"
   },
   {
     id: "3",
-    name: "विकास शर्मा",
+    name: {
+      en: "Vikas Sharma",
+      hi: "विकास शर्मा"
+    },
     avatar: "https://i.pravatar.cc/150?img=16",
     status: "offline",
     lastSeen: "Last seen 2h ago"
   },
   {
     id: "4",
-    name: "रेखा सिंह",
+    name: {
+      en: "Rekha Singh",
+      hi: "रेखा सिंह"
+    },
     avatar: "https://i.pravatar.cc/150?img=17",
     status: "online",
     lastSeen: "Active now"
   },
   {
     id: "5",
-    name: "कमल जोशी",
+    name: {
+      en: "Kamal Joshi",
+      hi: "कमल जोशी"
+    },
     avatar: "https://i.pravatar.cc/150?img=18",
     status: "offline",
     lastSeen: "Last seen yesterday"
@@ -50,32 +65,39 @@ const Connections = () => {
   const [connections, setConnections] = useState(mockConnections);
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const handleMessage = (name) => {
+    const displayName = typeof name === 'object' ? (language === 'en' ? name.en : name.hi) : name;
     toast({
       title: t("opening_chat"),
-      description: `${t("chat_with")} ${name}`,
+      description: `${t("chat_with")} ${displayName}`,
     });
   };
 
   const handleVoiceCall = (name) => {
+    const displayName = typeof name === 'object' ? (language === 'en' ? name.en : name.hi) : name;
     toast({
       title: t("calling"),
-      description: `${t("voice_calling")} ${name}...`,
+      description: `${t("voice_calling")} ${displayName}...`,
     });
   };
 
   const handleVideoCall = (name) => {
+    const displayName = typeof name === 'object' ? (language === 'en' ? name.en : name.hi) : name;
     toast({
       title: t("video_calling"),
-      description: `${t("video_calling")} ${name}...`,
+      description: `${t("video_calling")} ${displayName}...`,
     });
   };
 
-  const filteredConnections = connections.filter(connection => 
-    connection.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredConnections = connections.filter(connection => {
+    const nameToCheck = typeof connection.name === 'object' 
+      ? (language === 'en' ? connection.name.en : connection.name.hi) 
+      : connection.name;
+    
+    return nameToCheck.toLowerCase().includes(searchQuery.toLowerCase());
+  });
 
   return (
     <div className="p-4 space-y-4">
@@ -100,15 +122,23 @@ const Connections = () => {
               <div className="flex items-center">
                 <div className="relative">
                   <Avatar className="h-12 w-12 mr-4">
-                    <AvatarImage src={connection.avatar} alt={connection.name} />
-                    <AvatarFallback>{connection.name.charAt(0)}</AvatarFallback>
+                    <AvatarImage src={connection.avatar} alt={typeof connection.name === 'object' ? (language === 'en' ? connection.name.en : connection.name.hi) : connection.name} />
+                    <AvatarFallback>
+                      {typeof connection.name === 'object' 
+                        ? (language === 'en' ? connection.name.en.charAt(0) : connection.name.hi.charAt(0))
+                        : connection.name.charAt(0)}
+                    </AvatarFallback>
                   </Avatar>
                   {connection.status === "online" && (
                     <span className="absolute bottom-0 right-4 h-3 w-3 rounded-full bg-green-500 border-2 border-white"></span>
                   )}
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-medium">{connection.name}</h3>
+                  <h3 className="font-medium">
+                    {typeof connection.name === 'object' 
+                      ? (language === 'en' ? connection.name.en : connection.name.hi) 
+                      : connection.name}
+                  </h3>
                   <p className="text-xs text-muted-foreground">
                     {connection.status === "online" ? t("active_now") : connection.lastSeen}
                   </p>

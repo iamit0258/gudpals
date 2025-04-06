@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, ReactNode } from "react";
 
 type Language = "en" | "hi";
@@ -26,6 +27,7 @@ const translations = {
     products: "Products",
     sessions: "Sessions",
     close: "Close",
+    events: "Events",
 
     // Services
     our_services: "Our Services",
@@ -153,6 +155,17 @@ const translations = {
     order_confirmation_email: "We have sent a confirmation to your registered email.",
     continue_shopping: "Continue Shopping",
     go_to_home: "Go to Home",
+    
+    // Events
+    upcoming_events: "Upcoming Events",
+    your_events: "Your Events",
+    search_events: "Search events",
+    no_events_found: "No events found",
+    no_registered_events: "You haven't registered for any events yet",
+    all: "All",
+    health: "Health",
+    technology: "Technology",
+    creativity: "Creativity",
   },
   hi: {
     // General
@@ -171,6 +184,7 @@ const translations = {
     products: "उत्पाद",
     sessions: "सत्र",
     close: "बंद करें",
+    events: "कार्यक्रम",
     
     // Services
     our_services: "हमारी सेवाएं",
@@ -298,6 +312,17 @@ const translations = {
     order_confirmation_email: "हमने आपके पंजीकृत ईमेल पर एक पुष्टिकरण भेजा है।",
     continue_shopping: "शॉपिंग जारी रखें",
     go_to_home: "होम पेज पर जाएं",
+    
+    // Events
+    upcoming_events: "आगामी कार्यक्रम",
+    your_events: "आपके कार्यक्रम",
+    search_events: "कार्यक्रम खोजें",
+    no_events_found: "कोई कार्यक्रम नहीं मिला",
+    no_registered_events: "आपने अभी तक किसी कार्यक्रम के लिए पंजीकरण नहीं किया है",
+    all: "सभी",
+    health: "स्वास्थ्य",
+    technology: "तकनीकी",
+    creativity: "रचनात्मकता",
   }
 };
 

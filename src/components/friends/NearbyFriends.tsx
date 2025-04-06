@@ -138,18 +138,20 @@ const NearbyFriends: React.FC<NearbyFriendsProps> = ({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
+        <div className="relative inline-flex">
           <Switch 
             checked={isActive}
             onCheckedChange={handleBeaconToggle}
             id="beacon-mode"
+            className="z-10"
           />
-          <label 
-            htmlFor="beacon-mode" 
-            className="text-sm font-medium cursor-pointer"
-          >
-            {t("location_beacon")}
-          </label>
+          {isActive && (
+            <>
+              <span className="absolute inset-0 rounded-full bg-primary/20 animate-ping"></span>
+              <span className="absolute inset-[-4px] rounded-full bg-primary/10 beacon-pulse"></span>
+              <span className="absolute inset-[-8px] rounded-full bg-primary/5"></span>
+            </>
+          )}
         </div>
         <span className="text-xs text-muted-foreground">
           {isActive ? t("beacon_visible") : t("beacon_invisible")}
