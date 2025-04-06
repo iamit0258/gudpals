@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLanguage } from "@/context/language/LanguageContext";
 
 interface Session {
   id: string;
@@ -27,77 +28,138 @@ const Sessions = () => {
   const { user, registerForActivity } = useAuth();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t, language } = useLanguage();
   
   // Handle registration success notification
   useEffect(() => {
     if (location.state?.registered && location.state?.activityName) {
       toast({
-        title: "Registration Successful",
-        description: `You've been registered for ${location.state.activityName}`,
+        title: t("registration_successful"),
+        description: `${t("registered_for")} ${location.state.activityName}`,
       });
       
       navigate(location.pathname, { replace: true });
     }
-  }, [location, toast, navigate]);
+  }, [location, toast, navigate, t]);
+  
+  // Mock session data
+  const mockSessions = [
+    {
+      id: "1",
+      title: language === "en" ? "Morning Yoga" : "प्रातःकालीन योग",
+      instructor: language === "en" ? "Anjali Sharma" : "अंजलि शर्मा",
+      time: "8:00 AM - 9:00 AM",
+      date: t("today"),
+      category: language === "en" ? "Wellness" : "स्वास्थ्य",
+      image: "https://images.unsplash.com/photo-1616699002805-0741e1e4a9c5?q=80&w=300&auto=format&fit=crop"
+    },
+    {
+      id: "2",
+      title: language === "en" ? "Smartphone Basics" : "स्मार्टफोन मूल बातें",
+      instructor: language === "en" ? "Raj Kumar" : "राज कुमार",
+      time: "11:00 AM - 12:30 PM",
+      date: t("today"),
+      category: language === "en" ? "Digital Literacy" : "डिजिटल साक्षरता",
+      image: "https://images.unsplash.com/photo-1601784551062-20c13f969c4c?q=80&w=300&auto=format&fit=crop"
+    },
+    {
+      id: "3",
+      title: language === "en" ? "Tambola Evening" : "तम्बोला शाम",
+      instructor: language === "en" ? "Meera Patel" : "मीरा पटेल",
+      time: "4:00 PM - 6:00 PM",
+      date: t("today"),
+      category: language === "en" ? "Entertainment" : "मनोरंजन",
+      image: "https://images.unsplash.com/photo-1606167668584-78701c57f13d?q=80&w=300&auto=format&fit=crop"
+    },
+    {
+      id: "4",
+      title: language === "en" ? "Online Safety Workshop" : "ऑनलाइन सुरक्षा कार्यशाला",
+      instructor: language === "en" ? "Sanjay Gupta" : "संजय गुप्ता",
+      time: "2:00 PM - 3:30 PM",
+      date: t("tomorrow"),
+      category: language === "en" ? "Safety" : "सुरक्षा",
+      image: "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?q=80&w=300&auto=format&fit=crop"
+    },
+    {
+      id: "5",
+      title: language === "en" ? "Cooking Class: Healthy Recipes" : "पाक कला: स्वस्थ व्यंजन",
+      instructor: language === "en" ? "Priya Malhotra" : "प्रिया मल्होत्रा",
+      time: "10:00 AM - 11:30 AM",
+      date: t("tomorrow"),
+      category: language === "en" ? "Cooking" : "पाकशाला",
+      image: "https://images.unsplash.com/photo-1556911220-bda9f7b8e9cb?q=80&w=300&auto=format&fit=crop"
+    },
+    {
+      id: "6",
+      title: language === "en" ? "Music Appreciation" : "संगीत रसास्वादन",
+      instructor: language === "en" ? "Hari Menon" : "हरि मेनन",
+      time: "3:00 PM - 4:00 PM",
+      date: language === "en" ? "Next Week" : "अगले सप्ताह",
+      category: language === "en" ? "Arts" : "कला",
+      image: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?q=80&w=300&auto=format&fit=crop"
+    }
+  ];
   
   // Fetch sessions from Supabase
   useEffect(() => {
     const fetchSessions = async () => {
       try {
         setLoading(true);
+        
+        // Try to fetch from Supabase
         const { data, error } = await supabase
           .from('activities')
           .select('*')
           .eq('activity_type', 'session');
         
-        if (error) throw error;
-        
-        // Transform data into the format we need
-        const formattedSessions = data.map(session => {
-          // Format date and time
-          const startTime = session.start_time ? new Date(session.start_time) : null;
-          const endTime = session.end_time ? new Date(session.end_time) : null;
-          
-          // Create a readable time range if both times exist
-          const timeStr = startTime && endTime 
-            ? `${startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-            : "Flexible timing";
-          
-          // Format the date
-          const dateStr = startTime 
-            ? startTime.toDateString() === new Date().toDateString() 
-              ? "Today" 
-              : startTime.toDateString() === new Date(Date.now() + 86400000).toDateString()
-                ? "Tomorrow"
-                : startTime.toLocaleDateString()
-            : "Anytime";
+        if (error || !data || data.length === 0) {
+          // Use mock data if Supabase fetch fails or returns empty
+          setSessions(mockSessions);
+        } else {
+          // Transform data into the format we need
+          const formattedSessions = data.map(session => {
+            // Format date and time
+            const startTime = session.start_time ? new Date(session.start_time) : null;
+            const endTime = session.end_time ? new Date(session.end_time) : null;
             
-          return {
-            id: session.id,
-            title: session.title,
-            instructor: session.instructor,
-            time: timeStr,
-            date: dateStr,
-            category: session.category,
-            image: session.image_url
-          };
-        });
-        
-        setSessions(formattedSessions);
+            // Create a readable time range if both times exist
+            const timeStr = startTime && endTime 
+              ? `${startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+              : "Flexible timing";
+            
+            // Format the date
+            const dateStr = startTime 
+              ? startTime.toDateString() === new Date().toDateString() 
+                ? t("today") 
+                : startTime.toDateString() === new Date(Date.now() + 86400000).toDateString()
+                  ? t("tomorrow")
+                  : startTime.toLocaleDateString()
+              : "Anytime";
+              
+            return {
+              id: session.id,
+              title: session.title,
+              instructor: session.instructor,
+              time: timeStr,
+              date: dateStr,
+              category: session.category,
+              image: session.image_url
+            };
+          });
+          
+          setSessions(formattedSessions);
+        }
       } catch (error) {
         console.error("Error fetching sessions:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load sessions. Please try again later.",
-          variant: "destructive",
-        });
+        // Fall back to mock data
+        setSessions(mockSessions);
       } finally {
         setLoading(false);
       }
     };
     
     fetchSessions();
-  }, [toast]);
+  }, [t, language]);
 
   const handleSessionRegister = async (session: Session) => {
     if (user) {
@@ -113,8 +175,8 @@ const Sessions = () => {
         
         if (existingReg && existingReg.length > 0) {
           toast({
-            title: "Already Registered",
-            description: `You're already registered for ${session.title}`,
+            title: t("already_registered"),
+            description: `${t("already_registered_for")} ${session.title}`,
           });
           return;
         }
@@ -130,14 +192,14 @@ const Sessions = () => {
         if (regError) throw regError;
         
         toast({
-          title: "Registration Successful",
-          description: `You've been registered for ${session.title}`,
+          title: t("registration_successful"),
+          description: `${t("registered_for")} ${session.title}`,
         });
       } catch (error) {
         console.error("Registration error:", error);
         toast({
-          title: "Registration Failed",
-          description: "Something went wrong. Please try again.",
+          title: t("registration_failed"),
+          description: t("registration_error"),
           variant: "destructive",
         });
       }
@@ -172,10 +234,10 @@ const Sessions = () => {
   return (
     <MobileLayout>
       <div className="p-4 space-y-6">
-        <h1 className="text-2xl font-bold text-dhayan-green-DEFAULT">Your Sessions</h1>
+        <h1 className="text-2xl font-bold text-dhayan-green-DEFAULT">{t("your_sessions")}</h1>
         
         <div className="space-y-2">
-          <h2 className="text-lg font-medium">Upcoming Sessions</h2>
+          <h2 className="text-lg font-medium">{t("upcoming_sessions")}</h2>
           {loading ? (
             renderSkeletons()
           ) : sessions.length > 0 ? (
@@ -208,7 +270,7 @@ const Sessions = () => {
                         className="w-full mt-3 bg-dhayan-green-DEFAULT text-white hover:bg-opacity-90"
                         onClick={() => handleSessionRegister(session)}
                       >
-                        Register
+                        {t("register")}
                       </Button>
                     </CardContent>
                   </div>
@@ -217,15 +279,15 @@ const Sessions = () => {
             </div>
           ) : (
             <div className="p-6 text-center bg-gray-50 rounded-lg">
-              <p className="text-dhayan-gray-dark">No upcoming sessions found.</p>
+              <p className="text-dhayan-gray-dark">{t("no_upcoming_sessions")}</p>
             </div>
           )}
         </div>
         
         <div className="space-y-2">
-          <h2 className="text-lg font-medium">Recommended For You</h2>
+          <h2 className="text-lg font-medium">{t("recommended_for_you")}</h2>
           <div className="p-6 text-center bg-gray-50 rounded-lg">
-            <p className="text-dhayan-gray-dark">More sessions coming soon!</p>
+            <p className="text-dhayan-gray-dark">{t("more_sessions_coming")}</p>
           </div>
         </div>
       </div>

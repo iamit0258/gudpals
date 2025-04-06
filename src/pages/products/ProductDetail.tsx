@@ -4,9 +4,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ShoppingCart, ArrowLeft, Star, Plus, Minus, Check } from "lucide-react";
+import { ShoppingCart, ArrowLeft, Star, Plus, Minus, Check, MessageSquare } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/context/language/LanguageContext";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 const mockProducts = {
   "1": {
@@ -75,8 +77,11 @@ const ProductDetail = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [quantity, setQuantity] = useState(1);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [rating, setRating] = useState(5);
+  const [reviewText, setReviewText] = useState("");
   
   // In a real app, you would fetch this data
   const product = mockProducts[productId];
@@ -124,6 +129,19 @@ const ProductDetail = () => {
   const decreaseQuantity = () => {
     if (quantity > 1) setQuantity(quantity - 1);
   };
+
+  const handleOpenReview = () => {
+    setReviewOpen(true);
+  };
+
+  const handleSubmitReview = () => {
+    toast({
+      title: t("review"),
+      description: "Thank you for your review!",
+    });
+    setReviewOpen(false);
+    setReviewText("");
+  };
   
   // Format price to Indian Rupees
   const formattedPrice = new Intl.NumberFormat('en-IN', {
@@ -131,6 +149,64 @@ const ProductDetail = () => {
     currency: 'INR',
     maximumFractionDigits: 0
   }).format(product.price);
+
+  // Get the correct translations for product title and features based on language
+  const getLocalizedTitle = () => {
+    if (language === "hi") {
+      if (product.id === 1) return "सीनियर-फ्रेंडली स्मार्टफोन";
+      if (product.id === 2) return "ध्यान कुशन सेट";
+      if (product.id === 3) return "गठिया के अनुकूल बर्तन";
+    }
+    return product.title;
+  };
+
+  const getLocalizedFeatures = () => {
+    if (language === "hi") {
+      if (product.id === 1) {
+        return [
+          "अतिरिक्त बड़ा डिस्प्ले और बटन",
+          "आवश्यक कार्यों के साथ सरल इंटरफेस",
+          "आपातकालीन SOS बटन",
+          "लंबे समय तक चलने वाली बैटरी",
+          "हियरिंग एड कंपैटिबिलिटी"
+        ];
+      }
+      if (product.id === 2) {
+        return [
+          "आरामदायक बैठने के लिए एर्गोनोमिक डिज़ाइन",
+          "पर्यावरण के अनुकूल सामग्री से बना",
+          "आसानी से साफ होने वाले कवर",
+          "उचित रीढ़ संरेखण प्रदान करता है",
+          "शांत रंगों में उपलब्ध"
+        ];
+      }
+      if (product.id === 3) {
+        return [
+          "एर्गोनोमिक ग्रिप डिज़ाइन",
+          "हल्का निर्माण",
+          "डिशवॉशर सेफ",
+          "BPA-मुक्त सामग्री",
+          "सेट में चाकू, कांटा, चम्मच और अनुकूली हैंडल शामिल हैं"
+        ];
+      }
+    }
+    return product.features;
+  };
+
+  const getLocalizedDescription = () => {
+    if (language === "hi") {
+      if (product.id === 1) {
+        return "हमारे विशेष रूप से डिज़ाइन किए गए स्मार्टफोन में बड़े बटन, सरल इंटरफेस और बेहतर पहुंच सुविधाएं हैं। उन वरिष्ठ नागरिकों के लिए आदर्श जो नियमित स्मार्टफोन की जटिलता के बिना जुड़े रहना चाहते हैं।";
+      }
+      if (product.id === 2) {
+        return "वरिष्ठ नागरिकों को ध्यान में रखकर बनाया गया, यह ध्यान कुशन सेट लंबे ध्यान सत्रों के लिए उचित समर्थन प्रदान करता है। सेट में एक आरामदायक सीट कुशन और आपके घुटनों के लिए एक सहायक कुशन शामिल है।";
+      }
+      if (product.id === 3) {
+        return "ये विशेष रूप से डिज़ाइन किए गए बर्तन गठिया या सीमित हाथ की गतिशीलता वाले लोगों के लिए खाना आसान बनाते हैं। एर्गोनोमिक हैंडल आरामदायक पकड़ प्रदान करते हैं जबकि हल्के डिज़ाइन तनाव को कम करता है।";
+      }
+    }
+    return product.description;
+  };
 
   return (
     <MobileLayout>
@@ -147,7 +223,7 @@ const ProductDetail = () => {
           <div className="h-60 bg-gray-100 flex items-center justify-center">
             <img
               src={product.images[0]}
-              alt={product.title}
+              alt={getLocalizedTitle()}
               className="max-h-60 object-contain"
             />
           </div>
@@ -155,9 +231,9 @@ const ProductDetail = () => {
           {/* Product Info */}
           <div className="p-4">
             <div className="flex justify-between items-start">
-              <h1 className="text-2xl font-bold">{product.title}</h1>
+              <h1 className="text-2xl font-bold">{getLocalizedTitle()}</h1>
               <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full">
-                {product.category}
+                {t(product.category.toLowerCase())}
               </span>
             </div>
             
@@ -168,6 +244,15 @@ const ProductDetail = () => {
               </div>
               <span className="mx-2 text-gray-300">|</span>
               <span className="text-sm text-muted-foreground">{product.reviews} {t("reviews")}</span>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="ml-2 text-xs text-primary"
+                onClick={handleOpenReview}
+              >
+                <MessageSquare className="h-3 w-3 mr-1" />
+                {t("write_review")}
+              </Button>
             </div>
             
             <div className="mt-4">
@@ -180,13 +265,13 @@ const ProductDetail = () => {
             
             <div className="mt-4">
               <h3 className="font-medium">{t("description")}</h3>
-              <p className="text-sm text-muted-foreground mt-1">{product.description}</p>
+              <p className="text-sm text-muted-foreground mt-1">{getLocalizedDescription()}</p>
             </div>
             
             <div className="mt-4">
               <h3 className="font-medium">{t("features")}</h3>
               <ul className="mt-2 space-y-1">
-                {product.features.map((feature, index) => (
+                {getLocalizedFeatures().map((feature, index) => (
                   <li key={index} className="text-sm text-muted-foreground flex items-start">
                     <span className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center mr-2 flex-shrink-0 mt-0.5">
                       <Check className="h-3 w-3" />
@@ -242,6 +327,54 @@ const ProductDetail = () => {
           </Button>
         </div>
       </div>
+
+      {/* Review Dialog */}
+      <Dialog open={reviewOpen} onOpenChange={setReviewOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("write_review")}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <label className="text-sm font-medium mb-1 block">{t("rating")}</label>
+              <div className="flex items-center space-x-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setRating(star)}
+                    className="focus:outline-none"
+                  >
+                    <Star
+                      className={`h-6 w-6 ${
+                        star <= rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
+                      }`}
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">{t("your_review")}</label>
+              <Textarea
+                placeholder={language === "en" ? "Share your experience with this product..." : "इस उत्पाद के साथ अपने अनुभव को साझा करें..."}
+                className="resize-none"
+                rows={4}
+                value={reviewText}
+                onChange={(e) => setReviewText(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReviewOpen(false)}>
+              {t("close")}
+            </Button>
+            <Button onClick={handleSubmitReview}>
+              {t("submit_review")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </MobileLayout>
   );
 };

@@ -14,7 +14,7 @@ const Products = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { registerForActivity } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   
   React.useEffect(() => {
     if (location.state?.registered && location.state?.activityName) {
@@ -30,8 +30,8 @@ const Products = () => {
   const products = [
     {
       id: 1,
-      title: "सीनियर-फ्रेंडली स्मार्टफोन",
-      description: "बड़े बटन और सरल इंटरफेस के साथ आसान नेविगेशन।",
+      title: language === "en" ? "Senior-Friendly Smartphone" : "सीनियर-फ्रेंडली स्मार्टफोन",
+      description: language === "en" ? "Large buttons and simple interface for easy navigation." : "बड़े बटन और सरल इंटरफेस के साथ आसान नेविगेशन।",
       users: 156,
       availability: t("in_stock"),
       image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=300&auto=format&fit=crop",
@@ -40,8 +40,8 @@ const Products = () => {
     },
     {
       id: 2,
-      title: "ध्यान कुशन सेट",
-      description: "आपके दैनिक ध्यान अभ्यास के लिए आरामदायक कुशन।",
+      title: language === "en" ? "Meditation Cushion Set" : "ध्यान कुशन सेट",
+      description: language === "en" ? "Comfortable cushions for your daily meditation practice." : "आपके दैनिक ध्यान अभ्यास के लिए आरामदायक कुशन।",
       users: 89,
       availability: t("limited_stock"),
       image: "https://images.unsplash.com/photo-1545205597-3d9d02c29597?q=80&w=300&auto=format&fit=crop",
@@ -50,8 +50,8 @@ const Products = () => {
     },
     {
       id: 3,
-      title: "गठिया के अनुकूल बर्तन",
-      description: "बेहतर पकड़ और आराम के लिए विशेष रूप से डिज़ाइन किया गया।",
+      title: language === "en" ? "Arthritis-Friendly Utensils" : "गठिया के अनुकूल बर्तन",
+      description: language === "en" ? "Specially designed for better grip and comfort." : "बेहतर पकड़ और आराम के लिए विशेष रूप से डिज़ाइन किया गया।",
       users: 203,
       availability: t("in_stock"),
       image: "https://images.unsplash.com/photo-1630324982388-c15f371bf8c2?q=80&w=300&auto=format&fit=crop",

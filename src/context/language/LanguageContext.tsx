@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, ReactNode } from "react";
 
 type Language = "en" | "hi";
@@ -48,6 +47,16 @@ const translations = {
     by: "by",
     participants: "participants",
     register: "Register",
+    your_sessions: "Your Sessions",
+    recommended_for_you: "Recommended For You",
+    more_sessions_coming: "More sessions coming soon!",
+    registration_successful: "Registration Successful",
+    already_registered: "Already Registered",
+    registered_for: "You've been registered for",
+    already_registered_for: "You're already registered for",
+    registration_failed: "Registration Failed",
+    registration_error: "Something went wrong. Please try again.",
+    no_upcoming_sessions: "No upcoming sessions found.",
     
     // Friends related
     nearby: "Nearby",
@@ -90,6 +99,11 @@ const translations = {
     back_to_products: "Back to Products",
     product_not_found: "Product not found",
     reviews: "reviews",
+    review: "Review",
+    write_review: "Write a Review",
+    submit_review: "Submit Review",
+    rating: "Rating",
+    your_review: "Your Review",
     features: "Features",
     description: "Description",
     quantity: "Quantity",
@@ -178,6 +192,16 @@ const translations = {
     by: "द्वारा",
     participants: "प्रतिभागी",
     register: "रजिस्टर करें",
+    your_sessions: "आपके सत्र",
+    recommended_for_you: "आपके लिए अनुशंसित",
+    more_sessions_coming: "जल्द ही और सत्र आ रहे हैं!",
+    registration_successful: "पंजीकरण सफल",
+    already_registered: "पहले से पंजीकृत",
+    registered_for: "आपको इसके लिए पंजीकृत किया गया है",
+    already_registered_for: "आप पहले से ही इसके लिए पंजीकृत हैं",
+    registration_failed: "पंजीकरण विफल",
+    registration_error: "कुछ गलत हो गया। कृपया पुनः प्रयास करें।",
+    no_upcoming_sessions: "कोई आगामी सत्र नहीं मिला।",
     
     // Friends related
     nearby: "आस-पास",
@@ -220,6 +244,11 @@ const translations = {
     back_to_products: "उत्पादों पर वापस जाएं",
     product_not_found: "उत्पाद नहीं मिला",
     reviews: "समीक्षाएँ",
+    review: "समीक्षा",
+    write_review: "समीक्षा लिखें",
+    submit_review: "समीक्षा जमा करें",
+    rating: "रेटिंग",
+    your_review: "आपकी समीक्षा",
     features: "विशेषताएं",
     description: "विवरण",
     quantity: "मात्रा",

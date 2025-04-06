@@ -16,7 +16,7 @@ const FeaturedSessions = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { registerForActivity } = useAuth();
 
   useEffect(() => {
@@ -46,13 +46,23 @@ const FeaturedSessions = () => {
   const getCategoryColor = (category) => {
     switch (category) {
       case "Yoga":
+      case "योग":
         return "bg-dhayan-green text-green-800";
       case "Digital Literacy":
+      case "डिजिटल साक्षरता":
         return "bg-dhayan-orange text-orange-800";
       case "Entertainment":
+      case "मनोरंजन":
         return "bg-dhayan-purple-light text-dhayan-purple-dark";
       case "Safety":
+      case "सुरक्षा":
         return "bg-dhayan-pink text-rose-800";
+      case "Cooking":
+      case "पाकशाला":
+        return "bg-amber-200 text-amber-800";
+      case "Arts":
+      case "कला":
+        return "bg-blue-200 text-blue-800";
       default:
         return "bg-dhayan-yellow text-amber-800";
     }
@@ -84,39 +94,57 @@ const FeaturedSessions = () => {
   const featuredSessions = sessions.length > 0 ? sessions : [
     {
       id: 1,
-      title: "प्रातःकालीन योग",
-      instructor: "अंजलि शर्मा",
+      title: language === "en" ? "Morning Yoga" : "प्रातःकालीन योग",
+      instructor: language === "en" ? "Anjali Sharma" : "अंजलि शर्मा",
       start_time: new Date().setHours(8, 0),
-      category: "Yoga",
+      category: language === "en" ? "Yoga" : "योग",
       participants: 24,
       image_url: "https://images.unsplash.com/photo-1616699002805-0741e1e4a9c5?q=80&w=300&auto=format&fit=crop"
     },
     {
       id: 2,
-      title: "स्मार्टफोन मूल बातें",
-      instructor: "राज कुमार",
+      title: language === "en" ? "Smartphone Basics" : "स्मार्टफोन मूल बातें",
+      instructor: language === "en" ? "Raj Kumar" : "राज कुमार",
       start_time: new Date().setHours(11, 0),
-      category: "Digital Literacy",
+      category: language === "en" ? "Digital Literacy" : "डिजिटल साक्षरता",
       participants: 15,
       image_url: "https://images.unsplash.com/photo-1601784551062-20c13f969c4c?q=80&w=300&auto=format&fit=crop"
     },
     {
       id: 3,
-      title: "तम्बोला शाम",
-      instructor: "मीरा पटेल",
+      title: language === "en" ? "Tambola Evening" : "तम्बोला शाम",
+      instructor: language === "en" ? "Meera Patel" : "मीरा पटेल",
       start_time: new Date().setHours(16, 0),
-      category: "Entertainment",
+      category: language === "en" ? "Entertainment" : "मनोरंजन",
       participants: 42,
       image_url: "https://images.unsplash.com/photo-1606167668584-78701c57f13d?q=80&w=300&auto=format&fit=crop"
     },
     {
       id: 4,
-      title: "ऑनलाइन सुरक्षा कार्यशाला",
-      instructor: "संजय गुप्ता",
+      title: language === "en" ? "Online Safety Workshop" : "ऑनलाइन सुरक्षा कार्यशाला",
+      instructor: language === "en" ? "Sanjay Gupta" : "संजय गुप्ता",
       start_time: new Date().setHours(14, 0),
-      category: "Safety",
+      category: language === "en" ? "Safety" : "सुरक्षा",
       participants: 18,
       image_url: "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?q=80&w=300&auto=format&fit=crop"
+    },
+    {
+      id: 5,
+      title: language === "en" ? "Cooking Class: Healthy Recipes" : "पाक कला: स्वस्थ व्यंजन",
+      instructor: language === "en" ? "Priya Malhotra" : "प्रिया मल्होत्रा",
+      start_time: new Date(Date.now() + 86400000).setHours(10, 0),
+      category: language === "en" ? "Cooking" : "पाकशाला",
+      participants: 12,
+      image_url: "https://images.unsplash.com/photo-1556911220-bda9f7b8e9cb?q=80&w=300&auto=format&fit=crop"
+    },
+    {
+      id: 6,
+      title: language === "en" ? "Music Appreciation" : "संगीत रसास्वादन",
+      instructor: language === "en" ? "Hari Menon" : "हरि मेनन",
+      start_time: new Date(Date.now() + 86400000).setHours(15, 0),
+      category: language === "en" ? "Arts" : "कला",
+      participants: 20,
+      image_url: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?q=80&w=300&auto=format&fit=crop"
     }
   ];
 
