@@ -8,7 +8,7 @@ export const AuthContext = createContext<AuthContextType>({
   isLoading: true,
   sendOTP: async () => {},
   verifyOTP: async () => {},
-  signOut: () => {},
+  signOut: async () => {}, // Make this an async function that returns a Promise
   updateProfile: async () => {},
   isAuthenticated: false,
   registerForActivity: () => {},

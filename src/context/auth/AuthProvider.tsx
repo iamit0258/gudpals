@@ -10,7 +10,7 @@ import { useAuthMethods, ToastInterface } from "./useAuthMethods";
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
+  const toastHook = useToast();
   const navigate = useNavigate();
 
   // Check for existing user session on component mount
@@ -41,7 +41,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // If user is logged in, register them directly
       activityService.registerForActivity(user, activityType, activityName)
         .then(() => {
-          toast({
+          toastHook.toast({
             title: "Registration Successful",
             description: `You've been registered for ${activityName}`,
           });
@@ -56,7 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         })
         .catch((error) => {
           console.error("Registration error:", error);
-          toast({
+          toastHook.toast({
             title: "Registration Failed",
             description: "Something went wrong. Please try again.",
             variant: "destructive",
@@ -75,7 +75,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Create a properly typed toast object to pass to the auth methods
-  const toastInterface: ToastInterface = { toast };
+  const toastInterface: ToastInterface = { toast: toastHook };
 
   // Import authentication methods from separate file
   const { sendOTP, verifyOTP, signOut, updateProfile } = useAuthMethods(

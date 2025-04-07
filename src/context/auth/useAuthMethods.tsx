@@ -19,7 +19,7 @@ export const useAuthMethods = (
   const [loading, setLoading] = useState(false);
   const defaultNavigate = useNavigate();
   const nav = navigate || defaultNavigate;
-  const { toast } = toastInterface || useToast();
+  const toastUtil = toastInterface || useToast();
   
   const loginWithPhoneOTP = async (phoneNumber: string) => {
     try {
@@ -82,7 +82,8 @@ export const useAuthMethods = (
               
             if (error) throw error;
             
-            toast({
+            // Use the toast from toastUtil properly
+            toastUtil.toast({
               title: "Registration successful",
               description: `You've registered for ${parsedData.activityName}`,
             });
