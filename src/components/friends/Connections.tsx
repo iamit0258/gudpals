@@ -99,6 +99,20 @@ const Connections = () => {
     return nameToCheck.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
+  // Helper function to get the correct name to display based on language
+  const getDisplayName = (nameObj) => {
+    if (typeof nameObj === 'object') {
+      return language === 'en' ? nameObj.en : nameObj.hi;
+    }
+    return nameObj || '';
+  };
+
+  // Helper function to get initials safely
+  const getInitial = (nameObj) => {
+    const displayName = getDisplayName(nameObj);
+    return displayName ? displayName.charAt(0) : '';
+  };
+
   return (
     <div className="p-4 space-y-4">
       <div className="relative">
@@ -122,11 +136,9 @@ const Connections = () => {
               <div className="flex items-center">
                 <div className="relative">
                   <Avatar className="h-12 w-12 mr-4">
-                    <AvatarImage src={connection.avatar} alt={typeof connection.name === 'object' ? (language === 'en' ? connection.name.en : connection.name.hi) : connection.name} />
+                    <AvatarImage src={connection.avatar} alt={getDisplayName(connection.name)} />
                     <AvatarFallback>
-                      {typeof connection.name === 'object' 
-                        ? (language === 'en' ? connection.name.en.charAt(0) : connection.name.hi.charAt(0))
-                        : connection.name.charAt(0)}
+                      {getInitial(connection.name)}
                     </AvatarFallback>
                   </Avatar>
                   {connection.status === "online" && (
@@ -135,9 +147,7 @@ const Connections = () => {
                 </div>
                 <div className="flex-1">
                   <h3 className="font-medium">
-                    {typeof connection.name === 'object' 
-                      ? (language === 'en' ? connection.name.en : connection.name.hi) 
-                      : connection.name}
+                    {getDisplayName(connection.name)}
                   </h3>
                   <p className="text-xs text-muted-foreground">
                     {connection.status === "online" ? t("active_now") : connection.lastSeen}
