@@ -77,10 +77,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Create a properly typed toast object to pass to the auth methods
   const toastInterface: ToastInterface = { toast };
 
-  // Import authentication methods from separate file with properly typed toast
+  // Import authentication methods from separate file
   const { sendOTP, verifyOTP, signOut, updateProfile } = useAuthMethods(
-    user, 
-    setUser, 
+    user,
+    setUser,
     toastInterface,
     navigate
   );

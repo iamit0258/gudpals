@@ -205,7 +205,8 @@ const Sessions = () => {
       }
     } else {
       // Use the existing registerForActivity function for unauthenticated users
-      registerForActivity("session", session.title, "/sessions", session.id);
+      // Pass only the required 3 arguments
+      registerForActivity("session", session.title, "/sessions");
     }
   };
 

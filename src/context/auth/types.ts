@@ -14,10 +14,10 @@ export interface User {
 export interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  sendOTP: (phoneNumber: string) => Promise<void>;
-  verifyOTP: (phoneNumber: string, otp: string) => Promise<void>;
-  signOut: () => void;
-  updateProfile: (data: Partial<User>) => Promise<void>;
+  sendOTP: (phoneNumber: string) => Promise<any>;
+  verifyOTP: (phoneNumber: string, otp: string) => Promise<any>;
+  signOut: () => Promise<any>;
+  updateProfile: (data: Partial<User>) => Promise<any>;
   isAuthenticated: boolean;
   registerForActivity: (
     activityType: ActivityType, 

@@ -3,11 +3,23 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { User } from "./types";
 
-export const useAuthMethods = () => {
+// Define the ToastInterface type that was missing
+export interface ToastInterface {
+  toast: ReturnType<typeof useToast>;
+}
+
+export const useAuthMethods = (
+  currentUser?: User | null,
+  setUser?: React.Dispatch<React.SetStateAction<User | null>>,
+  toastInterface?: ToastInterface,
+  navigate?: ReturnType<typeof useNavigate>
+) => {
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-  const { toast } = useToast();
+  const defaultNavigate = useNavigate();
+  const nav = navigate || defaultNavigate;
+  const { toast } = toastInterface || useToast();
   
   const loginWithPhoneOTP = async (phoneNumber: string) => {
     try {
@@ -83,6 +95,11 @@ export const useAuthMethods = () => {
         sessionStorage.removeItem("dhayan_signup_data");
       }
       
+      // Set user if setUser function is provided
+      if (setUser) {
+        setUser(user);
+      }
+      
       // Return the user
       return { user };
     } catch (error: any) {
@@ -103,8 +120,13 @@ export const useAuthMethods = () => {
       // Simulate a delay
       await new Promise(resolve => setTimeout(resolve, 500));
       
+      // Clear user if setUser function is provided
+      if (setUser) {
+        setUser(null);
+      }
+      
       // Redirect to login page
-      navigate("/login");
+      nav("/login");
       
       return { success: true };
     } catch (error: any) {
@@ -119,6 +141,33 @@ export const useAuthMethods = () => {
     return loginWithPhoneOTP(phoneNumber);
   };
   
+  const updateProfile = async (data: Partial<User>) => {
+    try {
+      setLoading(true);
+      
+      // In a real app, we would update the user profile in Supabase
+      console.log("Updating user profile with:", data);
+      
+      // Simulate a delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Update user if both currentUser and setUser are provided
+      if (currentUser && setUser) {
+        setUser({
+          ...currentUser,
+          ...data
+        });
+      }
+      
+      return { success: true };
+    } catch (error: any) {
+      console.error("Error updating profile:", error.message);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   const registerForActivity = (
     activityType: string,
     activityName: string,
@@ -126,7 +175,7 @@ export const useAuthMethods = () => {
     activityId?: string
   ) => {
     // Redirect to registration page with activity details
-    navigate("/register", {
+    nav("/register", {
       state: {
         activityType,
         activityName,
@@ -143,5 +192,7 @@ export const useAuthMethods = () => {
     logout,
     sendOTP,
     registerForActivity,
+    updateProfile, // Added this function
+    signOut: logout, // Alias for logout to match expected interface
   };
 };
