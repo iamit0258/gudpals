@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { activityService } from "@/services/activityService";
 import { AuthContext } from "./AuthContext";
 import { User, ActivityType } from "./types";
-import { useAuthMethods, ToastInterface } from "./useAuthMethods";
+import { useAuthMethods, ToastInterface, ToastData } from "./useAuthMethods";
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -76,7 +76,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Create a properly typed toast interface to pass to the auth methods
   const toastInterface: ToastInterface = {
-    toast: (props) => toastHook.toast(props),
+    toast: (props: ToastData) => toastHook.toast(props),
     dismiss: toastHook.dismiss,
     toasts: toastHook.toasts
   };

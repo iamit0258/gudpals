@@ -4,11 +4,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "./types";
-import { ToastProps as Toast } from "@/components/ui/toast";
+// Import the correct type for toast
+import { ToastActionElement } from "@/components/ui/toast"; 
+
+// Define a more appropriate toast data structure matching what's expected
+export interface ToastData {
+  title?: string;
+  description?: string;
+  variant?: "default" | "destructive";
+  action?: ToastActionElement;
+}
 
 // Define the ToastInterface type more specifically
 export interface ToastInterface {
-  toast: (props: Toast) => { 
+  toast: (props: ToastData) => { 
     id: string; 
     dismiss: () => void; 
     update: (props: any) => void;
@@ -29,7 +38,7 @@ export const useAuthMethods = (
   const toastUtil = toastInterface || useToast();
   
   // Helper function to safely use toast
-  const showToast = (props: Toast) => {
+  const showToast = (props: ToastData) => {
     // Check if toastUtil has a toast function
     if (toastUtil && typeof toastUtil.toast === 'function') {
       toastUtil.toast(props);
