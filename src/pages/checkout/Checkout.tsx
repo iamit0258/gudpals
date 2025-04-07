@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { Button } from "@/components/ui/button";
@@ -13,24 +13,25 @@ import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/context/language/LanguageContext";
 
-// Mock cart items
-const mockCartItems = [
-  {
-    id: 1,
-    title: "Senior-Friendly Smartphone",
-    price: 5999,
-    quantity: 1,
-    image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=300&auto=format&fit=crop"
-  }
-];
-
 const Checkout = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useLanguage();
-  const [cartItems, setCartItems] = useState(mockCartItems);
+  const [cartItems, setCartItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
+  
+  // Load cart from localStorage
+  useEffect(() => {
+    const savedCart = localStorage.getItem('cart');
+    if (savedCart) {
+      try {
+        setCartItems(JSON.parse(savedCart));
+      } catch (e) {
+        console.error("Error parsing cart data:", e);
+      }
+    }
+  }, []);
   
   const form = useForm({
     defaultValues: {
@@ -57,7 +58,7 @@ const Checkout = () => {
     return calculateSubtotal() + calculateDeliveryFee();
   };
   
-  const formatPrice = (price) => {
+  const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
@@ -65,8 +66,11 @@ const Checkout = () => {
     }).format(price);
   };
   
-  const handleRemoveItem = (id) => {
+  const handleRemoveItem = (id: number) => {
     setCartItems(cartItems.filter(item => item.id !== id));
+    
+    // Update localStorage with updated cart
+    localStorage.setItem('cart', JSON.stringify(cartItems.filter(item => item.id !== id)));
     
     toast({
       title: t("item_removed"),
@@ -80,13 +84,39 @@ const Checkout = () => {
     }
   };
   
-  const handleSubmit = (data) => {
+  const handleSubmit = (data: any) => {
+    if (cartItems.length === 0) {
+      toast({
+        title: "Cart is empty",
+        description: "Add some products to your cart before checking out.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setLoading(true);
     
     // Simulate API call
     setTimeout(() => {
       setLoading(false);
       setOrderComplete(true);
+      
+      // Store the order in localStorage for demo purposes
+      const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
+      const newOrder = {
+        id: Date.now(),
+        items: cartItems,
+        address: data,
+        total: calculateTotal(),
+        status: 'Processing',
+        date: new Date().toISOString()
+      };
+      
+      orderHistory.push(newOrder);
+      localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
+      
+      // Clear cart after successful order
+      localStorage.setItem('cart', JSON.stringify([]));
       
       toast({
         title: t("order_placed"),
@@ -148,7 +178,7 @@ const Checkout = () => {
             </div>
           ) : (
             <div className="space-y-3">
-              {cartItems.map(item => (
+              {cartItems.map((item) => (
                 <Card key={item.id} className="overflow-hidden">
                   <CardContent className="p-3">
                     <div className="flex">

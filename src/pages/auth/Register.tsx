@@ -23,6 +23,7 @@ const Register = () => {
   const redirectPath = location.state?.from || "/";
   const activityType = location.state?.activityType || "activity";
   const activityName = location.state?.activityName || "this activity";
+  const activityId = location.state?.activityId || null;
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,6 +56,7 @@ const Register = () => {
         age: age,
         activityType,
         activityName,
+        activityId,
         redirectPath,
         registeredAt: new Date().toISOString(),
       };

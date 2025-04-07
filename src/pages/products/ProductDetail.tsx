@@ -1,10 +1,10 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ShoppingCart, ArrowLeft, Star, Plus, Minus, Check, MessageSquare } from "lucide-react";
+import { ShoppingCart, ArrowLeft, Star, Plus, Minus, Check, MessageSquare, Trash } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/context/language/LanguageContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -139,9 +139,29 @@ const ProductDetail = () => {
   const [reviewText, setReviewText] = useState("");
   const [reviews, setReviews] = useState(sampleReviews);
   const [showAllReviews, setShowAllReviews] = useState(false);
+  const [cart, setCart] = useState<any[]>([]);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
   
   // In a real app, you would fetch this data
-  const product = mockProducts[productId];
+  const product = mockProducts[productId as keyof typeof mockProducts];
+  
+  // Load cart from localStorage on mount
+  useEffect(() => {
+    const savedCart = localStorage.getItem('cart');
+    if (savedCart) {
+      try {
+        setCart(JSON.parse(savedCart));
+      } catch (e) {
+        console.error("Error parsing cart data:", e);
+      }
+    }
+  }, []);
+  
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart));
+  }, [cart]);
   
   if (!product) {
     return (
@@ -160,72 +180,97 @@ const ProductDetail = () => {
   }
   
   const handleAddToCart = () => {
+    setIsAddingToCart(true);
+    
+    // Simulate network delay
+    setTimeout(() => {
+      const cartItem = {
+        id: product.id,
+        title: getLocalizedTitle(),
+        price: product.price,
+        quantity: quantity,
+        image: product.images[0]
+      };
+      
+      // Check if the product is already in the cart
+      const existingItemIndex = cart.findIndex(item => item.id === product.id);
+      
+      if (existingItemIndex >= 0) {
+        // Update quantity if already in cart
+        const updatedCart = [...cart];
+        updatedCart[existingItemIndex].quantity += quantity;
+        setCart(updatedCart);
+      } else {
+        // Add new item to cart
+        setCart([...cart, cartItem]);
+      }
+      
+      setIsAddingToCart(false);
+      setCartOpen(true);
+      
+      toast({
+        title: t("added_to_cart"),
+        description: `${getLocalizedTitle()} ${t("added_to_cart_success")}`,
+      });
+    }, 500);
+  };
+  
+  const handleRemoveFromCart = (id: number) => {
+    setCart(cart.filter(item => item.id !== id));
+    
     toast({
-      title: t("added_to_cart"),
-      description: `${getLocalizedTitle()} ${t("added_to_cart_success")}`,
+      title: t("item_removed"),
+      description: t("item_removed_from_cart"),
     });
-
-    // Simulate adding to cart
+  };
+  
+  const handleUpdateQuantity = (id: number, newQuantity: number) => {
+    if (newQuantity < 1) return;
+    
+    const updatedCart = cart.map(item => 
+      item.id === id ? { ...item, quantity: newQuantity } : item
+    );
+    
+    setCart(updatedCart);
+  };
+  
+  const handleBuyNow = () => {
+    // Add current product to cart first
     const cartItem = {
-      productId: product.id,
+      id: product.id,
       title: getLocalizedTitle(),
       price: product.price,
       quantity: quantity,
       image: product.images[0]
     };
     
-    // Store in local storage for demo
-    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-    const existingItemIndex = cart.findIndex(item => item.productId === product.id);
+    // Add to cart if not already there
+    const existingItemIndex = cart.findIndex(item => item.id === product.id);
     
-    if (existingItemIndex >= 0) {
-      cart[existingItemIndex].quantity += quantity;
+    if (existingItemIndex === -1) {
+      setCart([...cart, cartItem]);
     } else {
-      cart.push(cartItem);
+      // Update quantity if already in cart
+      const updatedCart = [...cart];
+      updatedCart[existingItemIndex].quantity += quantity;
+      setCart(updatedCart);
     }
     
-    localStorage.setItem('cart', JSON.stringify(cart));
-    
-    // Navigate after a short delay to show the toast
-    setTimeout(() => {
-      navigate("/checkout");
-    }, 1000);
-  };
-  
-  const handleBuyNow = () => {
     toast({
       title: t("proceeding_to_checkout"),
       description: t("preparing_order"),
     });
     
-    // Store order item in local storage
-    const orderItem = {
-      productId: product.id,
-      title: getLocalizedTitle(),
-      price: product.price,
-      quantity: quantity,
-      image: product.images[0],
-      date: new Date().toISOString()
-    };
-    
-    // Store in order history
-    const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
-    orderHistory.push({
-      id: Date.now(),
-      items: [orderItem],
-      total: product.price * quantity,
-      date: new Date().toISOString(),
-      status: 'Completed'
-    });
-    
-    localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
-    
-    navigate("/checkout", { 
-      state: { 
-        buyNow: true, 
-        item: orderItem 
-      } 
-    });
+    // Navigate to checkout
+    navigate("/checkout");
+  };
+  
+  const getTotalCartItems = () => {
+    return cart.reduce((total, item) => total + item.quantity, 0);
+  };
+  
+  const calculateCartTotal = () => {
+    return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   };
   
   const increaseQuantity = () => {
@@ -289,10 +334,23 @@ const ProductDetail = () => {
     <MobileLayout>
       <div className="pb-28">
         <div className="bg-white">
-          <div className="p-4">
+          <div className="p-4 flex justify-between items-center">
             <Button variant="ghost" onClick={() => navigate("/products")}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               {t("back_to_products")}
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              className="relative" 
+              onClick={() => setCartOpen(true)}
+            >
+              <ShoppingCart className="h-5 w-5" />
+              {cart.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {getTotalCartItems()}
+                </span>
+              )}
             </Button>
           </div>
           
@@ -437,9 +495,16 @@ const ProductDetail = () => {
             variant="outline"
             className="flex-1 border-primary text-primary"
             onClick={handleAddToCart}
+            disabled={isAddingToCart}
           >
-            <ShoppingCart className="h-4 w-4 mr-2" />
-            {t("add_to_cart")}
+            {isAddingToCart ? (
+              <span className="animate-pulse">Adding...</span>
+            ) : (
+              <>
+                <ShoppingCart className="h-4 w-4 mr-2" />
+                {t("add_to_cart")}
+              </>
+            )}
           </Button>
           <Button
             className="flex-1 bg-primary hover:bg-dhayan-teal-dark text-white"
@@ -493,6 +558,109 @@ const ProductDetail = () => {
             </Button>
             <Button onClick={handleSubmitReview}>
               {t("submit_review")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Cart Dialog */}
+      <Dialog open={cartOpen} onOpenChange={setCartOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("your_cart")}</DialogTitle>
+          </DialogHeader>
+          
+          <div className="py-4">
+            {cart.length === 0 ? (
+              <div className="text-center py-8">
+                <ShoppingCart className="h-12 w-12 mx-auto text-muted-foreground opacity-50 mb-4" />
+                <p className="text-muted-foreground">{t("cart_empty")}</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {cart.map(item => (
+                  <div key={item.id} className="flex items-center border-b pb-3">
+                    <div className="h-16 w-16 bg-gray-100 rounded overflow-hidden flex-shrink-0">
+                      <img 
+                        src={item.image} 
+                        alt={item.title} 
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <div className="ml-3 flex-1">
+                      <h4 className="font-medium text-sm">{item.title}</h4>
+                      <div className="flex justify-between items-center mt-1">
+                        <p className="font-bold text-primary text-sm">
+                          {new Intl.NumberFormat('en-IN', {
+                            style: 'currency',
+                            currency: 'INR',
+                            maximumFractionDigits: 0
+                          }).format(item.price)}
+                        </p>
+                        <div className="flex items-center">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0"
+                            onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                            disabled={item.quantity <= 1}
+                          >
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                          <span className="w-6 text-center text-sm">{item.quantity}</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0"
+                            onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 text-red-500 ml-1"
+                            onClick={() => handleRemoveFromCart(item.id)}
+                          >
+                            <Trash className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                <div className="flex justify-between items-center py-2">
+                  <span className="font-medium">{t("total")}</span>
+                  <span className="font-bold text-primary">
+                    {new Intl.NumberFormat('en-IN', {
+                      style: 'currency',
+                      currency: 'INR',
+                      maximumFractionDigits: 0
+                    }).format(calculateCartTotal())}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter className="flex gap-2">
+            <Button 
+              variant="outline" 
+              className="flex-1"
+              onClick={() => setCartOpen(false)}
+            >
+              {t("continue_shopping")}
+            </Button>
+            <Button 
+              className="flex-1 bg-primary"
+              onClick={() => {
+                setCartOpen(false);
+                navigate("/checkout");
+              }}
+              disabled={cart.length === 0}
+            >
+              {t("checkout")}
             </Button>
           </DialogFooter>
         </DialogContent>
