@@ -4,10 +4,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "./types";
+import { Toast } from "@/components/ui/toast";
 
-// Define the ToastInterface type that was missing
+// Define the ToastInterface type more specifically
 export interface ToastInterface {
-  toast: ReturnType<typeof useToast>;
+  toast: (props: Toast) => { 
+    id: string; 
+    dismiss: () => void; 
+    update: (props: any) => void;
+  };
+  dismiss?: (toastId?: string) => void;
+  toasts?: any[];
 }
 
 export const useAuthMethods = (
@@ -20,6 +27,14 @@ export const useAuthMethods = (
   const defaultNavigate = useNavigate();
   const nav = navigate || defaultNavigate;
   const toastUtil = toastInterface || useToast();
+  
+  // Helper function to safely use toast
+  const showToast = (props: Toast) => {
+    // Check if toastUtil has a toast function
+    if (toastUtil && typeof toastUtil.toast === 'function') {
+      toastUtil.toast(props);
+    }
+  };
   
   const loginWithPhoneOTP = async (phoneNumber: string) => {
     try {
@@ -82,13 +97,11 @@ export const useAuthMethods = (
               
             if (error) throw error;
             
-            // Use the toast from toastUtil properly by accessing its toast property
-            if ('toast' in toastUtil) {
-              toastUtil.toast({
-                title: "Registration successful",
-                description: `You've registered for ${parsedData.activityName}`,
-              });
-            }
+            // Use the showToast helper function to show the registration success message
+            showToast({
+              title: "Registration successful",
+              description: `You've registered for ${parsedData.activityName}`,
+            });
           }
         } catch (error) {
           console.error("Registration error:", error);
