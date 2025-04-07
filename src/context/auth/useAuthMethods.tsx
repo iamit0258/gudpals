@@ -82,11 +82,13 @@ export const useAuthMethods = (
               
             if (error) throw error;
             
-            // Use the toast from toastUtil properly
-            toastUtil.toast({
-              title: "Registration successful",
-              description: `You've registered for ${parsedData.activityName}`,
-            });
+            // Use the toast from toastUtil properly by accessing its toast property
+            if ('toast' in toastUtil) {
+              toastUtil.toast({
+                title: "Registration successful",
+                description: `You've registered for ${parsedData.activityName}`,
+              });
+            }
           }
         } catch (error) {
           console.error("Registration error:", error);
