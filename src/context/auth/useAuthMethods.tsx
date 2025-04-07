@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "./types";
-import { Toast } from "@/components/ui/toast";
+import { ToastProps as Toast } from "@/components/ui/toast";
 
 // Define the ToastInterface type more specifically
 export interface ToastInterface {

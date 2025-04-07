@@ -74,8 +74,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Create a properly typed toast object to pass to the auth methods
-  const toastInterface: ToastInterface = { toast: toastHook };
+  // Create a properly typed toast interface to pass to the auth methods
+  const toastInterface: ToastInterface = {
+    toast: (props) => toastHook.toast(props),
+    dismiss: toastHook.dismiss,
+    toasts: toastHook.toasts
+  };
 
   // Import authentication methods from separate file
   const { sendOTP, verifyOTP, signOut, updateProfile } = useAuthMethods(
