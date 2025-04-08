@@ -3,11 +3,13 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { User } from "../types";
 import { useAuthState } from "../providers/AuthStateProvider";
+import { useToast } from "@/hooks/use-toast";
 
 export const useSessionMethods = () => {
   const [loading, setLoading] = useState(false);
   const { setUser } = useAuthState();
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   const logout = async () => {
     try {
@@ -24,6 +26,12 @@ export const useSessionMethods = () => {
         setUser(null);
       }
       
+      // Show toast notification
+      toast({
+        title: "Logged Out",
+        description: "You have been successfully logged out.",
+      });
+      
       // Redirect to login page
       if (navigate) {
         navigate("/login");
@@ -32,6 +40,11 @@ export const useSessionMethods = () => {
       return { success: true };
     } catch (error: any) {
       console.error("Error logging out:", error.message);
+      toast({
+        title: "Error",
+        description: "Failed to log out. Please try again.",
+        variant: "destructive",
+      });
       throw error;
     } finally {
       setLoading(false);

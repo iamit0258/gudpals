@@ -1,20 +1,26 @@
 
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import MobileLayout from "@/components/layout/MobileLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Settings, LogOut, Calendar, Award, Heart, MessageSquare, Package, ChevronRight } from "lucide-react";
+import { LogOut, Package, ChevronRight, Pencil, TextSize, Eye, Globe, ShoppingBag, CreditCard, MapPin, Bell, Shield, HelpCircle, Info } from "lucide-react";
 import { useAuth } from "@/context/auth";
 import { useLanguage } from "@/context/language/LanguageContext";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { format } from "date-fns";
+import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
 const Profile = () => {
   const { user, signOut } = useAuth();
-  const { t, language } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
   const [orderHistory, setOrderHistory] = useState([]);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const [interestTags, setInterestTags] = useState(['gardening', 'reading', 'travel']);
+  const [bio, setBio] = useState('Retired teacher who loves gardening and meeting new people');
   
   useEffect(() => {
     // Load order history from localStorage
@@ -40,190 +46,238 @@ const Profile = () => {
     );
   }
 
-  const menuItems = [
-    { icon: Calendar, label: language === "en" ? "My Sessions" : "मेरे सत्र", link: "/sessions" },
-    { icon: Heart, label: language === "en" ? "Health & Wellness" : "स्वास्थ्य और कल्याण", link: "/wellness" },
-    { icon: Award, label: language === "en" ? "Rewards & Points" : "पुरस्कार और अंक", link: "/rewards" },
-    { icon: MessageSquare, label: language === "en" ? "My Messages" : "मेरे संदेश", link: "/messages" },
-    { icon: Settings, label: language === "en" ? "Settings" : "सेटिंग्स", link: "/settings" },
-  ];
-
-  const formatDate = (dateString) => {
-    try {
-      const date = new Date(dateString);
-      return format(date, 'MMM dd, yyyy');
-    } catch (error) {
-      return dateString;
-    }
+  const handleEditProfile = () => {
+    toast({
+      title: language === "en" ? "Edit Profile" : "प्रोफ़ाइल संपादित करें",
+      description: language === "en" ? "Profile edit coming soon" : "प्रोफ़ाइल संपादन जल्द आ रहा है"
+    });
   };
+
+  const handleTextSizeChange = () => {
+    toast({
+      title: language === "en" ? "Text Size" : "पाठ का आकार",
+      description: language === "en" ? "Text size adjustment coming soon" : "पाठ के आकार का समायोजन जल्द आ रहा है"
+    });
+  };
+
+  const handleHighContrastToggle = () => {
+    toast({
+      title: language === "en" ? "High Contrast" : "उच्च कंट्रास्ट",
+      description: language === "en" ? "High contrast mode coming soon" : "उच्च कंट्रास्ट मोड जल्द आ रहा है"
+    });
+  };
+
+  const handleLanguageChange = () => {
+    const newLanguage = language === "en" ? "hi" : "en";
+    setLanguage(newLanguage);
+    toast({
+      title: newLanguage === "en" ? "Language Changed" : "भाषा बदल गई",
+      description: newLanguage === "en" ? "Language set to English" : "भाषा हिंदी में सेट की गई"
+    });
+  };
+
+  const handleMyOrders = () => {
+    navigate('/checkout');
+    toast({
+      title: language === "en" ? "My Orders" : "मेरे आदेश",
+      description: language === "en" ? "Viewing your orders" : "आपके आदेश देखना"
+    });
+  };
+
+  const handlePaymentMethods = () => {
+    toast({
+      title: language === "en" ? "Payment Methods" : "भुगतान के तरीके",
+      description: language === "en" ? "Payment methods coming soon" : "भुगतान के तरीके जल्द आ रहे हैं"
+    });
+  };
+
+  const handleShippingAddresses = () => {
+    toast({
+      title: language === "en" ? "Shipping Addresses" : "शिपिंग पते",
+      description: language === "en" ? "Shipping addresses coming soon" : "शिपिंग पते जल्द आ रहे हैं"
+    });
+  };
+
+  const handleNotifications = () => {
+    toast({
+      title: language === "en" ? "Notifications" : "सूचनाएं",
+      description: language === "en" ? "Notification settings coming soon" : "सूचना सेटिंग्स जल्द आ रही हैं"
+    });
+  };
+
+  const handlePrivacySecurity = () => {
+    toast({
+      title: language === "en" ? "Privacy & Security" : "गोपनीयता और सुरक्षा",
+      description: language === "en" ? "Privacy settings coming soon" : "गोपनीयता सेटिंग्स जल्द आ रही हैं"
+    });
+  };
+
+  const handleHelpSupport = () => {
+    toast({
+      title: language === "en" ? "Help & Support" : "सहायता और समर्थन",
+      description: language === "en" ? "Support resources coming soon" : "समर्थन संसाधन जल्द आ रहे हैं"
+    });
+  };
+
+  const handleAbout = () => {
+    toast({
+      title: language === "en" ? "About" : "के बारे में",
+      description: language === "en" ? "App information coming soon" : "ऐप जानकारी जल्द आ रही है"
+    });
+  };
+
+  const handleLogout = () => {
+    setShowLogoutDialog(true);
+  };
+
+  const confirmLogout = async () => {
+    setShowLogoutDialog(false);
+    await signOut();
+    toast({
+      title: language === "en" ? "Logged Out" : "लॉग आउट",
+      description: language === "en" ? "You have been logged out successfully" : "आप सफलतापूर्वक लॉग आउट हो गए हैं"
+    });
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutDialog(false);
+  };
+
+  const profileActions = [
+    {
+      section: language === "en" ? "profile.accessibility" : "प्रोफाइल.पहुंच",
+      items: [
+        { icon: TextSize, label: language === "en" ? "profile.textSize" : "प्रोफाइल.पाठआकार", onClick: handleTextSizeChange },
+        { icon: Eye, label: language === "en" ? "profile.highContrast" : "प्रोफाइल.उच्चकंट्रास्ट", onClick: handleHighContrastToggle },
+        { icon: Globe, label: language === "en" ? "Language" : "भाषा", onClick: handleLanguageChange },
+      ]
+    },
+    {
+      section: language === "en" ? "Settings" : "सेटिंग्स",
+      items: [
+        { icon: ShoppingBag, label: language === "en" ? "My Orders" : "मेरे आदेश", onClick: handleMyOrders },
+        { icon: CreditCard, label: language === "en" ? "profile.paymentMethods" : "प्रोफाइल.भुगतानविधियां", onClick: handlePaymentMethods },
+        { icon: MapPin, label: language === "en" ? "profile.shippingAddresses" : "प्रोफाइल.शिपिंगपते", onClick: handleShippingAddresses },
+        { icon: Bell, label: language === "en" ? "Notifications" : "सूचनाएं", onClick: handleNotifications },
+        { icon: Shield, label: language === "en" ? "profile.privacySecurity" : "प्रोफाइल.गोपनीयताऔरसुरक्षा", onClick: handlePrivacySecurity },
+        { icon: HelpCircle, label: language === "en" ? "profile.helpSupport" : "प्रोफाइल.सहायताऔरसमर्थन", onClick: handleHelpSupport },
+        { icon: Info, label: language === "en" ? "profile.about" : "प्रोफाइल.के बारे में", onClick: handleAbout },
+      ]
+    }
+  ];
 
   return (
     <MobileLayout>
       <div className="p-4 space-y-6">
+        <h1 className="text-2xl font-bold mb-4">{language === "en" ? "My Profile" : "मेरी प्रोफाइल"}</h1>
+        
         <Card>
           <CardContent className="p-6">
-            <div className="flex items-center">
-              <Avatar className="h-16 w-16 mr-4">
+            <div className="flex items-start">
+              <Avatar className="h-16 w-16 mr-4 bg-emerald-600">
                 <AvatarImage src={user.photoURL || ""} />
-                <AvatarFallback className="bg-dhayan-purple text-white text-xl">
-                  {user.displayName ? user.displayName[0].toUpperCase() : "U"}
+                <AvatarFallback className="text-white text-xl">
+                  {user.displayName ? user.displayName[0].toUpperCase() : "JS"}
                 </AvatarFallback>
               </Avatar>
-              <div>
-                <h2 className="text-xl font-semibold">{user.displayName || "User"}</h2>
-                <p className="text-dhayan-gray">{user.email}</p>
-                <p className="text-sm mt-1 text-dhayan-purple">GUDPALS Member since 2023</p>
-                <Link 
-                  to="/settings"
-                  className="inline-flex items-center text-xs mt-2 text-dhayan-purple hover:underline"
+              <div className="flex-1">
+                <h2 className="text-xl font-semibold">{user.displayName || "Jane Smith"}</h2>
+                <p className="text-dhayan-gray">{user.email || "Mumbai, MH"}</p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="mt-2 text-xs"
+                  onClick={handleEditProfile}
                 >
-                  <Settings className="h-3 w-3 mr-1" />
-                  {language === "en" ? "Edit Profile" : "प्रोफाइल संपादित करें"}
-                </Link>
+                  <Pencil className="h-3 w-3 mr-1" />
+                  {language === "en" ? "Edit Profile" : "प्रोफ़ाइल संपादित करें"}
+                </Button>
+              </div>
+            </div>
+            
+            <p className="mt-4 text-sm text-gray-600">{bio}</p>
+            
+            <div className="mt-3">
+              <h3 className="text-sm font-medium text-gray-500 mb-2">
+                {language === "en" ? "profile.interests" : "प्रोफाइल.रुचियां"}
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {interestTags.map((tag, index) => (
+                  <span 
+                    key={index} 
+                    className="px-2 py-1 bg-blue-50 text-blue-600 rounded-md text-xs"
+                  >
+                    {tag}
+                  </span>
+                ))}
               </div>
             </div>
           </CardContent>
         </Card>
         
-        <Tabs defaultValue="menu">
-          <TabsList className="grid grid-cols-2 mb-4">
-            <TabsTrigger value="menu">{language === "en" ? "Menu" : "मेनू"}</TabsTrigger>
-            <TabsTrigger value="orders">{language === "en" ? "Order History" : "ऑर्डर इतिहास"}</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="menu">
-            <Card>
+        {profileActions.map((section, sectionIndex) => (
+          <div key={sectionIndex} className="space-y-1">
+            <h2 className="text-lg font-semibold px-1 py-2 bg-gray-50">{section.section}</h2>
+            <Card className="overflow-hidden">
               <CardContent className="p-0">
                 <nav>
                   <ul>
-                    {menuItems.map((item, index) => (
+                    {section.items.map((item, index) => (
                       <li key={index}>
-                        <Link 
-                          to={item.link} 
-                          className="flex items-center p-4 hover:bg-gray-50 transition-colors justify-between"
+                        <Button 
+                          variant="ghost" 
+                          className="w-full flex items-center justify-between p-4 rounded-none h-auto"
+                          onClick={item.onClick}
                         >
                           <div className="flex items-center">
-                            <item.icon className="h-5 w-5 mr-3 text-dhayan-purple" />
+                            <item.icon className="h-5 w-5 mr-3 text-gray-500" />
                             <span>{item.label}</span>
                           </div>
                           <ChevronRight className="h-4 w-4 text-gray-400" />
-                        </Link>
-                        {index < menuItems.length - 1 && <div className="h-[1px] bg-gray-100 mx-4" />}
+                        </Button>
+                        {index < section.items.length - 1 && <Separator />}
                       </li>
                     ))}
                   </ul>
                 </nav>
               </CardContent>
             </Card>
-            
-            <Button 
-              variant="outline" 
-              className="w-full mt-6 flex items-center justify-center text-red-500 border-red-200 hover:bg-red-50"
-              onClick={signOut}
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              {language === "en" ? "Sign Out" : "साइन आउट"}
-            </Button>
-          </TabsContent>
-          
-          <TabsContent value="orders">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">
-                  {language === "en" ? "Your Orders" : "आपके ऑर्डर"}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {orderHistory.length > 0 ? (
-                  <div className="space-y-4">
-                    {orderHistory.map((order) => (
-                      <Card key={order.id} className="overflow-hidden">
-                        <div className="p-4 bg-gray-50 flex justify-between items-center">
-                          <div>
-                            <p className="text-sm font-medium">
-                              {language === "en" ? "Order #" : "ऑर्डर #"}{order.id.toString().slice(-6)}
-                            </p>
-                            <p className="text-xs text-gray-500">{formatDate(order.date)}</p>
-                          </div>
-                          <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">
-                            {language === "en" ? order.status : order.status === "Completed" ? "पूरा हुआ" : order.status}
-                          </span>
-                        </div>
-                        
-                        {order.items.map((item) => (
-                          <div key={item.productId} className="p-4 flex items-center border-t">
-                            <div className="h-16 w-16 bg-gray-100 rounded flex-shrink-0 mr-3 overflow-hidden">
-                              <img 
-                                src={item.image} 
-                                alt={item.title} 
-                                className="h-full w-full object-cover"
-                              />
-                            </div>
-                            <div className="flex-grow">
-                              <h4 className="font-medium text-sm">{item.title}</h4>
-                              <div className="flex justify-between items-center mt-1">
-                                <p className="text-sm text-gray-500">
-                                  {language === "en" ? "Qty: " : "मात्रा: "}{item.quantity}
-                                </p>
-                                <p className="font-semibold">
-                                  {new Intl.NumberFormat('en-IN', {
-                                    style: 'currency',
-                                    currency: 'INR',
-                                    maximumFractionDigits: 0
-                                  }).format(item.price)}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                        
-                        <div className="p-4 border-t bg-gray-50">
-                          <div className="flex justify-between items-center">
-                            <span className="font-medium">{language === "en" ? "Total:" : "कुल:"}</span>
-                            <span className="font-bold text-primary">
-                              {new Intl.NumberFormat('en-IN', {
-                                style: 'currency',
-                                currency: 'INR',
-                                maximumFractionDigits: 0
-                              }).format(order.total)}
-                            </span>
-                          </div>
-                        </div>
-                        
-                        <div className="p-4 border-t flex justify-between">
-                          <Button variant="ghost" size="sm" className="text-xs">
-                            <Package className="h-3.5 w-3.5 mr-1" />
-                            {language === "en" ? "Track Order" : "ऑर्डर ट्रैक करें"}
-                          </Button>
-                          <Button variant="outline" size="sm" className="text-xs">
-                            {language === "en" ? "Buy Again" : "फिर से खरीदें"}
-                          </Button>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <Package className="mx-auto h-12 w-12 text-gray-300" />
-                    <p className="mt-4 text-gray-500">
-                      {language === "en" 
-                        ? "You haven't placed any orders yet" 
-                        : "आपने अभी तक कोई ऑर्डर नहीं दिया है"}
-                    </p>
-                    <Button 
-                      className="mt-4" 
-                      variant="outline"
-                      onClick={() => window.location.href = "/products"}
-                    >
-                      {language === "en" ? "Browse Products" : "उत्पाद ब्राउज़ करें"}
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+          </div>
+        ))}
+        
+        <Button 
+          variant="outline" 
+          className="w-full mt-6 flex items-center justify-between text-red-500 border-red-200 hover:bg-red-50"
+          onClick={handleLogout}
+        >
+          <div className="flex items-center">
+            <LogOut className="h-5 w-5 mr-3" />
+            <span>{language === "en" ? "Logout" : "लॉगआउट"}</span>
+          </div>
+          <ChevronRight className="h-4 w-4" />
+        </Button>
       </div>
+
+      <Dialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{language === "en" ? "Confirm Logout" : "लॉगआउट की पुष्टि करें"}</DialogTitle>
+            <DialogDescription>
+              {language === "en" 
+                ? "Are you sure you want to log out of your account?" 
+                : "क्या आप वाकई अपने खाते से लॉग आउट करना चाहते हैं?"}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={cancelLogout}>
+              {language === "en" ? "Cancel" : "रद्द करें"}
+            </Button>
+            <Button variant="destructive" onClick={confirmLogout}>
+              {language === "en" ? "Logout" : "लॉगआउट"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </MobileLayout>
   );
 };
