@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, Package, ChevronRight, Pencil, TextSize, Eye, Globe, ShoppingBag, CreditCard, MapPin, Bell, Shield, HelpCircle, Info } from "lucide-react";
+import { LogOut, Package, ChevronRight, Pencil, Type, Eye, Globe, ShoppingBag, CreditCard, MapPin, Bell, Shield, HelpCircle, Info } from "lucide-react";
 import { useAuth } from "@/context/auth";
 import { useLanguage } from "@/context/language/LanguageContext";
 import { Separator } from "@/components/ui/separator";
@@ -147,7 +146,7 @@ const Profile = () => {
     {
       section: language === "en" ? "profile.accessibility" : "प्रोफाइल.पहुंच",
       items: [
-        { icon: TextSize, label: language === "en" ? "profile.textSize" : "प्रोफाइल.पाठआकार", onClick: handleTextSizeChange },
+        { icon: Type, label: language === "en" ? "profile.textSize" : "प्रोफाइल.पाठआकार", onClick: handleTextSizeChange },
         { icon: Eye, label: language === "en" ? "profile.highContrast" : "प्रोफाइल.उच्चकंट्रास्ट", onClick: handleHighContrastToggle },
         { icon: Globe, label: language === "en" ? "Language" : "भाषा", onClick: handleLanguageChange },
       ]
