@@ -183,8 +183,7 @@ const Sessions = () => {
       await registerForActivity(
         "session",
         session.title,
-        "/sessions",
-        session.id
+        "/sessions"
       );
       
       toast({
