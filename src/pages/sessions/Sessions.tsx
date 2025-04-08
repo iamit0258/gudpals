@@ -162,51 +162,58 @@ const Sessions = () => {
   }, [t, language]);
 
   const handleSessionRegister = async (session: Session) => {
-    if (user) {
-      try {
-        // Check if already registered
-        const { data: existingReg, error: checkError } = await supabase
-          .from('registrations')
-          .select('*')
-          .eq('user_id', user.uid)
-          .eq('activity_id', session.id);
-        
-        if (checkError) throw checkError;
-        
-        if (existingReg && existingReg.length > 0) {
-          toast({
-            title: t("already_registered"),
-            description: `${t("already_registered_for")} ${session.title}`,
-          });
-          return;
+    if (!user) {
+      // Not logged in: navigate to register page with session info
+      navigate("/register", {
+        state: {
+          activityType: "session",
+          activityName: session.title,
+          activityId: session.id,
+          from: "/sessions"
         }
-        
-        // Register for the session
-        const { error: regError } = await supabase
-          .from('registrations')
-          .insert({
-            user_id: user.uid,
-            activity_id: session.id
-          });
-          
-        if (regError) throw regError;
-        
+      });
+      return;
+    }
+    
+    try {
+      // Check if already registered
+      const { data: existingReg, error: checkError } = await supabase
+        .from('registrations')
+        .select('*')
+        .eq('user_id', user.uid)
+        .eq('activity_id', session.id);
+      
+      if (checkError) throw checkError;
+      
+      if (existingReg && existingReg.length > 0) {
         toast({
-          title: t("registration_successful"),
-          description: `${t("registered_for")} ${session.title}`,
+          title: t("already_registered"),
+          description: `${t("already_registered_for")} ${session.title}`,
         });
-      } catch (error) {
-        console.error("Registration error:", error);
-        toast({
-          title: t("registration_failed"),
-          description: t("registration_error"),
-          variant: "destructive",
-        });
+        return;
       }
-    } else {
-      // Use the existing registerForActivity function for unauthenticated users
-      // Pass only the required 3 arguments
-      registerForActivity("session", session.title, "/sessions");
+      
+      // Register for the session
+      const { error: regError } = await supabase
+        .from('registrations')
+        .insert({
+          user_id: user.uid,
+          activity_id: session.id
+        });
+          
+      if (regError) throw regError;
+      
+      toast({
+        title: t("registration_successful"),
+        description: `${t("registered_for")} ${session.title}`,
+      });
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast({
+        title: t("registration_failed"),
+        description: t("registration_error"),
+        variant: "destructive",
+      });
     }
   };
 
@@ -250,7 +257,7 @@ const Sessions = () => {
                       <img 
                         src={session.image || "https://images.unsplash.com/photo-1616699002805-0741e1e4a9c5?q=80&w=300&auto=format&fit=crop"} 
                         alt={session.title} 
-                        className="h-full object-cover"
+                        className="h-full w-full object-cover"
                       />
                     </div>
                     <CardContent className="w-2/3 p-3">

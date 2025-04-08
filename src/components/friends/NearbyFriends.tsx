@@ -36,7 +36,7 @@ const NearbyFriends = () => {
   const [isBeaconActive, setIsBeaconActive] = useState(false);
   const [friends, setFriends] = useState(mockNearbyFriends);
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const toggleBeacon = () => {
     setIsBeaconActive(!isBeaconActive);
@@ -68,68 +68,96 @@ const NearbyFriends = () => {
   };
 
   return (
-    <div className="p-4 space-y-4">
-      <div className="flex justify-center mb-6">
+    <div className="flex flex-col h-full">
+      <div className="p-6 flex-1 flex flex-col items-center bg-gradient-to-b from-blue-900 to-blue-600">
+        <h2 className="text-2xl font-bold text-white mb-4">Light Your Beacon</h2>
+        
         <Button 
           onClick={toggleBeacon}
-          className={`rounded-full w-20 h-20 flex flex-col items-center justify-center ${
-            isBeaconActive ? "bg-green-500 hover:bg-green-600" : "bg-dhayan-purple hover:bg-dhayan-purple-dark"
-          }`}
+          className={`rounded-full mb-4 px-8 py-2 ${
+            isBeaconActive ? "bg-green-500 hover:bg-green-600" : "bg-gray-500/60 hover:bg-gray-500/80"
+          } transition-all`}
         >
-          <Radio className="h-8 w-8 mb-1" />
-          <span className="text-xs">{isBeaconActive ? t("active") : t("beacon")}</span>
+          <Radio className="h-5 w-5 mr-2" />
+          {isBeaconActive ? "Beacon is ON" : "Beacon is OFF"}
         </Button>
+        
+        <p className="text-center text-white/80 mb-8">
+          {isBeaconActive 
+            ? "Your beacon is active. Nearby travelers can see you."
+            : "Beacon is off. Turn it on to find travelers and accommodations around you."}
+        </p>
+        
+        {/* Concentric circles visualization */}
+        <div className="relative w-64 h-64">
+          {/* Outer circle (dashed) */}
+          <div className="absolute top-0 left-0 w-full h-full rounded-full border-2 border-dashed border-blue-300/50"></div>
+          
+          {/* Circle 1 (outermost solid) */}
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-5/6 h-5/6 rounded-full bg-blue-400/20"></div>
+          
+          {/* Circle 2 */}
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2/3 h-2/3 rounded-full bg-blue-400/30"></div>
+          
+          {/* Circle 3 */}
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/2 h-1/2 rounded-full bg-blue-400/40"></div>
+          
+          {/* Center circle */}
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/6 h-1/6 rounded-full bg-black"></div>
+        </div>
       </div>
       
-      <h3 className="text-lg font-semibold">{t("nearby_friends")}</h3>
-      
-      {friends.length > 0 ? (
-        <div className="space-y-3">
-          {friends.map((friend) => (
-            <Card key={friend.id}>
-              <CardContent className="p-4">
-                <div className="flex items-center">
-                  <Avatar className="h-12 w-12 mr-4">
-                    <AvatarImage src={friend.avatar} alt={friend.name} />
-                    <AvatarFallback>{friend.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <h4 className="font-medium">{friend.name}</h4>
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <MapPin className="h-3 w-3 mr-1" />
-                      <span>{friend.distance}</span>
-                      <span className="mx-2">•</span>
-                      <span>{friend.lastSeen}</span>
+      <div className="p-4 bg-white">
+        <h3 className="text-lg font-semibold mb-2">{t("nearby_friends")}</h3>
+        
+        {friends.length > 0 ? (
+          <div className="space-y-3">
+            {friends.map((friend) => (
+              <Card key={friend.id}>
+                <CardContent className="p-4">
+                  <div className="flex items-center">
+                    <Avatar className="h-12 w-12 mr-4">
+                      <AvatarImage src={friend.avatar} alt={friend.name} />
+                      <AvatarFallback>{friend.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <h4 className="font-medium">{friend.name}</h4>
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <MapPin className="h-3 w-3 mr-1" />
+                        <span>{friend.distance}</span>
+                        <span className="mx-2">•</span>
+                        <span>{friend.lastSeen}</span>
+                      </div>
+                    </div>
+                    <div className="flex space-x-1">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="text-primary hover:bg-primary/10"
+                        onClick={() => handleMessage(friend.name)}
+                      >
+                        <MessageCircle className="h-5 w-5" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="text-primary hover:bg-primary/10"
+                        onClick={() => handleCall(friend.name)}
+                      >
+                        <Phone className="h-5 w-5" />
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex space-x-1">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="text-primary hover:bg-primary/10"
-                      onClick={() => handleMessage(friend.name)}
-                    >
-                      <MessageCircle className="h-5 w-5" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="text-primary hover:bg-primary/10"
-                      onClick={() => handleCall(friend.name)}
-                    >
-                      <Phone className="h-5 w-5" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center p-8 text-muted-foreground">
-          <p>{t("no_nearby_friends")}</p>
-        </div>
-      )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center p-8 text-muted-foreground">
+            <p>{t("no_nearby_friends")}</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

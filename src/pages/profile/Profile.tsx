@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import MobileLayout from "@/components/layout/MobileLayout";
@@ -144,10 +145,10 @@ const Profile = () => {
 
   const profileActions = [
     {
-      section: language === "en" ? "profile.accessibility" : "प्रोफाइल.पहुंच",
+      section: language === "en" ? "Accessibility" : "पहुंच",
       items: [
-        { icon: Type, label: language === "en" ? "profile.textSize" : "प्रोफाइल.पाठआकार", onClick: handleTextSizeChange },
-        { icon: Eye, label: language === "en" ? "profile.highContrast" : "प्रोफाइल.उच्चकंट्रास्ट", onClick: handleHighContrastToggle },
+        { icon: Type, label: language === "en" ? "Text Size" : "पाठ का आकार", onClick: handleTextSizeChange },
+        { icon: Eye, label: language === "en" ? "High Contrast" : "उच्च कंट्रास्ट", onClick: handleHighContrastToggle },
         { icon: Globe, label: language === "en" ? "Language" : "भाषा", onClick: handleLanguageChange },
       ]
     },
@@ -155,12 +156,12 @@ const Profile = () => {
       section: language === "en" ? "Settings" : "सेटिंग्स",
       items: [
         { icon: ShoppingBag, label: language === "en" ? "My Orders" : "मेरे आदेश", onClick: handleMyOrders },
-        { icon: CreditCard, label: language === "en" ? "profile.paymentMethods" : "प्रोफाइल.भुगतानविधियां", onClick: handlePaymentMethods },
-        { icon: MapPin, label: language === "en" ? "profile.shippingAddresses" : "प्रोफाइल.शिपिंगपते", onClick: handleShippingAddresses },
+        { icon: CreditCard, label: language === "en" ? "Payment Methods" : "भुगतान विधियां", onClick: handlePaymentMethods },
+        { icon: MapPin, label: language === "en" ? "Shipping Addresses" : "शिपिंग पते", onClick: handleShippingAddresses },
         { icon: Bell, label: language === "en" ? "Notifications" : "सूचनाएं", onClick: handleNotifications },
-        { icon: Shield, label: language === "en" ? "profile.privacySecurity" : "प्रोफाइल.गोपनीयताऔरसुरक्षा", onClick: handlePrivacySecurity },
-        { icon: HelpCircle, label: language === "en" ? "profile.helpSupport" : "प्रोफाइल.सहायताऔरसमर्थन", onClick: handleHelpSupport },
-        { icon: Info, label: language === "en" ? "profile.about" : "प्रोफाइल.के बारे में", onClick: handleAbout },
+        { icon: Shield, label: language === "en" ? "Privacy & Security" : "गोपनीयता और सुरक्षा", onClick: handlePrivacySecurity },
+        { icon: HelpCircle, label: language === "en" ? "Help & Support" : "सहायता और समर्थन", onClick: handleHelpSupport },
+        { icon: Info, label: language === "en" ? "About" : "के बारे में", onClick: handleAbout },
       ]
     }
   ];
@@ -198,7 +199,7 @@ const Profile = () => {
             
             <div className="mt-3">
               <h3 className="text-sm font-medium text-gray-500 mb-2">
-                {language === "en" ? "profile.interests" : "प्रोफाइल.रुचियां"}
+                {language === "en" ? "Interests" : "रुचियां"}
               </h3>
               <div className="flex flex-wrap gap-2">
                 {interestTags.map((tag, index) => (
