@@ -34,12 +34,12 @@ const Profile = () => {
     return (
       <MobileLayout>
         <div className="p-4 flex flex-col items-center justify-center h-[80vh]">
-          <h2 className="text-xl font-semibold text-center mb-4">Please sign in to view your profile</h2>
+          <h2 className="text-xl font-semibold text-center mb-4">{t("please_sign_in")}</h2>
           <Button
             className="bg-dhayan-purple hover:bg-dhayan-purple-dark text-white w-full max-w-xs"
-            onClick={() => window.location.href = "/login"}
+            onClick={() => navigate("/login")}
           >
-            Sign In
+            {t("sign_in")}
           </Button>
         </div>
       </MobileLayout>
@@ -48,22 +48,22 @@ const Profile = () => {
 
   const handleEditProfile = () => {
     toast({
-      title: language === "en" ? "Edit Profile" : "प्रोफ़ाइल संपादित करें",
-      description: language === "en" ? "Profile edit coming soon" : "प्रोफ़ाइल संपादन जल्द आ रहा है"
+      title: t("edit_profile"),
+      description: t("profile_edit_coming_soon")
     });
   };
 
   const handleTextSizeChange = () => {
     toast({
-      title: language === "en" ? "Text Size" : "पाठ का आकार",
-      description: language === "en" ? "Text size adjustment coming soon" : "पाठ के आकार का समायोजन जल्द आ रहा है"
+      title: t("text_size"),
+      description: t("text_size_coming_soon")
     });
   };
 
   const handleHighContrastToggle = () => {
     toast({
-      title: language === "en" ? "High Contrast" : "उच्च कंट्रास्ट",
-      description: language === "en" ? "High contrast mode coming soon" : "उच्च कंट्रास्ट मोड जल्द आ रहा है"
+      title: t("high_contrast"),
+      description: t("contrast_coming_soon")
     });
   };
 
@@ -79,50 +79,50 @@ const Profile = () => {
   const handleMyOrders = () => {
     navigate('/checkout');
     toast({
-      title: language === "en" ? "My Orders" : "मेरे आदेश",
-      description: language === "en" ? "Viewing your orders" : "आपके आदेश देखना"
+      title: t("my_orders"),
+      description: t("viewing_orders")
     });
   };
 
   const handlePaymentMethods = () => {
     toast({
-      title: language === "en" ? "Payment Methods" : "भुगतान के तरीके",
-      description: language === "en" ? "Payment methods coming soon" : "भुगतान के तरीके जल्द आ रहे हैं"
+      title: t("payment_methods"),
+      description: t("payment_coming_soon")
     });
   };
 
   const handleShippingAddresses = () => {
     toast({
-      title: language === "en" ? "Shipping Addresses" : "शिपिंग पते",
-      description: language === "en" ? "Shipping addresses coming soon" : "शिपिंग पते जल्द आ रहे हैं"
+      title: t("shipping_addresses"),
+      description: t("shipping_coming_soon")
     });
   };
 
   const handleNotifications = () => {
     toast({
-      title: language === "en" ? "Notifications" : "सूचनाएं",
-      description: language === "en" ? "Notification settings coming soon" : "सूचना सेटिंग्स जल्द आ रही हैं"
+      title: t("notifications"),
+      description: t("notifications_coming_soon")
     });
   };
 
   const handlePrivacySecurity = () => {
     toast({
-      title: language === "en" ? "Privacy & Security" : "गोपनीयता और सुरक्षा",
-      description: language === "en" ? "Privacy settings coming soon" : "गोपनीयता सेटिंग्स जल्द आ रही हैं"
+      title: t("privacy_security"),
+      description: t("privacy_coming_soon")
     });
   };
 
   const handleHelpSupport = () => {
     toast({
-      title: language === "en" ? "Help & Support" : "सहायता और समर्थन",
-      description: language === "en" ? "Support resources coming soon" : "समर्थन संसाधन जल्द आ रहे हैं"
+      title: t("help_support"),
+      description: t("support_coming_soon")
     });
   };
 
   const handleAbout = () => {
     toast({
-      title: language === "en" ? "About" : "के बारे में",
-      description: language === "en" ? "App information coming soon" : "ऐप जानकारी जल्द आ रही है"
+      title: t("about"),
+      description: t("app_info_coming_soon")
     });
   };
 
@@ -132,11 +132,21 @@ const Profile = () => {
 
   const confirmLogout = async () => {
     setShowLogoutDialog(false);
-    await signOut();
-    toast({
-      title: language === "en" ? "Logged Out" : "लॉग आउट",
-      description: language === "en" ? "You have been logged out successfully" : "आप सफलतापूर्वक लॉग आउट हो गए हैं"
-    });
+    try {
+      await signOut();
+      toast({
+        title: t("logged_out"),
+        description: t("logout_success")
+      });
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast({
+        title: t("logout_error"),
+        description: t("logout_failed"),
+        variant: "destructive"
+      });
+    }
   };
 
   const cancelLogout = () => {
@@ -145,23 +155,23 @@ const Profile = () => {
 
   const profileActions = [
     {
-      section: language === "en" ? "Accessibility" : "पहुंच",
+      section: t("accessibility"),
       items: [
-        { icon: Type, label: language === "en" ? "Text Size" : "पाठ का आकार", onClick: handleTextSizeChange },
-        { icon: Eye, label: language === "en" ? "High Contrast" : "उच्च कंट्रास्ट", onClick: handleHighContrastToggle },
-        { icon: Globe, label: language === "en" ? "Language" : "भाषा", onClick: handleLanguageChange },
+        { icon: Type, label: t("text_size"), onClick: handleTextSizeChange },
+        { icon: Eye, label: t("high_contrast"), onClick: handleHighContrastToggle },
+        { icon: Globe, label: t("language"), onClick: handleLanguageChange },
       ]
     },
     {
-      section: language === "en" ? "Settings" : "सेटिंग्स",
+      section: t("settings"),
       items: [
-        { icon: ShoppingBag, label: language === "en" ? "My Orders" : "मेरे आदेश", onClick: handleMyOrders },
-        { icon: CreditCard, label: language === "en" ? "Payment Methods" : "भुगतान विधियां", onClick: handlePaymentMethods },
-        { icon: MapPin, label: language === "en" ? "Shipping Addresses" : "शिपिंग पते", onClick: handleShippingAddresses },
-        { icon: Bell, label: language === "en" ? "Notifications" : "सूचनाएं", onClick: handleNotifications },
-        { icon: Shield, label: language === "en" ? "Privacy & Security" : "गोपनीयता और सुरक्षा", onClick: handlePrivacySecurity },
-        { icon: HelpCircle, label: language === "en" ? "Help & Support" : "सहायता और समर्थन", onClick: handleHelpSupport },
-        { icon: Info, label: language === "en" ? "About" : "के बारे में", onClick: handleAbout },
+        { icon: ShoppingBag, label: t("my_orders"), onClick: handleMyOrders },
+        { icon: CreditCard, label: t("payment_methods"), onClick: handlePaymentMethods },
+        { icon: MapPin, label: t("shipping_addresses"), onClick: handleShippingAddresses },
+        { icon: Bell, label: t("notifications"), onClick: handleNotifications },
+        { icon: Shield, label: t("privacy_security"), onClick: handlePrivacySecurity },
+        { icon: HelpCircle, label: t("help_support"), onClick: handleHelpSupport },
+        { icon: Info, label: t("about"), onClick: handleAbout },
       ]
     }
   ];
@@ -169,7 +179,7 @@ const Profile = () => {
   return (
     <MobileLayout>
       <div className="p-4 space-y-6">
-        <h1 className="text-2xl font-bold mb-4">{language === "en" ? "My Profile" : "मेरी प्रोफाइल"}</h1>
+        <h1 className="text-2xl font-bold mb-4">{t("my_profile")}</h1>
         
         <Card>
           <CardContent className="p-6">
@@ -177,12 +187,12 @@ const Profile = () => {
               <Avatar className="h-16 w-16 mr-4 bg-emerald-600">
                 <AvatarImage src={user.photoURL || ""} />
                 <AvatarFallback className="text-white text-xl">
-                  {user.displayName ? user.displayName[0].toUpperCase() : "JS"}
+                  {user.displayName ? user.displayName[0].toUpperCase() : "U"}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <h2 className="text-xl font-semibold">{user.displayName || "Jane Smith"}</h2>
-                <p className="text-dhayan-gray">{user.email || "Mumbai, MH"}</p>
+                <h2 className="text-xl font-semibold">{user.displayName || "User"}</h2>
+                <p className="text-dhayan-gray">{user.email || user.phoneNumber || "No contact info"}</p>
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -190,7 +200,7 @@ const Profile = () => {
                   onClick={handleEditProfile}
                 >
                   <Pencil className="h-3 w-3 mr-1" />
-                  {language === "en" ? "Edit Profile" : "प्रोफ़ाइल संपादित करें"}
+                  {t("edit_profile")}
                 </Button>
               </div>
             </div>
@@ -199,7 +209,7 @@ const Profile = () => {
             
             <div className="mt-3">
               <h3 className="text-sm font-medium text-gray-500 mb-2">
-                {language === "en" ? "Interests" : "रुचियां"}
+                {t("interests")}
               </h3>
               <div className="flex flex-wrap gap-2">
                 {interestTags.map((tag, index) => (
@@ -252,7 +262,7 @@ const Profile = () => {
         >
           <div className="flex items-center">
             <LogOut className="h-5 w-5 mr-3" />
-            <span>{language === "en" ? "Logout" : "लॉगआउट"}</span>
+            <span>{t("logout")}</span>
           </div>
           <ChevronRight className="h-4 w-4" />
         </Button>
@@ -261,19 +271,17 @@ const Profile = () => {
       <Dialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{language === "en" ? "Confirm Logout" : "लॉगआउट की पुष्टि करें"}</DialogTitle>
+            <DialogTitle>{t("confirm_logout")}</DialogTitle>
             <DialogDescription>
-              {language === "en" 
-                ? "Are you sure you want to log out of your account?" 
-                : "क्या आप वाकई अपने खाते से लॉग आउट करना चाहते हैं?"}
+              {t("confirm_logout_desc")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={cancelLogout}>
-              {language === "en" ? "Cancel" : "रद्द करें"}
+              {t("cancel")}
             </Button>
             <Button variant="destructive" onClick={confirmLogout}>
-              {language === "en" ? "Logout" : "लॉगआउट"}
+              {t("logout")}
             </Button>
           </DialogFooter>
         </DialogContent>

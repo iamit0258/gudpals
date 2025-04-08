@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import MobileLayout from "@/components/layout/MobileLayout";
@@ -26,11 +25,10 @@ const Sessions = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, registerForActivity } = useAuth();
-  const [sessions, setSessions] = useState<Session[]>([]);
+  const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const { t, language } = useLanguage();
   
-  // Handle registration success notification
   useEffect(() => {
     if (location.state?.registered && location.state?.activityName) {
       toast({
@@ -42,7 +40,6 @@ const Sessions = () => {
     }
   }, [location, toast, navigate, t]);
   
-  // Mock session data
   const mockSessions = [
     {
       id: "1",
@@ -99,35 +96,28 @@ const Sessions = () => {
       image: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?q=80&w=300&auto=format&fit=crop"
     }
   ];
-  
-  // Fetch sessions from Supabase
+
   useEffect(() => {
     const fetchSessions = async () => {
       try {
         setLoading(true);
         
-        // Try to fetch from Supabase
         const { data, error } = await supabase
           .from('activities')
           .select('*')
           .eq('activity_type', 'session');
         
         if (error || !data || data.length === 0) {
-          // Use mock data if Supabase fetch fails or returns empty
           setSessions(mockSessions);
         } else {
-          // Transform data into the format we need
           const formattedSessions = data.map(session => {
-            // Format date and time
             const startTime = session.start_time ? new Date(session.start_time) : null;
             const endTime = session.end_time ? new Date(session.end_time) : null;
             
-            // Create a readable time range if both times exist
             const timeStr = startTime && endTime 
               ? `${startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
               : "Flexible timing";
             
-            // Format the date
             const dateStr = startTime 
               ? startTime.toDateString() === new Date().toDateString() 
                 ? t("today") 
@@ -151,7 +141,6 @@ const Sessions = () => {
         }
       } catch (error) {
         console.error("Error fetching sessions:", error);
-        // Fall back to mock data
         setSessions(mockSessions);
       } finally {
         setLoading(false);
@@ -161,9 +150,8 @@ const Sessions = () => {
     fetchSessions();
   }, [t, language]);
 
-  const handleSessionRegister = async (session: Session) => {
+  const handleSessionRegister = async (session) => {
     if (!user) {
-      // Not logged in: navigate to register page with session info
       navigate("/register", {
         state: {
           activityType: "session",
@@ -176,7 +164,6 @@ const Sessions = () => {
     }
     
     try {
-      // Check if already registered
       const { data: existingReg, error: checkError } = await supabase
         .from('registrations')
         .select('*')
@@ -193,15 +180,12 @@ const Sessions = () => {
         return;
       }
       
-      // Register for the session
-      const { error: regError } = await supabase
-        .from('registrations')
-        .insert({
-          user_id: user.uid,
-          activity_id: session.id
-        });
-          
-      if (regError) throw regError;
+      await registerForActivity(
+        "session",
+        session.title,
+        "/sessions",
+        session.id
+      );
       
       toast({
         title: t("registration_successful"),
@@ -217,7 +201,6 @@ const Sessions = () => {
     }
   };
 
-  // Render loading skeletons
   const renderSkeletons = () => (
     <div className="space-y-4">
       {[1, 2, 3].map((i) => (

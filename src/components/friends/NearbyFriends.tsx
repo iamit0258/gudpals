@@ -70,7 +70,7 @@ const NearbyFriends = () => {
   return (
     <div className="flex flex-col h-full">
       <div className="p-6 flex-1 flex flex-col items-center bg-gradient-to-b from-blue-900 to-blue-600">
-        <h2 className="text-2xl font-bold text-white mb-4">Light Your Beacon</h2>
+        <h2 className="text-2xl font-bold text-white mb-4">{t("light_your_beacon")}</h2>
         
         <Button 
           onClick={toggleBeacon}
@@ -79,34 +79,35 @@ const NearbyFriends = () => {
           } transition-all`}
         >
           <Radio className="h-5 w-5 mr-2" />
-          {isBeaconActive ? "Beacon is ON" : "Beacon is OFF"}
+          {isBeaconActive ? t("beacon_on") : t("beacon_off")}
         </Button>
         
         <p className="text-center text-white/80 mb-8">
           {isBeaconActive 
-            ? "Your beacon is active. Nearby travelers can see you."
-            : "Beacon is off. Turn it on to find travelers and accommodations around you."}
+            ? t("beacon_active_desc")
+            : t("beacon_inactive_desc")}
         </p>
         
         {/* Concentric circles visualization */}
-        <div className="relative w-64 h-64">
+        <div className="relative w-64 h-64 mb-6">
           {/* Outer circle (dashed) */}
-          <div className="absolute top-0 left-0 w-full h-full rounded-full border-2 border-dashed border-blue-300/50"></div>
+          <div className="absolute top-0 left-0 w-full h-full rounded-full border-2 border-dashed border-blue-300/50 animate-pulse"></div>
           
-          {/* Circle 1 (outermost solid) */}
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-5/6 h-5/6 rounded-full bg-blue-400/20"></div>
+          {/* Animated pulse rings */}
+          <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-5/6 h-5/6 rounded-full bg-blue-400/20 ${isBeaconActive ? 'animate-ping opacity-70' : 'opacity-30'}`} style={{ animationDuration: '3s' }}></div>
           
-          {/* Circle 2 */}
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2/3 h-2/3 rounded-full bg-blue-400/30"></div>
+          <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2/3 h-2/3 rounded-full bg-blue-400/30 ${isBeaconActive ? 'animate-ping opacity-80' : 'opacity-40'}`} style={{ animationDuration: '2.5s' }}></div>
           
-          {/* Circle 3 */}
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/2 h-1/2 rounded-full bg-blue-400/40"></div>
+          <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/2 h-1/2 rounded-full bg-blue-400/40 ${isBeaconActive ? 'animate-ping opacity-90' : 'opacity-50'}`} style={{ animationDuration: '2s' }}></div>
           
-          {/* Center circle */}
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/6 h-1/6 rounded-full bg-black"></div>
+          {/* Center dot */}
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-blue-50 shadow-lg flex items-center justify-center z-10">
+            <div className={`w-6 h-6 rounded-full ${isBeaconActive ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
+          </div>
         </div>
       </div>
       
+      {/* Nearby friends section */}
       <div className="p-4 bg-white">
         <h3 className="text-lg font-semibold mb-2">{t("nearby_friends")}</h3>
         
