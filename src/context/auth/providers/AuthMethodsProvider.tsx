@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthState } from "./AuthStateProvider";
 import { ToastInterface } from "../types/toast";
-import { useAuthMethods } from "../useAuthMethods";
+import { useAuthMethods as useAuthMethodsHook } from "../useAuthMethods";
 
 interface AuthMethodsProviderProps {
   children: React.ReactNode;
@@ -37,12 +37,7 @@ export const AuthMethodsProvider: React.FC<AuthMethodsProviderProps> = ({ childr
   };
 
   // Import authentication methods from separate file
-  const { sendOTP, verifyOTP, signOut, updateProfile } = useAuthMethods(
-    user,
-    setUser,
-    toastInterface,
-    navigate
-  );
+  const { sendOTP, verifyOTP, signOut, updateProfile } = useAuthMethodsHook();
 
   return (
     <AuthMethodsContext.Provider

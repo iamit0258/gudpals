@@ -1,19 +1,19 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { User } from "../types";
-import { ToastInterface, ToastData, createToastHelper } from "../types/toast";
-import { NavigateFunction } from "react-router-dom";
+import { ToastInterface, createToastHelper } from "../types/toast";
+import { useToast } from "@/hooks/use-toast";
+import { useAuthState } from "../providers/AuthStateProvider";
 
-export const usePhoneAuth = (
-  currentUser?: User | null,
-  setUser?: React.Dispatch<React.SetStateAction<User | null>>,
-  toastInterface?: ToastInterface,
-  navigate?: NavigateFunction
-) => {
+export const usePhoneAuth = () => {
   const [loading, setLoading] = useState(false);
+  const { user, setUser } = useAuthState();
+  const navigate = useNavigate();
+  const toastInterface = useToast();
   
   // Helper function to safely use toast
-  const showToast = toastInterface ? createToastHelper(toastInterface) : () => {};
+  const showToast = createToastHelper(toastInterface);
   
   const loginWithPhoneOTP = async (phoneNumber: string) => {
     try {

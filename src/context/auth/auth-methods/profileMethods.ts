@@ -2,13 +2,13 @@
 import { useState } from "react";
 import { User } from "../types";
 import { ToastInterface, createToastHelper } from "../types/toast";
+import { useToast } from "@/hooks/use-toast";
+import { useAuthState } from "../providers/AuthStateProvider";
 
-export const useProfileMethods = (
-  currentUser?: User | null,
-  setUser?: React.Dispatch<React.SetStateAction<User | null>>,
-  toastInterface?: ToastInterface
-) => {
+export const useProfileMethods = () => {
   const [loading, setLoading] = useState(false);
+  const { user, setUser } = useAuthState();
+  const toastInterface = useToast();
   
   const updateProfile = async (data: Partial<User>) => {
     try {
@@ -21,9 +21,9 @@ export const useProfileMethods = (
       await new Promise(resolve => setTimeout(resolve, 500));
       
       // Update user if both currentUser and setUser are provided
-      if (currentUser && setUser) {
+      if (user && setUser) {
         setUser({
-          ...currentUser,
+          ...user,
           ...data
         });
       }

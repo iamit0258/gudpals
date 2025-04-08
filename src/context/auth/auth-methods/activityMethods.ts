@@ -1,7 +1,9 @@
 
-import { NavigateFunction } from "react-router-dom";
+import { NavigateFunction, useNavigate } from "react-router-dom";
 
-export const useActivityMethods = (navigate?: NavigateFunction) => {
+export const useActivityMethods = () => {
+  const navigate = useNavigate();
+  
   const registerForActivity = (
     activityType: string,
     activityName: string,

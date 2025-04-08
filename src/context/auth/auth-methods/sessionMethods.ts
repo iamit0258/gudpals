@@ -1,13 +1,13 @@
 
 import { useState } from "react";
-import { NavigateFunction } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { User } from "../types";
+import { useAuthState } from "../providers/AuthStateProvider";
 
-export const useSessionMethods = (
-  setUser?: React.Dispatch<React.SetStateAction<User | null>>,
-  navigate?: NavigateFunction
-) => {
+export const useSessionMethods = () => {
   const [loading, setLoading] = useState(false);
+  const { setUser } = useAuthState();
+  const navigate = useNavigate();
   
   const logout = async () => {
     try {
