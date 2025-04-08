@@ -125,7 +125,7 @@ const FriendRequests = () => {
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="text-dhayan-teal hover:bg-dhayan-teal/10"
+                  className="text-primary hover:bg-primary/10"
                   onClick={() => handleMessage(request.name)}
                 >
                   <MessageCircle className="h-4 w-4" />
@@ -133,7 +133,7 @@ const FriendRequests = () => {
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="text-dhayan-purple hover:bg-dhayan-purple/10"
+                  className="text-primary hover:bg-primary/10"
                   onClick={() => handleCall(request.name)}
                 >
                   <Phone className="h-4 w-4" />

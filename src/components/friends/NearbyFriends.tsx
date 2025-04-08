@@ -2,7 +2,7 @@
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Phone, Video, UserPlus, Check } from "lucide-react";
+import { MessageCircle, Phone, Video, UserPlus, Check, MapPin, Beacon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
@@ -19,6 +19,7 @@ interface Friend {
   distance?: string;
   lastSeen?: string;
   isRequestSent?: boolean;
+  location?: string;
 }
 
 const mockFriends: Friend[] = [
@@ -30,7 +31,8 @@ const mockFriends: Friend[] = [
     },
     image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&q=80",
     status: "active",
-    distance: "2.3 km"
+    distance: "2.3 km",
+    location: "Old Delhi Train Station"
   },
   {
     id: "2",
@@ -40,7 +42,8 @@ const mockFriends: Friend[] = [
     },
     image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&q=80",
     status: "active",
-    distance: "3.7 km"
+    distance: "3.7 km",
+    location: "Connaught Place"
   },
   {
     id: "3",
@@ -61,6 +64,17 @@ const mockFriends: Friend[] = [
     image: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&h=400&fit=crop&q=80",
     status: "away",
     lastSeen: "30m ago"
+  },
+  {
+    id: "5",
+    name: {
+      en: "Rahul Verma",
+      hi: "राहुल वर्मा"
+    },
+    image: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&h=400&fit=crop&q=80",
+    status: "active",
+    distance: "1.5 km",
+    location: "Janpath Market"
   }
 ];
 
@@ -134,9 +148,16 @@ const NearbyFriends: React.FC<NearbyFriendsProps> = ({
       : friend.name.hi.includes(searchQuery)
     )
   );
+
+  // Filter nearby friends if beacon is active
+  const nearbyFriends = isActive 
+    ? filteredFriends.filter(friend => friend.distance)
+    : [];
+  
+  const displayedFriends = isActive ? nearbyFriends : filteredFriends;
   
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 px-4">
       <div className="flex items-center justify-between">
         <div className="relative inline-flex">
           <Switch 
@@ -153,7 +174,7 @@ const NearbyFriends: React.FC<NearbyFriendsProps> = ({
             </>
           )}
         </div>
-        <span className="text-xs text-muted-foreground">
+        <span className="text-sm text-muted-foreground">
           {isActive ? t("beacon_visible") : t("beacon_invisible")}
         </span>
       </div>
@@ -165,51 +186,86 @@ const NearbyFriends: React.FC<NearbyFriendsProps> = ({
         className="w-full"
       />
       
+      {!isActive && (
+        <div className="bg-muted/50 rounded-lg p-4 text-center">
+          <Beacon className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+          <p className="text-sm font-medium">{t("beacon_required")}</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {t("activate_beacon_message")}
+          </p>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="mt-3"
+            onClick={() => handleBeaconToggle(true)}
+          >
+            {t("activate_beacon")}
+          </Button>
+        </div>
+      )}
+      
       <div className="space-y-4">
-        {filteredFriends.length > 0 ? (
-          filteredFriends.map((friend) => (
+        {displayedFriends.length > 0 ? (
+          displayedFriends.map((friend) => (
             <div 
               key={friend.id}
-              className="flex items-center justify-between p-4 bg-white rounded-lg border"
+              className="flex flex-col p-4 bg-white rounded-lg border"
             >
-              <div className="flex items-center">
-                <div className="relative">
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage src={friend.image} alt={language === "en" ? friend.name.en : friend.name.hi} />
-                    <AvatarFallback>
-                      {language === "en" 
-                        ? friend.name.en.charAt(0) 
-                        : friend.name.hi.charAt(0)
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="relative">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={friend.image} alt={language === "en" ? friend.name.en : friend.name.hi} />
+                      <AvatarFallback>
+                        {language === "en" 
+                          ? friend.name.en.charAt(0) 
+                          : friend.name.hi.charAt(0)
+                        }
+                      </AvatarFallback>
+                    </Avatar>
+                    <span 
+                      className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white ${
+                        friend.status === 'active' 
+                          ? 'bg-green-500' 
+                          : friend.status === 'away' 
+                          ? 'bg-yellow-500' 
+                          : 'bg-gray-300'
+                      }`}
+                    />
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="font-medium">
+                      {language === "en" ? friend.name.en : friend.name.hi}
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      {friend.status === 'active' 
+                        ? t("active_now") 
+                        : friend.lastSeen
                       }
-                    </AvatarFallback>
-                  </Avatar>
-                  <span 
-                    className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white ${
-                      friend.status === 'active' 
-                        ? 'bg-green-500' 
-                        : friend.status === 'away' 
-                        ? 'bg-yellow-500' 
-                        : 'bg-gray-300'
-                    }`}
-                  />
+                    </p>
+                  </div>
                 </div>
-                <div className="ml-3">
-                  <h3 className="font-medium">
-                    {language === "en" ? friend.name.en : friend.name.hi}
-                  </h3>
-                  <p className="text-xs text-muted-foreground">
-                    {friend.status === 'active' 
-                      ? t("active_now") 
-                      : friend.lastSeen
-                    }
-                  </p>
-                </div>
+                
+                {friend.distance && (
+                  <div className="flex items-center text-sm text-primary">
+                    <MapPin className="h-3 w-3 mr-1" />
+                    <span>{friend.distance}</span>
+                  </div>
+                )}
               </div>
               
-              <div className="flex space-x-1">
+              {friend.location && (
+                <div className="mt-2 mb-3 px-2 py-1 bg-muted/30 rounded text-xs text-muted-foreground inline-flex items-center self-start">
+                  <MapPin className="h-3 w-3 mr-1" />
+                  {friend.location}
+                </div>
+              )}
+              
+              <div className="flex justify-end space-x-1 mt-2">
                 {friend.isRequestSent ? (
-                  <Button size="icon" variant="ghost" disabled>
-                    <Check className="h-4 w-4 text-green-500" />
+                  <Button size="sm" variant="outline" disabled className="text-green-500 flex items-center">
+                    <Check className="h-4 w-4 mr-1" />
+                    {t("request_sent")}
                   </Button>
                 ) : (
                   <>
@@ -222,8 +278,14 @@ const NearbyFriends: React.FC<NearbyFriendsProps> = ({
                     <Button size="icon" variant="ghost" onClick={() => handleVideoCall(friend)}>
                       <Video className="h-4 w-4 text-primary" />
                     </Button>
-                    <Button size="icon" variant="ghost" onClick={() => handleAddFriend(friend.id)}>
-                      <UserPlus className="h-4 w-4 text-primary" />
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={() => handleAddFriend(friend.id)}
+                      className="flex items-center"
+                    >
+                      <UserPlus className="h-4 w-4 mr-1" />
+                      {t("add")}
                     </Button>
                   </>
                 )}
@@ -231,9 +293,12 @@ const NearbyFriends: React.FC<NearbyFriendsProps> = ({
             </div>
           ))
         ) : (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">{t("no_matches_found")}</p>
-          </div>
+          isActive && (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">{t("no_nearby_friends")}</p>
+              <p className="text-xs text-muted-foreground mt-2">{t("invite_friends")}</p>
+            </div>
+          )
         )}
       </div>
     </div>
