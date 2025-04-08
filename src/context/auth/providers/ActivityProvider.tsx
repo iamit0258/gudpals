@@ -23,7 +23,7 @@ export const ActivityProvider: React.FC<ActivityProviderProps> = ({ children }) 
   const { user } = useAuthState();
   const navigate = useNavigate();
   const toastHook = useToast();
-  const { registerForActivity: navigateToRegistration } = useActivityMethods(navigate);
+  const { registerForActivity: navigateToRegistration } = useActivityMethods();
 
   // Handle activity registration
   const registerForActivity = (activityType: ActivityType, activityName: string, redirectPath: string) => {
