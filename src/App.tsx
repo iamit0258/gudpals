@@ -6,7 +6,12 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { LanguageProvider } from "@/context/language/LanguageContext";
-import { useAuth } from "@/context/auth/AuthContext";
+import { 
+  SignedIn, 
+  SignedOut, 
+  RedirectToSignIn, 
+  useUser 
+} from "@clerk/clerk-react";
 
 // Pages
 import Index from "./pages/Index";
@@ -28,9 +33,18 @@ import Settings from "./pages/settings/Settings";
 import Games from "./pages/games/Games";
 import Events from "./pages/events/Events";
 
-// Create a fallback for the protected route component while Clerk is disabled
+// Create a protected route component with Clerk
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  return children; // Temporarily allow access to all routes
+  return (
+    <>
+      <SignedIn>
+        {children}
+      </SignedIn>
+      <SignedOut>
+        <RedirectToSignIn />
+      </SignedOut>
+    </>
+  );
 };
 
 // Create the app content component

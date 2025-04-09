@@ -5,12 +5,53 @@ import LoginHeader from "@/components/auth/LoginHeader";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import LoginFooter from "@/components/auth/LoginFooter";
+import { useSignIn } from "@clerk/clerk-react";
+import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { signIn, isLoaded } = useSignIn();
+  const { toast } = useToast();
   
-  const handleDemoLogin = () => {
-    navigate('/');
+  const handleDemoLogin = async () => {
+    if (!isLoaded) {
+      return;
+    }
+
+    try {
+      // Example of demo login with Clerk
+      const result = await signIn.create({
+        strategy: "password",
+        identifier: "demo@example.com",
+        password: "demo-password",
+      });
+      
+      if (result.status === "complete") {
+        navigate('/');
+        toast({
+          title: "Login successful",
+          description: "You have successfully logged in",
+        });
+      } else {
+        // Handle incomplete login
+        toast({
+          title: "Login incomplete",
+          description: "Please complete the login process",
+          variant: "destructive",
+        });
+        console.error("Login incomplete", result);
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      toast({
+        title: "Login failed",
+        description: "Authentication temporarily using demo login",
+        variant: "destructive",
+      });
+      
+      // Fallback to demo login in case of error
+      navigate('/');
+    }
   };
   
   return (
@@ -24,11 +65,12 @@ const Login = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-center text-gray-500">
-              Authentication is temporarily disabled
+              {isLoaded ? "Sign in with your credentials" : "Loading authentication..."}
             </p>
             <Button 
               className="w-full bg-dhayan-purple hover:bg-dhayan-purple-dark text-white"
               onClick={handleDemoLogin}
+              disabled={!isLoaded}
             >
               Continue as Demo User
             </Button>

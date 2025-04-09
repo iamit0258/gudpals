@@ -4,12 +4,51 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useSignUp } from "@clerk/clerk-react";
+import { useToast } from "@/hooks/use-toast";
 
 const Register = () => {
   const navigate = useNavigate();
+  const { signUp, isLoaded } = useSignUp();
+  const { toast } = useToast();
   
-  const handleDemoRegister = () => {
-    navigate('/');
+  const handleDemoRegister = async () => {
+    if (!isLoaded) {
+      return;
+    }
+
+    try {
+      // In a real app, you would collect user info and use actual credentials
+      const email = `demo-${Date.now()}@example.com`;
+      const password = "demo-password";
+      
+      // Create the user
+      const result = await signUp.create({
+        emailAddress: email,
+        password: password,
+      });
+      
+      // Verify the email if needed
+      await signUp.prepareEmailAddressVerification();
+      
+      toast({
+        title: "Account created",
+        description: "Please verify your email to continue",
+      });
+      
+      // Navigate to appropriate page
+      navigate('/');
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast({
+        title: "Registration failed",
+        description: "Continuing with demo access",
+        variant: "destructive",
+      });
+      
+      // Fallback to demo access
+      navigate('/');
+    }
   };
   
   return (
@@ -30,11 +69,12 @@ const Register = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-center text-gray-500">
-              Registration is temporarily disabled
+              {isLoaded ? "Sign up to create your account" : "Loading registration..."}
             </p>
             <Button 
               className="w-full bg-dhayan-purple hover:bg-dhayan-purple-dark text-white"
               onClick={handleDemoRegister}
+              disabled={!isLoaded}
             >
               Continue as Demo User
             </Button>

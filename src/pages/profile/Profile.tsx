@@ -7,27 +7,40 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/context/language/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import { User, Mail, Phone, Calendar } from "lucide-react";
+import { useUser, useClerk } from "@clerk/clerk-react";
 
 const Profile = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useUser();
+  const { signOut } = useClerk();
   
-  const handleLogout = () => {
-    toast({
-      title: t("logged_out"),
-      description: t("logout_success")
-    });
-    navigate("/login");
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast({
+        title: t("logged_out"),
+        description: t("logout_success")
+      });
+      navigate("/login");
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast({
+        title: "Error",
+        description: "Failed to log out. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
-  // Demo user profile data
-  const demoUser = {
-    firstName: "Demo",
-    lastName: "User",
-    email: "demo@example.com",
-    phone: "+1 (555) 123-4567",
-    dob: "January 1, 1965"
+  // User profile data from Clerk or fallback to demo
+  const profileData = {
+    firstName: user?.firstName || "Demo",
+    lastName: user?.lastName || "User",
+    email: user?.primaryEmailAddress?.emailAddress || "demo@example.com",
+    phone: user?.primaryPhoneNumber?.phoneNumber || "+1 (555) 123-4567",
+    dob: "January 1, 1965" // Clerk doesn't store DOB directly
   };
 
   return (
@@ -39,10 +52,18 @@ const Profile = () => {
           <CardContent className="p-6">
             <div className="flex flex-col items-center mb-6">
               <div className="w-24 h-24 bg-dhayan-purple-light rounded-full flex items-center justify-center mb-4">
-                <User className="h-12 w-12 text-dhayan-purple" />
+                {user?.imageUrl ? (
+                  <img 
+                    src={user.imageUrl} 
+                    alt={`${profileData.firstName}'s profile`}
+                    className="h-24 w-24 rounded-full object-cover"
+                  />
+                ) : (
+                  <User className="h-12 w-12 text-dhayan-purple" />
+                )}
               </div>
-              <h2 className="text-xl font-semibold">{demoUser.firstName} {demoUser.lastName}</h2>
-              <p className="text-sm text-dhayan-gray">Demo User</p>
+              <h2 className="text-xl font-semibold">{profileData.firstName} {profileData.lastName}</h2>
+              <p className="text-sm text-dhayan-gray">{user ? "Verified User" : "Demo User"}</p>
             </div>
             
             <div className="space-y-4">
@@ -50,7 +71,7 @@ const Profile = () => {
                 <Mail className="h-5 w-5 text-dhayan-gray mr-3" />
                 <div>
                   <p className="text-sm text-dhayan-gray">Email</p>
-                  <p>{demoUser.email}</p>
+                  <p>{profileData.email}</p>
                 </div>
               </div>
               
@@ -58,7 +79,7 @@ const Profile = () => {
                 <Phone className="h-5 w-5 text-dhayan-gray mr-3" />
                 <div>
                   <p className="text-sm text-dhayan-gray">Phone</p>
-                  <p>{demoUser.phone}</p>
+                  <p>{profileData.phone}</p>
                 </div>
               </div>
               
@@ -66,7 +87,7 @@ const Profile = () => {
                 <Calendar className="h-5 w-5 text-dhayan-gray mr-3" />
                 <div>
                   <p className="text-sm text-dhayan-gray">Date of Birth</p>
-                  <p>{demoUser.dob}</p>
+                  <p>{profileData.dob}</p>
                 </div>
               </div>
             </div>
