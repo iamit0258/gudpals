@@ -42,12 +42,9 @@ const Register = () => {
       console.error("Registration error:", error);
       toast({
         title: "Registration failed",
-        description: "Continuing with demo access",
+        description: "Please try again later",
         variant: "destructive",
       });
-      
-      // Fallback to demo access
-      navigate('/');
     }
   };
   

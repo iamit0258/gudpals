@@ -10,7 +10,7 @@ import {
   SignedIn, 
   SignedOut, 
   RedirectToSignIn, 
-  useUser 
+  useAuth 
 } from "@clerk/clerk-react";
 
 // Pages

@@ -8,6 +8,7 @@ import { useLanguage } from "@/context/language/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import { User, Mail, Phone, Calendar } from "lucide-react";
 import { useUser, useClerk } from "@clerk/clerk-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const Profile = () => {
   const { t } = useLanguage();
@@ -53,11 +54,12 @@ const Profile = () => {
             <div className="flex flex-col items-center mb-6">
               <div className="w-24 h-24 bg-dhayan-purple-light rounded-full flex items-center justify-center mb-4">
                 {user?.imageUrl ? (
-                  <img 
-                    src={user.imageUrl} 
-                    alt={`${profileData.firstName}'s profile`}
-                    className="h-24 w-24 rounded-full object-cover"
-                  />
+                  <Avatar className="h-24 w-24">
+                    <AvatarImage src={user.imageUrl} alt={`${profileData.firstName}'s profile`} />
+                    <AvatarFallback>
+                      <User className="h-12 w-12 text-dhayan-purple" />
+                    </AvatarFallback>
+                  </Avatar>
                 ) : (
                   <User className="h-12 w-12 text-dhayan-purple" />
                 )}

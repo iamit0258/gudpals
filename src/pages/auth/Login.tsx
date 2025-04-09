@@ -45,12 +45,9 @@ const Login = () => {
       console.error("Login error:", error);
       toast({
         title: "Login failed",
-        description: "Authentication temporarily using demo login",
+        description: "Authentication failed. Please try again.",
         variant: "destructive",
       });
-      
-      // Fallback to demo login in case of error
-      navigate('/');
     }
   };
   
