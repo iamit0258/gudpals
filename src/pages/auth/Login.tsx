@@ -2,8 +2,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import LoginHeader from "@/components/auth/LoginHeader";
-import LoginForm from "@/components/auth/LoginForm";
-import LoginAlternatives from "@/components/auth/LoginAlternatives";
+import { SignIn } from "@clerk/clerk-react";
 import LoginFooter from "@/components/auth/LoginFooter";
 
 const Login = () => {
@@ -17,8 +16,12 @@ const Login = () => {
             <CardTitle className="text-center">Welcome Back</CardTitle>
           </CardHeader>
           <CardContent>
-            <LoginForm />
-            <LoginAlternatives />
+            <SignIn
+              routing="path"
+              path="/login"
+              signUpUrl="/register"
+              redirectUrl="/"
+            />
           </CardContent>
           <CardFooter className="flex flex-col">
             <LoginFooter />
