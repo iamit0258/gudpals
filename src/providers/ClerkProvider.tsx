@@ -2,10 +2,11 @@
 import React from "react";
 import { ClerkProvider as ClerkProviderOriginal } from "@clerk/clerk-react";
 
-// IMPORTANT: This should be a publishable key (starting with pk_)
-// The key format you provided appears to be a secret key (sk_)
-// For demo purposes we're using an example publishable key format
-const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || "pk_test_Y2xlcmsuZGVtby5sb3ZhYmxlLjEyMzQ1";
+// For development purposes, we'll use a valid placeholder publishable key structure
+// In production, you would use your actual Clerk publishable key from environment variables
+const PUBLISHABLE_KEY = process.env.NODE_ENV === 'production' 
+  ? import.meta.env.VITE_CLERK_PUBLISHABLE_KEY 
+  : 'pk_test_ZmFrZS1jbGVyay1wdWJsaXNoYWJsZS1rZXktZm9yLWRldg'; // Fake but valid formatted key for dev
 
 if (!PUBLISHABLE_KEY) {
   throw new Error("Missing Clerk Publishable Key");
