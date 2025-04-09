@@ -1,21 +1,24 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSignUp } from "@clerk/clerk-react";
 import { useToast } from "@/hooks/use-toast";
 
 const Register = () => {
   const navigate = useNavigate();
-  const { signUp, isLoaded } = useSignUp();
+  const { signUp, isLoaded, setActive } = useSignUp();
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
   
   const handleDemoRegister = async () => {
     if (!isLoaded) {
       return;
     }
+
+    setIsLoading(true);
 
     try {
       // In a real app, you would collect user info and use actual credentials
@@ -28,16 +31,32 @@ const Register = () => {
         password: password,
       });
       
-      // Verify the email if needed
-      await signUp.prepareEmailAddressVerification();
-      
-      toast({
-        title: "Account created",
-        description: "Please verify your email to continue",
-      });
-      
-      // Navigate to appropriate page
-      navigate('/');
+      // Check if the sign-up requires email verification
+      if (result.status === "complete") {
+        // If the sign-up is complete, activate the session
+        await setActive({ session: result.createdSessionId });
+        
+        toast({
+          title: "Account created",
+          description: "Your account has been created successfully",
+        });
+        
+        // Navigate to appropriate page
+        navigate('/');
+      } else if (result.status === "needs_email_verification") {
+        // If email verification is needed, let the user know
+        toast({
+          title: "Verification required",
+          description: "Please check your email for verification instructions",
+        });
+        
+        // You could navigate to a verification page here
+      } else {
+        toast({
+          title: "Registration incomplete",
+          description: "Please complete the registration process",
+        });
+      }
     } catch (error) {
       console.error("Registration error:", error);
       toast({
@@ -45,6 +64,8 @@ const Register = () => {
         description: "Please try again later",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
   
@@ -71,9 +92,16 @@ const Register = () => {
             <Button 
               className="w-full bg-dhayan-purple hover:bg-dhayan-purple-dark text-white"
               onClick={handleDemoRegister}
-              disabled={!isLoaded}
+              disabled={!isLoaded || isLoading}
             >
-              Continue as Demo User
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating account...
+                </>
+              ) : (
+                "Continue as Demo User"
+              )}
             </Button>
           </CardContent>
           <CardFooter className="flex flex-col">

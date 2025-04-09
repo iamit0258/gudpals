@@ -35,16 +35,18 @@ import Events from "./pages/events/Events";
 
 // Create a protected route component with Clerk
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <>
-      <SignedIn>
-        {children}
-      </SignedIn>
-      <SignedOut>
-        <RedirectToSignIn />
-      </SignedOut>
-    </>
-  );
+  const { isSignedIn, isLoaded } = useAuth();
+  
+  if (!isLoaded) {
+    // Show a loading state
+    return <div className="p-4 flex justify-center">Loading authentication...</div>;
+  }
+  
+  if (!isSignedIn) {
+    return <RedirectToSignIn />;
+  }
+  
+  return <>{children}</>;
 };
 
 // Create the app content component

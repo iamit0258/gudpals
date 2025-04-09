@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import LoginHeader from "@/components/auth/LoginHeader";
 import { Button } from "@/components/ui/button";
@@ -7,26 +7,31 @@ import { useNavigate } from "react-router-dom";
 import LoginFooter from "@/components/auth/LoginFooter";
 import { useSignIn } from "@clerk/clerk-react";
 import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { signIn, isLoaded } = useSignIn();
+  const { signIn, isLoaded, setActive } = useSignIn();
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
   
   const handleDemoLogin = async () => {
     if (!isLoaded) {
       return;
     }
 
+    setIsLoading(true);
+
     try {
       // Example of demo login with Clerk
       const result = await signIn.create({
-        strategy: "password",
         identifier: "demo@example.com",
         password: "demo-password",
       });
       
       if (result.status === "complete") {
+        await setActive({ session: result.createdSessionId });
+        
         navigate('/');
         toast({
           title: "Login successful",
@@ -34,12 +39,21 @@ const Login = () => {
         });
       } else {
         // Handle incomplete login
-        toast({
-          title: "Login incomplete",
-          description: "Please complete the login process",
-          variant: "destructive",
-        });
         console.error("Login incomplete", result);
+        
+        if (result.status === "needs_second_factor") {
+          toast({
+            title: "Second factor required",
+            description: "Please complete the two-factor authentication",
+          });
+          // You could navigate to a 2FA page here if needed
+        } else {
+          toast({
+            title: "Login incomplete",
+            description: "Please complete the login process",
+            variant: "destructive",
+          });
+        }
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -48,6 +62,8 @@ const Login = () => {
         description: "Authentication failed. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
   
@@ -67,9 +83,16 @@ const Login = () => {
             <Button 
               className="w-full bg-dhayan-purple hover:bg-dhayan-purple-dark text-white"
               onClick={handleDemoLogin}
-              disabled={!isLoaded}
+              disabled={!isLoaded || isLoading}
             >
-              Continue as Demo User
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                "Continue as Demo User"
+              )}
             </Button>
           </CardContent>
           <CardFooter className="flex flex-col">
