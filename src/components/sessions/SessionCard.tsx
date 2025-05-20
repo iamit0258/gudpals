@@ -16,10 +16,9 @@ interface SessionCardProps {
     image: string | null;
   };
   onRegister: (session: any) => void;
-  isSignedIn: boolean;
 }
 
-const SessionCard: React.FC<SessionCardProps> = ({ session, onRegister, isSignedIn }) => {
+const SessionCard: React.FC<SessionCardProps> = ({ session, onRegister }) => {
   const { t } = useLanguage();
   
   return (

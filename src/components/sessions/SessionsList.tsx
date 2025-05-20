@@ -3,7 +3,6 @@ import React from "react";
 import SessionCard from "./SessionCard";
 import SessionSkeletons from "./SessionSkeletons";
 import { useLanguage } from "@/context/language/LanguageContext";
-import { useUser } from "@clerk/clerk-react";
 
 interface SessionsListProps {
   sessions: any[];
@@ -13,7 +12,6 @@ interface SessionsListProps {
 
 const SessionsList: React.FC<SessionsListProps> = ({ sessions, loading, onRegister }) => {
   const { t } = useLanguage();
-  const { isSignedIn } = useUser();
   
   if (loading) {
     return <SessionSkeletons />;
@@ -34,7 +32,6 @@ const SessionsList: React.FC<SessionsListProps> = ({ sessions, loading, onRegist
           key={session.id} 
           session={session} 
           onRegister={onRegister}
-          isSignedIn={isSignedIn}
         />
       ))}
     </div>

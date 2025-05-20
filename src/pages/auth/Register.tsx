@@ -1,71 +1,81 @@
 
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Loader2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { useSignUp } from "@clerk/clerk-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/auth"; // Updated import path
+import { ArrowLeft } from "lucide-react";
 
 const Register = () => {
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [name, setName] = useState("");
+  const [age, setAge] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-  const { signUp, isLoaded, setActive } = useSignUp();
+  const location = useLocation();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
+  const { sendOTP } = useAuth();
   
-  const handleDemoRegister = async () => {
-    if (!isLoaded) {
+  // Get the redirect path from state or default to homepage
+  const redirectPath = location.state?.from || "/";
+  const activityType = location.state?.activityType || "activity";
+  const activityName = location.state?.activityName || "this activity";
+  const activityId = location.state?.activityId || null;
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!phoneNumber || !name) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
       return;
     }
-
-    setIsLoading(true);
-
-    try {
-      // In a real app, you would collect user info and use actual credentials
-      const email = `demo-${Date.now()}@example.com`;
-      const password = "demo-password";
-      
-      // Create the user
-      const result = await signUp.create({
-        emailAddress: email,
-        password: password,
+    
+    // Validate phone number (simple validation)
+    if (!/^\d{10}$/.test(phoneNumber)) {
+      toast({
+        title: "Invalid phone number",
+        description: "Please enter a valid 10-digit phone number",
+        variant: "destructive",
       });
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      // Store registration data in session storage to use after verification
+      const registrationData = {
+        displayName: name,
+        age: age,
+        activityType,
+        activityName,
+        activityId,
+        redirectPath,
+        registeredAt: new Date().toISOString(),
+      };
       
-      // Check if the sign-up requires email verification
-      if (result.status === "complete") {
-        // If the sign-up is complete, activate the session
-        await setActive({ session: result.createdSessionId });
-        
-        toast({
-          title: "Account created",
-          description: "Your account has been created successfully",
-        });
-        
-        // Navigate to appropriate page
-        navigate('/');
-      } else if (result.status === "needs_email_verification") {
-        // If email verification is needed, let the user know
-        toast({
-          title: "Verification required",
-          description: "Please check your email for verification instructions",
-        });
-        
-        // You could navigate to a verification page here
-      } else {
-        toast({
-          title: "Registration incomplete",
-          description: "Please complete the registration process",
-        });
-      }
+      sessionStorage.setItem("dhayan_signup_data", JSON.stringify(registrationData));
+      
+      // Send OTP
+      await sendOTP(phoneNumber);
+      
+      // Redirect to verification page
+      navigate("/verify", { state: { phoneNumber, isRegistration: true } });
     } catch (error) {
-      console.error("Registration error:", error);
       toast({
         title: "Registration failed",
-        description: "Please try again later",
+        description: "Unable to proceed with registration. Please try again.",
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
   
@@ -83,30 +93,61 @@ const Register = () => {
         
         <Card>
           <CardHeader>
-            <CardTitle className="text-center">Create an Account</CardTitle>
+            <CardTitle className="text-center">Register for {activityName}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-center text-gray-500">
-              {isLoaded ? "Sign up to create your account" : "Loading registration..."}
-            </p>
-            <Button 
-              className="w-full bg-dhayan-purple hover:bg-dhayan-purple-dark text-white"
-              onClick={handleDemoRegister}
-              disabled={!isLoaded || isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating account...
-                </>
-              ) : (
-                "Continue as Demo User"
-              )}
-            </Button>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="Enter your full name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="Enter your 10-digit phone number"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="age">Age (Optional)</Label>
+                <Input
+                  id="age"
+                  type="number"
+                  placeholder="Enter your age"
+                  value={age}
+                  onChange={(e) => setAge(e.target.value)}
+                />
+              </div>
+              
+              <Button
+                type="submit"
+                className="w-full bg-dhayan-purple hover:bg-dhayan-purple-dark text-white"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <span className="animate-pulse">Registering...</span>
+                ) : (
+                  "Register & Continue"
+                )}
+              </Button>
+            </form>
           </CardContent>
           <CardFooter className="flex flex-col">
             <p className="text-sm text-center text-dhayan-gray">
-              By registering, you agree to our Terms of Service and Privacy Policy.
+              By registering, you'll receive an OTP to verify your phone number.
             </p>
           </CardFooter>
         </Card>
