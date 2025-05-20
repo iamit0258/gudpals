@@ -24,6 +24,19 @@ export interface AuthContextType {
     activityName: string, 
     redirectPath: string
   ) => void;
+  register: (data: RegisterData) => Promise<{ error: any | null; status: string | null }>;
+}
+
+// Interface for registration data
+export interface RegisterData {
+  email: string;
+  password: string;
+  phone: string;
+  options?: {
+    data?: {
+      display_name?: string;
+    };
+  };
 }
 
 // Re-export ActivityType from the service for convenience - fixed with export type

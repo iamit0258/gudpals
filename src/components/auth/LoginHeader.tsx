@@ -1,7 +1,12 @@
 
 import React from "react";
 
-const LoginHeader = () => {
+interface LoginHeaderProps {
+  title?: string;
+  subtitle?: string;
+}
+
+const LoginHeader: React.FC<LoginHeaderProps> = ({ title, subtitle }) => {
   return (
     <div className="text-center mb-6">
       <img 
@@ -9,7 +14,8 @@ const LoginHeader = () => {
         alt="GUDPALS Logo" 
         className="h-24 mx-auto mb-2"
       />
-      <p className="text-dhayan-gray mt-2">Login to access your GUDPALS account</p>
+      <h2 className="text-2xl font-bold">{title || "Welcome to GUDPALS"}</h2>
+      <p className="text-dhayan-gray mt-2">{subtitle || "Login to access your GUDPALS account"}</p>
     </div>
   );
 };

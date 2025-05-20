@@ -26,6 +26,19 @@ const AuthConsumer: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   const { sendOTP, verifyOTP, signOut, updateProfile } = useAuthMethodsHook();
   const { registerForActivity } = useActivity();
 
+  // Simple register implementation for demo
+  const register = async (data: any) => {
+    console.log("Registering user:", data);
+    // For demo purposes, return success after a delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Return mock success response
+    return { 
+      error: null, 
+      status: "needs_email_verification"
+    };
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -37,6 +50,7 @@ const AuthConsumer: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         updateProfile,
         isAuthenticated,
         registerForActivity,
+        register,
       }}
     >
       {children}

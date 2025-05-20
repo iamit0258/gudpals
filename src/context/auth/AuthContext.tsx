@@ -12,6 +12,7 @@ export const AuthContext = createContext<AuthContextType>({
   updateProfile: async () => {},
   isAuthenticated: false,
   registerForActivity: () => {},
+  register: async () => ({ error: null, status: null }),
 });
 
 // Custom hook to use the auth context
