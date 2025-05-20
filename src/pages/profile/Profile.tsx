@@ -5,28 +5,44 @@ import MobileLayout from "@/components/layout/MobileLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, Package, ChevronRight, Pencil, Type, Eye, Globe, ShoppingBag, CreditCard, MapPin, Bell, Shield, HelpCircle, Info } from "lucide-react";
+import { LogOut, Package, ChevronRight, Pencil, Type, Eye, Globe, ShoppingBag, CreditCard, MapPin, Bell, Shield, HelpCircle, Info, MessageSquare } from "lucide-react";
 import { useAuth } from "@/context/auth";
 import { useLanguage } from "@/context/language/LanguageContext";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const Profile = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, updateProfile } = useAuth();
   const { t, language, setLanguage } = useLanguage();
   const [orderHistory, setOrderHistory] = useState([]);
   const navigate = useNavigate();
   const { toast } = useToast();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
-  const [interestTags, setInterestTags] = useState(['gardening', 'reading', 'travel']);
-  const [bio, setBio] = useState('Retired teacher who loves gardening and meeting new people');
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [astrologyChats, setAstrologyChats] = useState<any>({});
   
+  // User profile state
+  const [displayName, setDisplayName] = useState(user?.displayName || "");
+  const [bio, setBio] = useState('Retired teacher who loves gardening and meeting new people');
+  const [interestTags, setInterestTags] = useState(['gardening', 'reading', 'travel']);
+  const [newInterest, setNewInterest] = useState('');
+  
+  // Load data from localStorage
   useEffect(() => {
-    // Load order history from localStorage
+    // Load order history
     const storedOrders = localStorage.getItem('orderHistory');
     if (storedOrders) {
       setOrderHistory(JSON.parse(storedOrders));
+    }
+    
+    // Load astrology chats
+    const storedChats = localStorage.getItem('astrologyChats');
+    if (storedChats) {
+      setAstrologyChats(JSON.parse(storedChats));
     }
   }, []);
   
@@ -47,10 +63,44 @@ const Profile = () => {
   }
 
   const handleEditProfile = () => {
-    toast({
-      title: t("edit_profile"),
-      description: t("profile_edit_coming_soon")
-    });
+    setShowEditDialog(true);
+  };
+  
+  const handleSaveProfile = async () => {
+    try {
+      await updateProfile({ displayName });
+      
+      // Save other profile info to localStorage for demo
+      const profileData = {
+        bio,
+        interests: interestTags
+      };
+      localStorage.setItem('profileData', JSON.stringify(profileData));
+      
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been successfully updated"
+      });
+      setShowEditDialog(false);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast({
+        title: "Update Failed",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+  
+  const handleAddInterest = () => {
+    if (newInterest.trim() && !interestTags.includes(newInterest.trim().toLowerCase())) {
+      setInterestTags([...interestTags, newInterest.trim().toLowerCase()]);
+      setNewInterest('');
+    }
+  };
+  
+  const handleRemoveInterest = (interest: string) => {
+    setInterestTags(interestTags.filter(tag => tag !== interest));
   };
 
   const handleTextSizeChange = () => {
@@ -152,6 +202,23 @@ const Profile = () => {
   const cancelLogout = () => {
     setShowLogoutDialog(false);
   };
+  
+  const handleAstrologyChatView = (astrologerId: string) => {
+    // Store the selected astrologer in localStorage before navigating
+    const astrologers = [
+      { id: "1", name: "Ravi Sharma", specialty: "Vedic Astrology", initials: "RS" },
+      { id: "2", name: "Priya Patel", specialty: "Tarot Reading", initials: "PP" },
+      { id: "3", name: "Anand Joshi", specialty: "Palmistry", initials: "AJ" },
+      { id: "4", name: "Lakshmi Devi", specialty: "Numerology", initials: "LD" },
+      { id: "5", name: "Rajesh Kumar", specialty: "Kundali Matching", initials: "RK" }
+    ];
+    
+    const astrologer = astrologers.find(a => a.id === astrologerId);
+    if (astrologer) {
+      localStorage.setItem("selectedAstrologer", JSON.stringify(astrologer));
+      navigate("/astrology/chat");
+    }
+  };
 
   const profileActions = [
     {
@@ -175,6 +242,20 @@ const Profile = () => {
       ]
     }
   ];
+  
+  // Get astrologer data from astrology ID
+  const getAstrologerName = (id: string) => {
+    const astrologers = [
+      { id: "1", name: "Ravi Sharma" },
+      { id: "2", name: "Priya Patel" },
+      { id: "3", name: "Anand Joshi" },
+      { id: "4", name: "Lakshmi Devi" },
+      { id: "5", name: "Rajesh Kumar" }
+    ];
+    
+    const astrologer = astrologers.find(a => a.id === id);
+    return astrologer ? astrologer.name : "Unknown Astrologer";
+  };
 
   return (
     <MobileLayout>
@@ -225,6 +306,57 @@ const Profile = () => {
           </CardContent>
         </Card>
         
+        {/* Astrology Consultations Section */}
+        {Object.keys(astrologyChats).length > 0 && (
+          <div className="space-y-1">
+            <h2 className="text-lg font-semibold px-1 py-2 bg-gray-50">My Astrology Consultations</h2>
+            <Card>
+              <CardContent className="p-4">
+                {Object.keys(astrologyChats).map((astrologerId) => (
+                  <Collapsible key={astrologerId} className="mb-3 border rounded-lg p-2">
+                    <CollapsibleTrigger className="flex items-center justify-between w-full p-2">
+                      <div className="flex items-center">
+                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-green-500 to-teal-600 flex items-center justify-center text-white font-bold mr-3">
+                          {getAstrologerName(astrologerId).substring(0, 2)}
+                        </div>
+                        <div>
+                          <h3 className="font-medium">{getAstrologerName(astrologerId)}</h3>
+                          <p className="text-xs text-gray-500">
+                            {astrologyChats[astrologerId].length} messages
+                          </p>
+                        </div>
+                      </div>
+                      <ChevronRight className="h-5 w-5 text-gray-400" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <div className="mt-2 p-2">
+                        <div className="max-h-40 overflow-y-auto border rounded-lg p-2 bg-gray-50 mb-3">
+                          {astrologyChats[astrologerId].slice(0, 2).map((msg: any, idx: number) => (
+                            <div key={idx} className="mb-2 text-sm">
+                              <span className="font-semibold">{msg.sender === 'user' ? 'You' : getAstrologerName(astrologerId)}:</span> {msg.text}
+                            </div>
+                          ))}
+                          {astrologyChats[astrologerId].length > 2 && (
+                            <div className="text-sm text-gray-500">And {astrologyChats[astrologerId].length - 2} more messages...</div>
+                          )}
+                        </div>
+                        <Button 
+                          className="w-full bg-green-600 hover:bg-green-700"
+                          onClick={() => handleAstrologyChatView(astrologerId)}
+                          size="sm"
+                        >
+                          <MessageSquare className="h-4 w-4 mr-2" />
+                          Continue Conversation
+                        </Button>
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+        
         {profileActions.map((section, sectionIndex) => (
           <div key={sectionIndex} className="space-y-1">
             <h2 className="text-lg font-semibold px-1 py-2 bg-gray-50">{section.section}</h2>
@@ -268,6 +400,7 @@ const Profile = () => {
         </Button>
       </div>
 
+      {/* Logout Confirmation Dialog */}
       <Dialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
         <DialogContent>
           <DialogHeader>
@@ -283,6 +416,75 @@ const Profile = () => {
             <Button variant="destructive" onClick={confirmLogout}>
               {t("logout")}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Edit Profile Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Profile</DialogTitle>
+            <DialogDescription>
+              Update your profile information below
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Display Name</label>
+              <Input 
+                value={displayName} 
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="Your name"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Bio</label>
+              <Textarea 
+                value={bio} 
+                onChange={(e) => setBio(e.target.value)}
+                placeholder="Tell us about yourself"
+                className="min-h-[100px]"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Interests</label>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {interestTags.map((tag, index) => (
+                  <div key={index} className="bg-blue-50 text-blue-600 text-xs rounded-md px-2 py-1 flex items-center">
+                    {tag}
+                    <button 
+                      className="ml-1 text-blue-400 hover:text-blue-600"
+                      onClick={() => handleRemoveInterest(tag)}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="flex gap-2">
+                <Input 
+                  value={newInterest} 
+                  onChange={(e) => setNewInterest(e.target.value)}
+                  placeholder="Add interest"
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddInterest()}
+                />
+                <Button type="button" size="sm" onClick={handleAddInterest}>
+                  Add
+                </Button>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button onClick={handleSaveProfile}>Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

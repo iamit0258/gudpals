@@ -5,8 +5,9 @@ import MobileLayout from "@/components/layout/MobileLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, CheckCircle, CreditCard, Calendar, Lock } from "lucide-react";
+import { ArrowLeft, CheckCircle, CreditCard, Calendar, Lock, Smartphone } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const AstrologyPayment = () => {
   const navigate = useNavigate();
@@ -14,12 +15,14 @@ const AstrologyPayment = () => {
   const [astrologer, setAstrologer] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("card");
   
   // Payment form state
   const [cardNumber, setCardNumber] = useState("");
   const [cardName, setCardName] = useState("");
   const [expiry, setExpiry] = useState("");
   const [cvv, setCvv] = useState("");
+  const [upiId, setUpiId] = useState("");
 
   // Load astrologer data from localStorage
   useEffect(() => {
@@ -62,13 +65,25 @@ const AstrologyPayment = () => {
     return v;
   };
 
+  // Format UPI ID
+  const formatUpiId = (value: string) => {
+    return value.replace(/\s+/g, "").toLowerCase();
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!cardNumber || !cardName || !expiry || !cvv) {
+    if (paymentMethod === 'card' && (!cardNumber || !cardName || !expiry || !cvv)) {
       toast({
         title: "Missing fields",
-        description: "Please fill in all payment details",
+        description: "Please fill in all card payment details",
+        variant: "destructive"
+      });
+      return;
+    } else if (paymentMethod === 'upi' && !upiId) {
+      toast({
+        title: "Missing UPI ID",
+        description: "Please enter your UPI ID",
         variant: "destructive"
       });
       return;
@@ -102,12 +117,21 @@ const AstrologyPayment = () => {
           <p className="text-gray-500 text-sm mb-8">
             You'll receive a confirmation email shortly with details to join the consultation.
           </p>
-          <Button
-            className="w-full bg-green-600 hover:bg-green-700 mb-3"
-            onClick={() => navigate("/astrology")}
-          >
-            Return to Astrology
-          </Button>
+          <div className="space-y-3 w-full">
+            <Button
+              className="w-full bg-green-600 hover:bg-green-700"
+              onClick={() => navigate("/astrology/chat")}
+            >
+              Start Consultation Now
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => navigate("/astrology")}
+            >
+              Return to Astrology
+            </Button>
+          </div>
         </div>
       </MobileLayout>
     );
@@ -161,74 +185,117 @@ const AstrologyPayment = () => {
         
         {/* Payment Form */}
         <h2 className="text-lg font-semibold mb-3">Payment Details</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium block">Card Number</label>
-              <div className="relative">
-                <Input 
-                  value={cardNumber}
-                  onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                  maxLength={19}
-                  placeholder="1234 5678 9012 3456"
-                  className="pl-10"
-                />
-                <CreditCard className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium block">Cardholder Name</label>
-              <Input 
-                value={cardName}
-                onChange={(e) => setCardName(e.target.value)}
-                placeholder="John Doe"
-              />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <label className="text-sm font-medium block">Expiry Date</label>
-                <div className="relative">
-                  <Input 
-                    value={expiry}
-                    onChange={(e) => setExpiry(formatExpiry(e.target.value))}
-                    maxLength={5}
-                    placeholder="MM/YY"
-                    className="pl-10"
-                  />
-                  <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+        <Tabs defaultValue="card" value={paymentMethod} onValueChange={setPaymentMethod} className="w-full">
+          <TabsList className="grid grid-cols-2 mb-4">
+            <TabsTrigger value="card" className="flex items-center gap-2">
+              <CreditCard className="h-4 w-4" /> Card
+            </TabsTrigger>
+            <TabsTrigger value="upi" className="flex items-center gap-2">
+              <Smartphone className="h-4 w-4" /> UPI
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="card">
+            <form onSubmit={handleSubmit}>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium block">Card Number</label>
+                  <div className="relative">
+                    <Input 
+                      value={cardNumber}
+                      onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                      maxLength={19}
+                      placeholder="1234 5678 9012 3456"
+                      className="pl-10"
+                    />
+                    <CreditCard className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                  </div>
                 </div>
-              </div>
-              
-              <div className="space-y-2">
-                <label className="text-sm font-medium block">CVV</label>
-                <div className="relative">
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium block">Cardholder Name</label>
                   <Input 
-                    value={cvv}
-                    onChange={(e) => setCvv(e.target.value.replace(/\D/g, ''))}
-                    maxLength={3}
-                    placeholder="123"
-                    className="pl-10"
+                    value={cardName}
+                    onChange={(e) => setCardName(e.target.value)}
+                    placeholder="John Doe"
                   />
-                  <Lock className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                 </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium block">Expiry Date</label>
+                    <div className="relative">
+                      <Input 
+                        value={expiry}
+                        onChange={(e) => setExpiry(formatExpiry(e.target.value))}
+                        maxLength={5}
+                        placeholder="MM/YY"
+                        className="pl-10"
+                      />
+                      <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium block">CVV</label>
+                    <div className="relative">
+                      <Input 
+                        value={cvv}
+                        onChange={(e) => setCvv(e.target.value.replace(/\D/g, ''))}
+                        maxLength={3}
+                        placeholder="123"
+                        className="pl-10"
+                      />
+                      <Lock className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                    </div>
+                  </div>
+                </div>
+                
+                <Button 
+                  type="submit"
+                  className="w-full bg-green-600 hover:bg-green-700 mt-2"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Processing..." : `Pay ₹${astrologer?.price ? (astrologer.price + 49) : 0}`}
+                </Button>
               </div>
-            </div>
-            
-            <Button 
-              type="submit"
-              className="w-full bg-green-600 hover:bg-green-700 mt-2"
-              disabled={isLoading}
-            >
-              {isLoading ? "Processing..." : `Pay ₹${astrologer?.price ? (astrologer.price + 49) : 0}`}
-            </Button>
-            
-            <p className="text-center text-xs text-gray-500 mt-2">
-              Your payment information is secure and encrypted
-            </p>
-          </div>
-        </form>
+            </form>
+          </TabsContent>
+          
+          <TabsContent value="upi">
+            <form onSubmit={handleSubmit}>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium block">UPI ID</label>
+                  <div className="relative">
+                    <Input 
+                      value={upiId}
+                      onChange={(e) => setUpiId(formatUpiId(e.target.value))}
+                      placeholder="name@upi"
+                      className="pl-10"
+                    />
+                    <Smartphone className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Enter your UPI ID (e.g., yourname@okhdfcbank, yourname@ybl)
+                  </p>
+                </div>
+                
+                <Button 
+                  type="submit"
+                  className="w-full bg-green-600 hover:bg-green-700 mt-2"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Processing..." : `Pay ₹${astrologer?.price ? (astrologer.price + 49) : 0} via UPI`}
+                </Button>
+              </div>
+            </form>
+          </TabsContent>
+        </Tabs>
+        
+        <p className="text-center text-xs text-gray-500 mt-4">
+          Your payment information is secure and encrypted
+        </p>
       </div>
     </MobileLayout>
   );

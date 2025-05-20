@@ -71,6 +71,14 @@ const AstrologyChat = () => {
     setNewMessage("");
     setIsTyping(true);
 
+    // Save chat history to localStorage
+    const chatHistory = JSON.parse(localStorage.getItem("astrologyChats") || "{}");
+    if (!chatHistory[astrologer?.id]) {
+      chatHistory[astrologer?.id] = [];
+    }
+    chatHistory[astrologer?.id].push(userMessage);
+    localStorage.setItem("astrologyChats", JSON.stringify(chatHistory));
+
     // Simulate astrologer response after a delay
     setTimeout(() => {
       const responses = [
@@ -91,6 +99,10 @@ const AstrologyChat = () => {
       
       setMessages(prevMessages => [...prevMessages, astrologerMessage]);
       setIsTyping(false);
+      
+      // Save astrologer response to chat history
+      chatHistory[astrologer?.id].push(astrologerMessage);
+      localStorage.setItem("astrologyChats", JSON.stringify(chatHistory));
     }, 1500 + Math.random() * 1000);
   };
 
@@ -119,7 +131,7 @@ const AstrologyChat = () => {
       </div>
 
       {/* Chat Messages */}
-      <div className="flex-1 p-4 pb-20 bg-gray-50">
+      <div className="flex-1 p-4 pb-24 bg-gray-50">
         <div className="space-y-3">
           {messages.map((message) => (
             <div
@@ -177,8 +189,8 @@ const AstrologyChat = () => {
         </div>
       </div>
 
-      {/* Message Input */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-3">
+      {/* Message Input - Fixed with proper bottom padding */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-3 pb-6">
         <div className="flex items-center">
           <Input
             placeholder="Type your message..."
