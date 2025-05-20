@@ -4,10 +4,11 @@ import { useNavigate, useLocation } from "react-router-dom";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, Users, Clock, Filter, Star } from "lucide-react";
+import { Package, Users, Clock, Filter, Star, ShoppingCart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/auth";
 import { useLanguage } from "@/context/language/LanguageContext";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 const Products = () => {
   const { toast } = useToast();
@@ -15,6 +16,25 @@ const Products = () => {
   const location = useLocation();
   const { registerForActivity } = useAuth();
   const { t, language } = useLanguage();
+  const [cartOpen, setCartOpen] = React.useState(false);
+  const [cart, setCart] = React.useState<any[]>([]);
+  
+  // Load cart from localStorage
+  React.useEffect(() => {
+    const savedCart = localStorage.getItem('cart');
+    if (savedCart) {
+      try {
+        setCart(JSON.parse(savedCart));
+      } catch (e) {
+        console.error("Error parsing cart data:", e);
+      }
+    }
+  }, []);
+  
+  // Save cart to localStorage whenever it changes
+  React.useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart));
+  }, [cart]);
   
   React.useEffect(() => {
     if (location.state?.registered && location.state?.activityName) {
@@ -40,7 +60,7 @@ const Products = () => {
       category: t("electronics"),
       reviews: 42,
       rating: 4.6,
-      price: "₹5,999"
+      price: 5999
     },
     {
       id: 2,
@@ -54,7 +74,7 @@ const Products = () => {
       category: t("wellness"),
       reviews: 28,
       rating: 4.8,
-      price: "₹1,499"
+      price: 1499
     },
     {
       id: 3,
@@ -68,12 +88,70 @@ const Products = () => {
       category: t("kitchen"),
       reviews: 56,
       rating: 4.3,
-      price: "₹899"
+      price: 899
     },
   ];
 
   const handleViewProduct = (productId) => {
     navigate(`/products/${productId}`);
+  };
+  
+  const handleAddToCart = (product) => {
+    const existingItem = cart.find(item => item.id === product.id);
+    
+    if (existingItem) {
+      // Update quantity if already in cart
+      const updatedCart = cart.map(item => 
+        item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+      );
+      setCart(updatedCart);
+    } else {
+      // Add new item to cart
+      setCart([...cart, {
+        id: product.id,
+        title: language === "en" ? product.title_en : product.title_hi,
+        price: product.price,
+        image: product.image,
+        quantity: 1
+      }]);
+    }
+    
+    toast({
+      title: t("added_to_cart"),
+      description: `${language === "en" ? product.title_en : product.title_hi} ${t("added_to_cart_success")}`,
+    });
+  };
+  
+  const handleBuyNow = (product) => {
+    // Add to cart first
+    handleAddToCart(product);
+    // Navigate to checkout
+    navigate("/checkout");
+  };
+  
+  const handleRemoveFromCart = (id) => {
+    setCart(cart.filter(item => item.id !== id));
+    
+    toast({
+      title: t("item_removed"),
+      description: t("item_removed_from_cart"),
+    });
+  };
+  
+  const getTotalCartItems = () => {
+    return cart.reduce((total, item) => total + item.quantity, 0);
+  };
+  
+  const calculateCartTotal = () => {
+    return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+  };
+  
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0
+    }).format(price);
   };
 
   return (
@@ -81,10 +159,25 @@ const Products = () => {
       <div className="p-4 space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold text-dhayan-purple-dark">{t("senior_products")}</h1>
-          <Button variant="outline" size="sm" className="gap-1">
-            <Filter className="h-4 w-4" />
-            {t("filter")}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="gap-1"
+              onClick={() => setCartOpen(true)}
+            >
+              <ShoppingCart className="h-4 w-4" />
+              {cart.length > 0 && (
+                <span className="bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {getTotalCartItems()}
+                </span>
+              )}
+            </Button>
+            <Button variant="outline" size="sm" className="gap-1">
+              <Filter className="h-4 w-4" />
+              {t("filter")}
+            </Button>
+          </div>
         </div>
         
         <div className="space-y-4">
@@ -100,7 +193,7 @@ const Products = () => {
                   {product.category}
                 </div>
                 <div className="absolute bottom-2 left-2 bg-white/70 backdrop-blur-sm font-bold text-primary px-2 py-1 rounded-lg">
-                  {product.price}
+                  {formatPrice(product.price)}
                 </div>
               </div>
               <CardContent className="p-4">
@@ -120,9 +213,17 @@ const Products = () => {
                   <span>{product.rating} ({product.reviews} {t("reviews")})</span>
                 </div>
               </CardContent>
-              <CardFooter className="p-4 pt-0">
+              <CardFooter className="p-4 pt-0 flex gap-2">
                 <Button 
-                  className="w-full bg-dhayan-purple hover:bg-dhayan-purple-dark text-white"
+                  variant="outline"
+                  className="flex-1 border-primary text-primary"
+                  onClick={() => handleAddToCart(product)}
+                >
+                  <ShoppingCart className="h-4 w-4 mr-2" />
+                  {t("add_to_cart")}
+                </Button>
+                <Button 
+                  className="flex-1 bg-dhayan-purple hover:bg-dhayan-purple-dark text-white"
                   onClick={() => handleViewProduct(product.id)}
                 >
                   <Package className="h-4 w-4 mr-2" />
@@ -133,6 +234,81 @@ const Products = () => {
           ))}
         </div>
       </div>
+      
+      {/* Cart Dialog */}
+      <Dialog open={cartOpen} onOpenChange={setCartOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("your_cart")}</DialogTitle>
+          </DialogHeader>
+          
+          <div className="py-4">
+            {cart.length === 0 ? (
+              <div className="text-center py-8">
+                <ShoppingCart className="h-12 w-12 mx-auto text-muted-foreground opacity-50 mb-4" />
+                <p className="text-muted-foreground">{t("cart_empty")}</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {cart.map(item => (
+                  <div key={item.id} className="flex items-center border-b pb-3">
+                    <div className="h-16 w-16 bg-gray-100 rounded overflow-hidden flex-shrink-0">
+                      <img 
+                        src={item.image} 
+                        alt={item.title} 
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <div className="ml-3 flex-1">
+                      <h4 className="font-medium text-sm">{item.title}</h4>
+                      <div className="flex justify-between items-center mt-1">
+                        <p className="font-bold text-primary text-sm">
+                          {formatPrice(item.price)} x {item.quantity}
+                        </p>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 text-red-500"
+                          onClick={() => handleRemoveFromCart(item.id)}
+                        >
+                          <Star className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                <div className="flex justify-between items-center py-2">
+                  <span className="font-medium">{t("total")}</span>
+                  <span className="font-bold text-primary">
+                    {formatPrice(calculateCartTotal())}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter className="flex gap-2">
+            <Button 
+              variant="outline" 
+              className="flex-1"
+              onClick={() => setCartOpen(false)}
+            >
+              {t("continue_shopping")}
+            </Button>
+            <Button 
+              className="flex-1 bg-primary"
+              onClick={() => {
+                setCartOpen(false);
+                navigate("/checkout");
+              }}
+              disabled={cart.length === 0}
+            >
+              {t("checkout")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </MobileLayout>
   );
 };

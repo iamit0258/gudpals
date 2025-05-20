@@ -1,158 +1,177 @@
 
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import LoginLayout from "@/components/layout/LoginLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import LoginAlternatives from "@/components/auth/LoginAlternatives";
+import LoginHeader from "@/components/auth/LoginHeader";
+import LoginFooter from "@/components/auth/LoginFooter";
+import { useLanguage } from "@/context/language/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/context/auth"; // Updated import path
-import { ArrowLeft } from "lucide-react";
+import { useAuth } from "@/context/auth";
 
 const Register = () => {
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [name, setName] = useState("");
-  const [age, setAge] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
+  const { t } = useLanguage();
   const { toast } = useToast();
-  const { sendOTP } = useAuth();
+  const { register } = useAuth();
   
-  // Get the redirect path from state or default to homepage
-  const redirectPath = location.state?.from || "/";
-  const activityType = location.state?.activityType || "activity";
-  const activityName = location.state?.activityName || "this activity";
-  const activityId = location.state?.activityId || null;
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
+  });
+  
+  const [loading, setLoading] = useState(false);
+  
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!phoneNumber || !name) {
+    // Validate form
+    if (!formData.fullName || !formData.email || !formData.phone || !formData.password) {
       toast({
-        title: "Missing information",
-        description: "Please fill in all required fields",
+        title: t("error"),
+        description: t("please_fill_all_fields"),
         variant: "destructive",
       });
       return;
     }
     
-    // Validate phone number (simple validation)
-    if (!/^\d{10}$/.test(phoneNumber)) {
+    if (formData.password !== formData.confirmPassword) {
       toast({
-        title: "Invalid phone number",
-        description: "Please enter a valid 10-digit phone number",
+        title: t("error"),
+        description: t("passwords_do_not_match"),
         variant: "destructive",
       });
       return;
     }
     
-    setIsSubmitting(true);
+    setLoading(true);
     
     try {
-      // Store registration data in session storage to use after verification
-      const registrationData = {
-        displayName: name,
-        age: age,
-        activityType,
-        activityName,
-        activityId,
-        redirectPath,
-        registeredAt: new Date().toISOString(),
-      };
+      const { error, status } = await register({
+        email: formData.email,
+        password: formData.password,
+        phone: formData.phone,
+        options: {
+          data: {
+            display_name: formData.fullName,
+          },
+        },
+      });
       
-      sessionStorage.setItem("dhayan_signup_data", JSON.stringify(registrationData));
+      if (error) {
+        toast({
+          title: t("registration_failed"),
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
       
-      // Send OTP
-      await sendOTP(phoneNumber);
+      // Fix the type comparison issue - use loose comparison
+      if (status == "needs_email_verification") {
+        navigate("/verify");
+      } else {
+        navigate("/");
+      }
       
-      // Redirect to verification page
-      navigate("/verify", { state: { phoneNumber, isRegistration: true } });
+      toast({
+        title: t("registration_successful"),
+        description: t("account_created"),
+      });
     } catch (error) {
       toast({
-        title: "Registration failed",
-        description: "Unable to proceed with registration. Please try again.",
+        title: t("error"),
+        description: error.message || t("something_went_wrong"),
         variant: "destructive",
       });
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
-  
+
   return (
-    <div className="min-h-screen bg-dhayan-purple-light/20 flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <Button
-          variant="ghost"
-          className="mb-4"
-          onClick={() => navigate(-1)}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
+    <LoginLayout>
+      <LoginHeader
+        title={t("create_account")}
+        subtitle={t("register_subtitle")}
+      />
+      
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Input
+            type="text"
+            name="fullName"
+            placeholder={t("full_name")}
+            value={formData.fullName}
+            onChange={handleChange}
+            required
+          />
+          <Input
+            type="email"
+            name="email"
+            placeholder={t("email")}
+            value={formData.email}
+            onChange={handleChange}
+            required
+          />
+          <Input
+            type="tel"
+            name="phone"
+            placeholder={t("phone_number")}
+            value={formData.phone}
+            onChange={handleChange}
+            required
+          />
+          <Input
+            type="password"
+            name="password"
+            placeholder={t("password")}
+            value={formData.password}
+            onChange={handleChange}
+            required
+          />
+          <Input
+            type="password"
+            name="confirmPassword"
+            placeholder={t("confirm_password")}
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            required
+          />
+        </div>
         
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-center">Register for {activityName}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Enter your full name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="Enter your 10-digit phone number"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="age">Age (Optional)</Label>
-                <Input
-                  id="age"
-                  type="number"
-                  placeholder="Enter your age"
-                  value={age}
-                  onChange={(e) => setAge(e.target.value)}
-                />
-              </div>
-              
-              <Button
-                type="submit"
-                className="w-full bg-dhayan-purple hover:bg-dhayan-purple-dark text-white"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <span className="animate-pulse">Registering...</span>
-                ) : (
-                  "Register & Continue"
-                )}
-              </Button>
-            </form>
-          </CardContent>
-          <CardFooter className="flex flex-col">
-            <p className="text-sm text-center text-dhayan-gray">
-              By registering, you'll receive an OTP to verify your phone number.
-            </p>
-          </CardFooter>
-        </Card>
+        <Button
+          type="submit"
+          className="w-full bg-dhayan-teal hover:bg-dhayan-teal-dark"
+          disabled={loading}
+        >
+          {loading ? t("registering") : t("register")}
+        </Button>
+      </form>
+      
+      <div className="my-6">
+        <LoginAlternatives />
       </div>
-    </div>
+      
+      <LoginFooter
+        text={t("already_have_account")}
+        linkText={t("login_here")}
+        linkUrl="/login"
+      />
+    </LoginLayout>
   );
 };
 

@@ -94,11 +94,11 @@ const NearbyFriends = () => {
           <div className="absolute top-0 left-0 w-full h-full rounded-full border-2 border-dashed border-blue-300/50 animate-pulse"></div>
           
           {/* Animated pulse rings */}
-          <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-5/6 h-5/6 rounded-full bg-blue-400/20 ${isBeaconActive ? 'animate-ping opacity-70' : 'opacity-30'}`} style={{ animationDuration: '3s' }}></div>
+          <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-5/6 h-5/6 rounded-full bg-green-400/20 ${isBeaconActive ? 'animate-ping opacity-70' : 'opacity-30'}`} style={{ animationDuration: '3s' }}></div>
           
-          <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2/3 h-2/3 rounded-full bg-blue-400/30 ${isBeaconActive ? 'animate-ping opacity-80' : 'opacity-40'}`} style={{ animationDuration: '2.5s' }}></div>
+          <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2/3 h-2/3 rounded-full bg-green-400/30 ${isBeaconActive ? 'animate-ping opacity-80' : 'opacity-40'}`} style={{ animationDuration: '2.5s' }}></div>
           
-          <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/2 h-1/2 rounded-full bg-blue-400/40 ${isBeaconActive ? 'animate-ping opacity-90' : 'opacity-50'}`} style={{ animationDuration: '2s' }}></div>
+          <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/2 h-1/2 rounded-full bg-green-400/40 ${isBeaconActive ? 'animate-ping opacity-90' : 'opacity-50'}`} style={{ animationDuration: '2s' }}></div>
           
           {/* Center dot */}
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-blue-50 shadow-lg flex items-center justify-center z-10">
