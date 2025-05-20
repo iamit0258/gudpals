@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/context/language/LanguageContext";
+import { useNavigate } from "react-router-dom";
 
 interface Astrologer {
   id: string;
@@ -14,7 +15,7 @@ interface Astrologer {
   specialty: string;
   experience: string;
   rating: number;
-  imageUrl: string;
+  initials: string;
   isPremium: boolean;
   price: number | null;
   availability: string;
@@ -25,6 +26,7 @@ const Astrology = () => {
   const { toast } = useToast();
   const { t } = useLanguage();
   const [selectedSign, setSelectedSign] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const astrologers: Astrologer[] = [
     {
@@ -33,7 +35,7 @@ const Astrology = () => {
       specialty: "Vedic Astrology",
       experience: "20+ years",
       rating: 4.8,
-      imageUrl: "https://i.pravatar.cc/150?img=11",
+      initials: "RS",
       isPremium: false,
       price: null,
       availability: "Available now",
@@ -45,7 +47,7 @@ const Astrology = () => {
       specialty: "Tarot Reading",
       experience: "15+ years",
       rating: 4.7,
-      imageUrl: "https://i.pravatar.cc/150?img=21",
+      initials: "PP",
       isPremium: true,
       price: 599,
       availability: "Available in 30 mins",
@@ -57,7 +59,7 @@ const Astrology = () => {
       specialty: "Palmistry",
       experience: "25+ years",
       rating: 4.9,
-      imageUrl: "https://i.pravatar.cc/150?img=12",
+      initials: "AJ",
       isPremium: true,
       price: 999,
       availability: "Available now",
@@ -69,7 +71,7 @@ const Astrology = () => {
       specialty: "Numerology",
       experience: "18+ years",
       rating: 4.6,
-      imageUrl: "https://i.pravatar.cc/150?img=33",
+      initials: "LD",
       isPremium: false,
       price: null,
       availability: "Available now",
@@ -81,7 +83,7 @@ const Astrology = () => {
       specialty: "Kundali Matching",
       experience: "22+ years",
       rating: 4.8,
-      imageUrl: "https://i.pravatar.cc/150?img=15",
+      initials: "RK",
       isPremium: true,
       price: 799,
       availability: "Available in 1 hour",
@@ -106,15 +108,13 @@ const Astrology = () => {
 
   const handleConsult = (astrologer: Astrologer) => {
     if (astrologer.isPremium) {
-      toast({
-        title: "Premium Consultation",
-        description: `Booking consultation with ${astrologer.name} for ₹${astrologer.price}`,
-      });
+      // Store selected astrologer data for checkout
+      localStorage.setItem('selectedAstrologer', JSON.stringify(astrologer));
+      navigate("/astrology/payment");
     } else {
-      toast({
-        title: "Free Consultation",
-        description: `Starting free consultation with ${astrologer.name}`,
-      });
+      // Store selected astrologer data for chat
+      localStorage.setItem('selectedAstrologer', JSON.stringify(astrologer));
+      navigate("/astrology/chat");
     }
   };
 
@@ -128,13 +128,13 @@ const Astrology = () => {
 
   return (
     <MobileLayout>
-      <div className="relative bg-gradient-to-br from-indigo-900 via-purple-800 to-indigo-900 text-white p-6">
+      <div className="relative bg-gradient-to-br from-green-900 via-green-800 to-teal-800 text-white p-6">
         <div className="absolute top-0 left-0 w-full h-full opacity-10">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KIca8Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIiBmaWxsPSJ3aGl0ZSIgLz4KPC9zdmc+')] bg-repeat"></div>
         </div>
         <div className="relative z-10">
           <h1 className="text-3xl font-bold mb-2 flex items-center">
-            <Star className="w-8 h-8 mr-2" />
+            <Star className="w-8 h-8 mr-2 text-yellow-300" />
             Astrology Services
           </h1>
           <p className="text-white/80 mb-6">Discover your cosmic path with our expert astrologers</p>
@@ -150,7 +150,7 @@ const Astrology = () => {
               variant={selectedSign === sign.name ? "default" : "outline"}
               className={`h-auto flex flex-col py-3 ${
                 selectedSign === sign.name
-                  ? "bg-gradient-to-br from-purple-600 to-indigo-600"
+                  ? "bg-gradient-to-br from-green-600 to-teal-600"
                   : ""
               }`}
               onClick={() => selectZodiacSign(sign.name)}
@@ -163,22 +163,22 @@ const Astrology = () => {
       </section>
 
       {selectedSign && (
-        <section className="p-4 bg-gradient-to-r from-purple-100/50 to-indigo-100/50">
+        <section className="p-4 bg-gradient-to-r from-green-100/50 to-teal-100/50">
           <h2 className="text-xl font-semibold mb-3">Today's Horoscope for {selectedSign}</h2>
-          <Card className="border-purple-200 bg-white/80 backdrop-blur-sm">
+          <Card className="border-green-200 bg-white/80 backdrop-blur-sm">
             <CardContent className="p-4">
               <p className="italic text-gray-600 mb-3">
                 "Today is a day of opportunities and reflection. The stars align to bring you clarity 
                 in matters of the heart. Take time to listen to your inner voice and trust your intuition."
               </p>
               <div className="flex flex-wrap gap-2 text-sm">
-                <Badge variant="outline" className="bg-purple-50 border-purple-200">
+                <Badge variant="outline" className="bg-green-50 border-green-200">
                   Lucky Number: 7
                 </Badge>
-                <Badge variant="outline" className="bg-purple-50 border-purple-200">
-                  Lucky Color: Violet
+                <Badge variant="outline" className="bg-green-50 border-green-200">
+                  Lucky Color: Green
                 </Badge>
-                <Badge variant="outline" className="bg-purple-50 border-purple-200">
+                <Badge variant="outline" className="bg-green-50 border-green-200">
                   Compatible: Leo
                 </Badge>
               </div>
@@ -195,12 +195,8 @@ const Astrology = () => {
               <CardContent className="p-0">
                 <div className="flex items-center p-4">
                   <div className="relative mr-4">
-                    <div className="h-16 w-16 rounded-full overflow-hidden">
-                      <img 
-                        src={astrologer.imageUrl} 
-                        alt={astrologer.name}
-                        className="h-full w-full object-cover"
-                      />
+                    <div className="h-16 w-16 rounded-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-green-500 to-teal-600 text-white font-bold text-xl">
+                      {astrologer.initials}
                     </div>
                     <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5">
                       <div className={`h-3 w-3 rounded-full ${
@@ -254,7 +250,7 @@ const Astrology = () => {
                     </div>
                   </div>
                   <Button
-                    className="w-full mb-4"
+                    className={`w-full mb-4 ${astrologer.isPremium ? 'bg-amber-500 hover:bg-amber-600' : 'bg-green-600 hover:bg-green-700'}`}
                     onClick={() => handleConsult(astrologer)}
                   >
                     {astrologer.isPremium ? (

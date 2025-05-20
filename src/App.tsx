@@ -28,6 +28,8 @@ import Settings from "./pages/settings/Settings";
 import Games from "./pages/games/Games";
 import Events from "./pages/events/Events";
 import Astrology from "./pages/astrology/Astrology";
+import AstrologyChat from "./pages/astrology/AstrologyChat";
+import AstrologyPayment from "./pages/astrology/AstrologyPayment";
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -79,6 +81,8 @@ const AppContent = () => {
         <Route path="/games" element={<Games />} />
         <Route path="/events" element={<Events />} />
         <Route path="/astrology" element={<Astrology />} />
+        <Route path="/astrology/chat" element={<AstrologyChat />} />
+        <Route path="/astrology/payment" element={<AstrologyPayment />} />
         
         {/* 404 route */}
         <Route path="*" element={<NotFound />} />
