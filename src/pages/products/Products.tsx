@@ -163,12 +163,12 @@ const Products = () => {
             <Button 
               variant="outline" 
               size="sm" 
-              className="gap-1"
+              className="gap-1 relative"
               onClick={() => setCartOpen(true)}
             >
               <ShoppingCart className="h-4 w-4" />
               {cart.length > 0 && (
-                <span className="bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                   {getTotalCartItems()}
                 </span>
               )}
@@ -213,21 +213,21 @@ const Products = () => {
                   <span>{product.rating} ({product.reviews} {t("reviews")})</span>
                 </div>
               </CardContent>
-              <CardFooter className="p-4 pt-0 flex gap-2">
+              <CardFooter className="p-4 pt-0 grid grid-cols-2 gap-2">
                 <Button 
-                  variant="outline"
-                  className="flex-1 border-primary text-primary"
+                  variant="secondary"
+                  className="w-full border-primary text-primary flex items-center justify-center"
                   onClick={() => handleAddToCart(product)}
                 >
                   <ShoppingCart className="h-4 w-4 mr-2" />
                   {t("add_to_cart")}
                 </Button>
                 <Button 
-                  className="flex-1 bg-dhayan-purple hover:bg-dhayan-purple-dark text-white"
-                  onClick={() => handleViewProduct(product.id)}
+                  className="w-full bg-dhayan-purple hover:bg-dhayan-purple-dark text-white flex items-center justify-center"
+                  onClick={() => handleBuyNow(product)}
                 >
                   <Package className="h-4 w-4 mr-2" />
-                  {t("view_product")}
+                  {t("buy_now")}
                 </Button>
               </CardFooter>
             </Card>

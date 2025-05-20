@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { PlayCircle, Brain, Coffee, Briefcase, Map } from "lucide-react";
+import { PlayCircle, Brain, Coffee, Briefcase, Map, Star } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import MobileLayout from "@/components/layout/MobileLayout";
 import FeaturedSessions from "@/components/home/FeaturedSessions";
@@ -46,6 +46,13 @@ const Index = () => {
       description: t("senior_friendly"),
       path: "/travel",
       color: "bg-gradient-to-br from-emerald-300 to-green-400"
+    },
+    {
+      icon: Star,
+      name: "Astrology",
+      description: "Daily horoscope and predictions",
+      path: "/astrology",
+      color: "bg-gradient-to-br from-purple-300 to-indigo-400"
     }
   ];
   

@@ -69,8 +69,8 @@ const NearbyFriends = () => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="p-6 flex-1 flex flex-col items-center bg-gradient-to-b from-blue-900 to-blue-600">
-        <h2 className="text-2xl font-bold text-white mb-4">{t("light_your_beacon")}</h2>
+      <div className="p-6 flex-1 flex flex-col items-center bg-gradient-to-b from-green-900 to-green-600">
+        <h2 className="text-2xl font-bold text-white mb-4">{t("beacon")}</h2>
         
         <Button 
           onClick={toggleBeacon}
@@ -91,7 +91,7 @@ const NearbyFriends = () => {
         {/* Concentric circles visualization */}
         <div className="relative w-64 h-64 mb-6">
           {/* Outer circle (dashed) */}
-          <div className="absolute top-0 left-0 w-full h-full rounded-full border-2 border-dashed border-blue-300/50 animate-pulse"></div>
+          <div className="absolute top-0 left-0 w-full h-full rounded-full border-2 border-dashed border-green-300/50 animate-pulse"></div>
           
           {/* Animated pulse rings */}
           <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-5/6 h-5/6 rounded-full bg-green-400/20 ${isBeaconActive ? 'animate-ping opacity-70' : 'opacity-30'}`} style={{ animationDuration: '3s' }}></div>
@@ -101,7 +101,7 @@ const NearbyFriends = () => {
           <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/2 h-1/2 rounded-full bg-green-400/40 ${isBeaconActive ? 'animate-ping opacity-90' : 'opacity-50'}`} style={{ animationDuration: '2s' }}></div>
           
           {/* Center dot */}
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-blue-50 shadow-lg flex items-center justify-center z-10">
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-green-50 shadow-lg flex items-center justify-center z-10">
             <div className={`w-6 h-6 rounded-full ${isBeaconActive ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
           </div>
         </div>
