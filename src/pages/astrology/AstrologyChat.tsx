@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import MobileLayout from "@/components/layout/MobileLayout";
@@ -129,82 +130,85 @@ const AstrologyChat = () => {
         </div>
       </div>
 
-      {/* Chat Messages - Updated padding to prevent overlap */}
-      <div className="flex-1 p-4 pb-28 bg-gray-50 min-h-screen">
-        <div className="space-y-3">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
-            >
-              {message.sender === "astrologer" && astrologer && (
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-green-500 to-teal-600 flex items-center justify-center text-white font-bold mr-2 flex-shrink-0 mt-1">
-                  {astrologer.initials}
-                </div>
-              )}
+      {/* Chat Messages Container */}
+      <div className="flex-1 flex flex-col" style={{ height: 'calc(100vh - 140px)' }}>
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
+          <div className="space-y-3">
+            {messages.map((message) => (
               <div
-                className={`max-w-[75%] rounded-2xl px-4 py-2 ${
-                  message.sender === "user"
-                    ? "bg-green-600 text-white"
-                    : "bg-white border border-gray-200"
-                }`}
+                key={message.id}
+                className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
               >
-                <p className="text-sm">{message.text}</p>
-                <p
-                  className={`text-[10px] mt-1 ${
-                    message.sender === "user" ? "text-white/70" : "text-gray-500"
+                {message.sender === "astrologer" && astrologer && (
+                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-green-500 to-teal-600 flex items-center justify-center text-white font-bold mr-2 flex-shrink-0 mt-1">
+                    {astrologer.initials}
+                  </div>
+                )}
+                <div
+                  className={`max-w-[75%] rounded-2xl px-4 py-2 ${
+                    message.sender === "user"
+                      ? "bg-green-600 text-white"
+                      : "bg-white border border-gray-200"
                   }`}
                 >
-                  {new Intl.DateTimeFormat("en", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: true,
-                  }).format(message.timestamp)}
-                </p>
+                  <p className="text-sm">{message.text}</p>
+                  <p
+                    className={`text-[10px] mt-1 ${
+                      message.sender === "user" ? "text-white/70" : "text-gray-500"
+                    }`}
+                  >
+                    {new Intl.DateTimeFormat("en", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true,
+                    }).format(message.timestamp)}
+                  </p>
+                </div>
+                {message.sender === "user" && (
+                  <Avatar className="h-8 w-8 ml-2 mt-1 bg-gray-300">
+                    <div className="text-sm">You</div>
+                  </Avatar>
+                )}
               </div>
-              {message.sender === "user" && (
-                <Avatar className="h-8 w-8 ml-2 mt-1 bg-gray-300">
-                  <div className="text-sm">You</div>
-                </Avatar>
-              )}
-            </div>
-          ))}
-          
-          {isTyping && (
-            <div className="flex justify-start">
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-green-500 to-teal-600 flex items-center justify-center text-white font-bold mr-2 flex-shrink-0 mt-1">
-                {astrologer?.initials}
-              </div>
-              <div className="bg-white border border-gray-200 rounded-2xl px-4 py-3">
-                <div className="flex space-x-1">
-                  <div className="h-2 w-2 bg-gray-400 rounded-full animate-pulse"></div>
-                  <div className="h-2 w-2 bg-gray-400 rounded-full animate-pulse delay-150"></div>
-                  <div className="h-2 w-2 bg-gray-400 rounded-full animate-pulse delay-300"></div>
+            ))}
+            
+            {isTyping && (
+              <div className="flex justify-start">
+                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-green-500 to-teal-600 flex items-center justify-center text-white font-bold mr-2 flex-shrink-0 mt-1">
+                  {astrologer?.initials}
+                </div>
+                <div className="bg-white border border-gray-200 rounded-2xl px-4 py-3">
+                  <div className="flex space-x-1">
+                    <div className="h-2 w-2 bg-gray-400 rounded-full animate-pulse"></div>
+                    <div className="h-2 w-2 bg-gray-400 rounded-full animate-pulse delay-150"></div>
+                    <div className="h-2 w-2 bg-gray-400 rounded-full animate-pulse delay-300"></div>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-          <div ref={messagesEndRef} />
+            )}
+            <div ref={messagesEndRef} />
+          </div>
         </div>
-      </div>
 
-      {/* Message Input - Fixed positioning with safe area */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 max-w-md mx-auto safe-area-inset-bottom">
-        <div className="flex items-center gap-2">
-          <Input
-            placeholder="Type your message..."
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            className="flex-1"
-            onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-          />
-          <Button
-            onClick={handleSendMessage}
-            className="bg-green-600 hover:bg-green-700"
-            size="icon"
-          >
-            <Send className="h-4 w-4" />
-          </Button>
+        {/* Message Input - Fixed at bottom */}
+        <div className="bg-white border-t p-4">
+          <div className="flex items-center gap-2 max-w-md mx-auto">
+            <Input
+              placeholder="Type your message..."
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              className="flex-1"
+              onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+            />
+            <Button
+              onClick={handleSendMessage}
+              className="bg-green-600 hover:bg-green-700"
+              size="icon"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
     </MobileLayout>

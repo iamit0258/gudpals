@@ -4,7 +4,7 @@ import MobileLayout from "@/components/layout/MobileLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, Package, ChevronRight, User, Type, Eye, Globe, ShoppingBag, CreditCard, MapPin, Bell, Shield, HelpCircle, Info, MessageSquare } from "lucide-react";
+import { LogOut, Package, ChevronRight, User, Type, Eye, Globe, ShoppingBag, CreditCard, MapPin, Bell, Shield, HelpCircle, Info, MessageSquare, Settings } from "lucide-react";
 import { useAuth } from "@/context/auth";
 import { useLanguage } from "@/context/language/LanguageContext";
 import { Separator } from "@/components/ui/separator";
@@ -13,6 +13,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 const Profile = () => {
   const { user, signOut, updateProfile } = useAuth();
@@ -23,6 +25,15 @@ const Profile = () => {
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [astrologyChats, setAstrologyChats] = useState<any>({});
+  
+  // Settings state
+  const [textSize, setTextSize] = useState("medium");
+  const [highContrast, setHighContrast] = useState(false);
+  const [notifications, setNotifications] = useState({
+    orders: true,
+    sessions: true,
+    marketing: false
+  });
   
   // User profile state
   const [displayName, setDisplayName] = useState(user?.displayName || "");
@@ -112,16 +123,35 @@ const Profile = () => {
   };
 
   const handleTextSizeChange = () => {
+    const sizes = ["small", "medium", "large"];
+    const currentIndex = sizes.indexOf(textSize);
+    const nextSize = sizes[(currentIndex + 1) % sizes.length];
+    setTextSize(nextSize);
+    
+    // Apply text size to document
+    document.documentElement.style.fontSize = 
+      nextSize === "small" ? "14px" : 
+      nextSize === "large" ? "18px" : "16px";
+    
     toast({
-      title: t("text_size"),
-      description: t("text_size_coming_soon")
+      title: "Text Size Changed",
+      description: `Text size set to ${nextSize}`
     });
   };
 
   const handleHighContrastToggle = () => {
+    setHighContrast(!highContrast);
+    
+    // Apply high contrast theme
+    if (!highContrast) {
+      document.documentElement.classList.add('high-contrast');
+    } else {
+      document.documentElement.classList.remove('high-contrast');
+    }
+    
     toast({
-      title: t("high_contrast"),
-      description: t("contrast_coming_soon")
+      title: "High Contrast",
+      description: `High contrast ${!highContrast ? 'enabled' : 'disabled'}`
     });
   };
 
@@ -137,50 +167,52 @@ const Profile = () => {
   const handleMyOrders = () => {
     navigate('/checkout');
     toast({
-      title: t("my_orders"),
-      description: t("viewing_orders")
+      title: "My Orders",
+      description: "Viewing your order history"
     });
   };
 
   const handlePaymentMethods = () => {
+    navigate('/profile/payment-methods');
     toast({
-      title: t("payment_methods"),
-      description: t("payment_coming_soon")
+      title: "Payment Methods",
+      description: "Opening payment methods (Demo)"
     });
   };
 
   const handleShippingAddresses = () => {
+    navigate('/profile/addresses');
     toast({
-      title: t("shipping_addresses"),
-      description: t("shipping_coming_soon")
+      title: "Shipping Addresses",
+      description: "Opening addresses (Demo)"
     });
   };
 
   const handleNotifications = () => {
     toast({
-      title: t("notifications"),
-      description: t("notifications_coming_soon")
+      title: "Notification Settings",
+      description: "Updated notification preferences"
     });
   };
 
   const handlePrivacySecurity = () => {
     toast({
-      title: t("privacy_security"),
-      description: t("privacy_coming_soon")
+      title: "Privacy & Security",
+      description: "Opening privacy settings (Demo)"
     });
   };
 
   const handleHelpSupport = () => {
     toast({
-      title: t("help_support"),
-      description: t("support_coming_soon")
+      title: "Help & Support",
+      description: "Opening support center (Demo)"
     });
   };
 
   const handleAbout = () => {
     toast({
-      title: t("about"),
-      description: t("app_info_coming_soon")
+      title: "About Dhayan",
+      description: "Version 1.0.0 - Built with ❤️ for seniors"
     });
   };
 
@@ -230,23 +262,45 @@ const Profile = () => {
 
   const profileActions = [
     {
-      section: t("accessibility"),
+      section: "Accessibility",
       items: [
-        { icon: Type, label: t("text_size"), onClick: handleTextSizeChange },
-        { icon: Eye, label: t("high_contrast"), onClick: handleHighContrastToggle },
-        { icon: Globe, label: t("language"), onClick: handleLanguageChange },
+        { 
+          icon: Type, 
+          label: `Text Size (${textSize})`, 
+          onClick: handleTextSizeChange,
+          hasToggle: false
+        },
+        { 
+          icon: Eye, 
+          label: "High Contrast", 
+          onClick: handleHighContrastToggle,
+          hasToggle: true,
+          isToggled: highContrast
+        },
+        { 
+          icon: Globe, 
+          label: `Language (${language === "en" ? "English" : "हिंदी"})`, 
+          onClick: handleLanguageChange,
+          hasToggle: false
+        },
       ]
     },
     {
-      section: t("settings"),
+      section: "Account Settings",
       items: [
-        { icon: ShoppingBag, label: t("my_orders"), onClick: handleMyOrders },
-        { icon: CreditCard, label: t("payment_methods"), onClick: handlePaymentMethods },
-        { icon: MapPin, label: t("shipping_addresses"), onClick: handleShippingAddresses },
-        { icon: Bell, label: t("notifications"), onClick: handleNotifications },
-        { icon: Shield, label: t("privacy_security"), onClick: handlePrivacySecurity },
-        { icon: HelpCircle, label: t("help_support"), onClick: handleHelpSupport },
-        { icon: Info, label: t("about"), onClick: handleAbout },
+        { icon: ShoppingBag, label: "My Orders", onClick: handleMyOrders },
+        { icon: CreditCard, label: "Payment Methods", onClick: handlePaymentMethods },
+        { icon: MapPin, label: "Shipping Addresses", onClick: handleShippingAddresses },
+        { 
+          icon: Bell, 
+          label: "Notifications", 
+          onClick: handleNotifications,
+          hasToggle: true,
+          isToggled: notifications.orders
+        },
+        { icon: Shield, label: "Privacy & Security", onClick: handlePrivacySecurity },
+        { icon: HelpCircle, label: "Help & Support", onClick: handleHelpSupport },
+        { icon: Info, label: "About", onClick: handleAbout },
       ]
     }
   ];
@@ -268,7 +322,7 @@ const Profile = () => {
   return (
     <MobileLayout>
       <div className="p-4 space-y-6">
-        <h1 className="text-2xl font-bold mb-4">{t("my_profile")}</h1>
+        <h1 className="text-2xl font-bold mb-4">My Profile</h1>
         
         <Card>
           <CardContent className="p-6">
@@ -281,7 +335,7 @@ const Profile = () => {
               </Avatar>
               <div className="flex-1">
                 <h2 className="text-xl font-semibold">{user.displayName || "User"}</h2>
-                <p className="text-dhayan-gray">{user.email || user.phoneNumber || "No contact info"}</p>
+                <p className="text-gray-600">{user.email || user.phoneNumber || "No contact info"}</p>
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -383,7 +437,16 @@ const Profile = () => {
                             <item.icon className="h-5 w-5 mr-3 text-gray-500" />
                             <span>{item.label}</span>
                           </div>
-                          <ChevronRight className="h-4 w-4 text-gray-400" />
+                          <div className="flex items-center">
+                            {item.hasToggle && (
+                              <Switch 
+                                checked={item.isToggled || false}
+                                onCheckedChange={() => item.onClick()}
+                                className="mr-2"
+                              />
+                            )}
+                            <ChevronRight className="h-4 w-4 text-gray-400" />
+                          </div>
                         </Button>
                         {index < section.items.length - 1 && <Separator />}
                       </li>
