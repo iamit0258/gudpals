@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, Package, ChevronRight, Pencil, Type, Eye, Globe, ShoppingBag, CreditCard, MapPin, Bell, Shield, HelpCircle, Info, MessageSquare } from "lucide-react";
+import { LogOut, Package, ChevronRight, User, Type, Eye, Globe, ShoppingBag, CreditCard, MapPin, Bell, Shield, HelpCircle, Info, MessageSquare } from "lucide-react";
 import { useAuth } from "@/context/auth";
 import { useLanguage } from "@/context/language/LanguageContext";
 import { Separator } from "@/components/ui/separator";
@@ -44,6 +43,14 @@ const Profile = () => {
     if (storedChats) {
       setAstrologyChats(JSON.parse(storedChats));
     }
+    
+    // Load profile data
+    const storedProfile = localStorage.getItem('profileData');
+    if (storedProfile) {
+      const profileData = JSON.parse(storedProfile);
+      setBio(profileData.bio || bio);
+      setInterestTags(profileData.interests || interestTags);
+    }
   }, []);
   
   if (!user) {
@@ -63,6 +70,7 @@ const Profile = () => {
   }
 
   const handleEditProfile = () => {
+    setDisplayName(user?.displayName || "");
     setShowEditDialog(true);
   };
   
@@ -280,8 +288,8 @@ const Profile = () => {
                   className="mt-2 text-xs"
                   onClick={handleEditProfile}
                 >
-                  <Pencil className="h-3 w-3 mr-1" />
-                  {t("edit_profile")}
+                  <User className="h-3 w-3 mr-1" />
+                  Edit Profile
                 </Button>
               </div>
             </div>
@@ -290,7 +298,7 @@ const Profile = () => {
             
             <div className="mt-3">
               <h3 className="text-sm font-medium text-gray-500 mb-2">
-                {t("interests")}
+                Interests
               </h3>
               <div className="flex flex-wrap gap-2">
                 {interestTags.map((tag, index) => (

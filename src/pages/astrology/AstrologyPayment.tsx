@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import MobileLayout from "@/components/layout/MobileLayout";
@@ -271,7 +270,7 @@ const AstrologyPayment = () => {
                     <Input 
                       value={upiId}
                       onChange={(e) => setUpiId(formatUpiId(e.target.value))}
-                      placeholder="name@upi"
+                      placeholder="yourname@upi"
                       className="pl-10"
                     />
                     <Smartphone className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />

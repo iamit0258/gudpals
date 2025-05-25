@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import MobileLayout from "@/components/layout/MobileLayout";
@@ -130,8 +129,8 @@ const AstrologyChat = () => {
         </div>
       </div>
 
-      {/* Chat Messages */}
-      <div className="flex-1 p-4 pb-24 bg-gray-50">
+      {/* Chat Messages - Updated padding to prevent overlap */}
+      <div className="flex-1 p-4 pb-28 bg-gray-50 min-h-screen">
         <div className="space-y-3">
           {messages.map((message) => (
             <div
@@ -189,14 +188,14 @@ const AstrologyChat = () => {
         </div>
       </div>
 
-      {/* Message Input - Fixed with proper bottom padding */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-3 pb-6">
-        <div className="flex items-center">
+      {/* Message Input - Fixed positioning with safe area */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 max-w-md mx-auto safe-area-inset-bottom">
+        <div className="flex items-center gap-2">
           <Input
             placeholder="Type your message..."
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            className="flex-1 mr-2"
+            className="flex-1"
             onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
           />
           <Button
