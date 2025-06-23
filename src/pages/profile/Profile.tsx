@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { UserButton } from "@clerk/clerk-react";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LogOut, Package, ChevronRight, User, Type, Eye, Globe, ShoppingBag, CreditCard, MapPin, Bell, Shield, HelpCircle, Info, MessageSquare, Settings } from "lucide-react";
-import { useAuth } from "@/context/auth";
+import { useAuth } from "@/context/ClerkAuthBridge";
 import { useLanguage } from "@/context/language/LanguageContext";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
@@ -71,7 +72,7 @@ const Profile = () => {
           <h2 className="text-xl font-semibold text-center mb-4">{t("please_sign_in")}</h2>
           <Button
             className="bg-dhayan-purple hover:bg-dhayan-purple-dark text-white w-full max-w-xs"
-            onClick={() => navigate("/login")}
+            onClick={() => navigate("/sign-in")}
           >
             {t("sign_in")}
           </Button>
@@ -228,7 +229,7 @@ const Profile = () => {
         title: t("logged_out"),
         description: t("logout_success")
       });
-      navigate("/login");
+      navigate("/sign-in");
     } catch (error) {
       console.error("Logout error:", error);
       toast({
@@ -336,15 +337,24 @@ const Profile = () => {
               <div className="flex-1">
                 <h2 className="text-xl font-semibold">{user.displayName || "User"}</h2>
                 <p className="text-gray-600">{user.email || user.phoneNumber || "No contact info"}</p>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="mt-2 text-xs"
-                  onClick={handleEditProfile}
-                >
-                  <User className="h-3 w-3 mr-1" />
-                  Edit Profile
-                </Button>
+                <div className="flex items-center gap-2 mt-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-xs"
+                    onClick={handleEditProfile}
+                  >
+                    <User className="h-3 w-3 mr-1" />
+                    Edit Profile
+                  </Button>
+                  <UserButton 
+                    appearance={{
+                      elements: {
+                        avatarBox: "w-8 h-8"
+                      }
+                    }}
+                  />
+                </div>
               </div>
             </div>
             

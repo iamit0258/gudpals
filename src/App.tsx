@@ -5,15 +5,15 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "@/context/auth";
+import { SignedIn, SignedOut } from "@clerk/clerk-react";
+import { AuthProvider, useAuth } from "@/context/ClerkAuthBridge";
 import { LanguageProvider } from "@/context/language/LanguageContext";
 
 // Pages
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import Login from "./pages/auth/Login";
-import Verify from "./pages/auth/Verify";
-import Register from "./pages/auth/Register";
+import ClerkLogin from "./pages/auth/ClerkLogin";
+import ClerkRegister from "./pages/auth/ClerkRegister";
 import Profile from "./pages/profile/Profile";
 import Friends from "./pages/friends/Friends";
 import Products from "./pages/products/Products";
@@ -33,24 +33,16 @@ import AstrologyPayment from "./pages/astrology/AstrologyPayment";
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, isLoading } = useAuth();
-  
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-t-dhayan-purple border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="mt-4 text-dhayan-gray">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-  
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-  
-  return <>{children}</>;
+  return (
+    <>
+      <SignedIn>
+        {children}
+      </SignedIn>
+      <SignedOut>
+        <Navigate to="/sign-in" replace />
+      </SignedOut>
+    </>
+  );
 };
 
 // Create the app content component
@@ -62,27 +54,31 @@ const AppContent = () => {
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<Index />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/verify" element={<Verify />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/sign-in" element={<ClerkLogin />} />
+        <Route path="/sign-up" element={<ClerkRegister />} />
         
-        {/* Feature routes */}
-        <Route path="/friends" element={<Friends />} />
-        <Route path="/products" element={<Products />} />
-        <Route path="/products/:productId" element={<ProductDetail />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/sessions" element={<Sessions />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/digitalLiteracy" element={<DigitalLiteracy />} />
-        <Route path="/activities" element={<Activities />} />
-        <Route path="/employment" element={<Employment />} />
-        <Route path="/travel" element={<Travel />} />
-        <Route path="/games" element={<Games />} />
-        <Route path="/events" element={<Events />} />
-        <Route path="/astrology" element={<Astrology />} />
-        <Route path="/astrology/chat" element={<AstrologyChat />} />
-        <Route path="/astrology/payment" element={<AstrologyPayment />} />
+        {/* Protected routes */}
+        <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
+        <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
+        <Route path="/products/:productId" element={<ProtectedRoute><ProductDetail /></ProtectedRoute>} />
+        <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+        <Route path="/sessions" element={<ProtectedRoute><Sessions /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+        <Route path="/digitalLiteracy" element={<ProtectedRoute><DigitalLiteracy /></ProtectedRoute>} />
+        <Route path="/activities" element={<ProtectedRoute><Activities /></ProtectedRoute>} />
+        <Route path="/employment" element={<ProtectedRoute><Employment /></ProtectedRoute>} />
+        <Route path="/travel" element={<ProtectedRoute><Travel /></ProtectedRoute>} />
+        <Route path="/games" element={<ProtectedRoute><Games /></ProtectedRoute>} />
+        <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
+        <Route path="/astrology" element={<ProtectedRoute><Astrology /></ProtectedRoute>} />
+        <Route path="/astrology/chat" element={<ProtectedRoute><AstrologyChat /></ProtectedRoute>} />
+        <Route path="/astrology/payment" element={<ProtectedRoute><AstrologyPayment /></ProtectedRoute>} />
+        
+        {/* Legacy routes for compatibility */}
+        <Route path="/login" element={<Navigate to="/sign-in" replace />} />
+        <Route path="/register" element={<Navigate to="/sign-up" replace />} />
+        <Route path="/verify" element={<Navigate to="/sign-in" replace />} />
         
         {/* 404 route */}
         <Route path="*" element={<NotFound />} />
