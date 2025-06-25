@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -83,7 +82,10 @@ export const useAstrologyService = () => {
       // Transform the data to match our interface
       const transformedData = data?.map(astrologer => ({
         ...astrologer,
-        profiles: astrologer.profiles && typeof astrologer.profiles === 'object' && 'display_name' in astrologer.profiles ? {
+        profiles: astrologer.profiles && 
+                  astrologer.profiles !== null && 
+                  typeof astrologer.profiles === 'object' && 
+                  'display_name' in astrologer.profiles ? {
           display_name: astrologer.profiles.display_name || '',
           photo_url: astrologer.profiles.photo_url || ''
         } : undefined
@@ -144,7 +146,10 @@ export const useAstrologyService = () => {
         ...consultation,
         astrologers: consultation.astrologers ? {
           ...consultation.astrologers,
-          profiles: consultation.astrologers.profiles && typeof consultation.astrologers.profiles === 'object' && 'display_name' in consultation.astrologers.profiles ? {
+          profiles: consultation.astrologers.profiles && 
+                    consultation.astrologers.profiles !== null &&
+                    typeof consultation.astrologers.profiles === 'object' && 
+                    'display_name' in consultation.astrologers.profiles ? {
             display_name: consultation.astrologers.profiles.display_name || '',
             photo_url: consultation.astrologers.profiles.photo_url || ''
           } : undefined

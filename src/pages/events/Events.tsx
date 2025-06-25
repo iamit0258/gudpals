@@ -9,62 +9,95 @@ import { Search, Filter } from "lucide-react";
 import EventRegistration from "@/components/events/EventRegistration";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/context/language/LanguageContext";
+import { useEventRegistration } from "@/hooks/useEventRegistration";
 
-// Mock events data
-const mockEvents = [
-  {
-    id: "1",
-    title: "Yoga for Seniors",
-    date: "15 April 2025",
-    time: "9:00 AM - 10:00 AM",
-    location: "Community Center, Andheri",
-    participants: 18,
-    maxParticipants: 25,
-    category: "health"
-  },
-  {
-    id: "2",
-    title: "Digital Skills Workshop",
-    date: "17 April 2025",
-    time: "11:00 AM - 12:30 PM",
-    location: "Public Library, Bandra",
-    participants: 12,
-    maxParticipants: 20,
-    category: "technology"
-  },
-  {
-    id: "3",
-    title: "Art and Craft Session",
-    date: "20 April 2025",
-    time: "3:00 PM - 4:30 PM",
-    location: "Senior Center, Dadar",
-    participants: 15,
-    maxParticipants: 20,
-    category: "creativity"
-  },
-  {
-    id: "4",
-    title: "Health Check-up Camp",
-    date: "25 April 2025",
-    time: "10:00 AM - 2:00 PM",
-    location: "City Hospital, Malad",
-    participants: 45,
-    maxParticipants: 100,
-    category: "health"
-  }
-];
+// Mock events data with real-time scheduling
+const generateUpcomingEvents = () => {
+  const now = new Date();
+  const events = [
+    {
+      id: "1",
+      title: "Yoga for Seniors",
+      time: "9:00 AM - 10:00 AM",
+      location: "Community Center, Andheri",
+      participants: 18,
+      maxParticipants: 25,
+      category: "health"
+    },
+    {
+      id: "2",
+      title: "Digital Skills Workshop",
+      time: "11:00 AM - 12:30 PM",
+      location: "Public Library, Bandra",
+      participants: 12,
+      maxParticipants: 20,
+      category: "technology"
+    },
+    {
+      id: "3",
+      title: "Art and Craft Session",
+      time: "3:00 PM - 4:30 PM",
+      location: "Senior Center, Dadar",
+      participants: 15,
+      maxParticipants: 20,
+      category: "creativity"
+    },
+    {
+      id: "4",
+      title: "Health Check-up Camp",
+      time: "10:00 AM - 2:00 PM",
+      location: "City Hospital, Malad",
+      participants: 45,
+      maxParticipants: 100,
+      category: "health"
+    }
+  ];
+
+  // Generate dates for the next 7 days
+  return events.map((event, index) => {
+    const eventDate = new Date(now);
+    eventDate.setDate(now.getDate() + index + 1);
+    
+    return {
+      ...event,
+      date: eventDate.toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      })
+    };
+  });
+};
 
 const Events = () => {
-  const [events, setEvents] = useState(mockEvents);
-  const [registeredEvents, setRegisteredEvents] = useState<string[]>([]);
+  const [events, setEvents] = useState(generateUpcomingEvents());
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
   const { toast } = useToast();
   const { t } = useLanguage();
   const location = useLocation();
+  const { registrations, fetchUserRegistrations } = useEventRegistration();
   
-  // Check if the user just registered for an event (coming from login/register flow)
+  // Check if the user just completed registration flow
   useEffect(() => {
+    const eventRegData = sessionStorage.getItem("event_registration");
+    if (eventRegData) {
+      try {
+        const data = JSON.parse(eventRegData);
+        toast({
+          title: t("registration_successful"),
+          description: `${t("registered_for")} ${data.title}`,
+        });
+        
+        // Clear the stored registration data
+        sessionStorage.removeItem("event_registration");
+      } catch (error) {
+        console.error("Error parsing event registration data:", error);
+      }
+    }
+
+    // Check URL parameters for registration success
     const params = new URLSearchParams(location.search);
     const registeredParam = params.get("registered");
     const eventName = params.get("event");
@@ -74,17 +107,12 @@ const Events = () => {
         title: t("registration_successful"),
         description: `${t("registered_for")} ${eventName}`,
       });
-      
-      // Find the event by name and add to registered events
-      const event = events.find(e => e.title === eventName);
-      if (event) {
-        setRegisteredEvents(prev => [...prev, event.id]);
-      }
     }
-  }, [location, toast, t, events]);
+  }, [location, toast, t]);
   
   const handleRegister = (eventId: string) => {
-    setRegisteredEvents(prev => [...prev, eventId]);
+    // Refresh registrations after registration
+    fetchUserRegistrations();
   };
   
   const filteredEvents = events.filter(event => {
@@ -93,7 +121,10 @@ const Events = () => {
     return matchesSearch && matchesFilter;
   });
   
-  const myEvents = events.filter(event => registeredEvents.includes(event.id));
+  // Get registered events by matching IDs
+  const myEvents = events.filter(event => 
+    registrations.some(reg => reg.activity_id === event.id)
+  );
   
   return (
     <MobileLayout>
@@ -106,7 +137,9 @@ const Events = () => {
           <div className="px-4">
             <TabsList className="w-full grid grid-cols-2 mb-4">
               <TabsTrigger value="upcoming">{t("upcoming_events")}</TabsTrigger>
-              <TabsTrigger value="registered">{t("your_events")}</TabsTrigger>
+              <TabsTrigger value="registered">
+                {t("your_events")} {registrations.length > 0 && `(${registrations.length})`}
+              </TabsTrigger>
             </TabsList>
           </div>
           
@@ -171,7 +204,6 @@ const Events = () => {
                     location={event.location}
                     participants={event.participants}
                     maxParticipants={event.maxParticipants}
-                    isRegistered={registeredEvents.includes(event.id)}
                     onRegister={() => handleRegister(event.id)}
                   />
                 ))
@@ -197,11 +229,15 @@ const Events = () => {
                     participants={event.participants}
                     maxParticipants={event.maxParticipants}
                     isRegistered={true}
+                    onRegister={() => handleRegister(event.id)}
                   />
                 ))
               ) : (
                 <div className="text-center py-10">
                   <p className="text-muted-foreground">{t("no_registered_events")}</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Register for events to see them here and receive reminders
+                  </p>
                 </div>
               )}
             </div>

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -69,7 +68,10 @@ export const useFriendsService = () => {
       // Transform the data to match our interface
       const transformedData = data?.map(request => ({
         ...request,
-        profiles: request.profiles && typeof request.profiles === 'object' && 'display_name' in request.profiles ? {
+        profiles: request.profiles && 
+                  request.profiles !== null &&
+                  typeof request.profiles === 'object' && 
+                  'display_name' in request.profiles ? {
           display_name: request.profiles.display_name || '',
           photo_url: request.profiles.photo_url || ''
         } : undefined
@@ -117,7 +119,10 @@ export const useFriendsService = () => {
       // Transform the data to match our interface
       const transformedData = data?.map(connection => ({
         ...connection,
-        profiles: connection.profiles && typeof connection.profiles === 'object' && 'display_name' in connection.profiles ? {
+        profiles: connection.profiles && 
+                  connection.profiles !== null &&
+                  typeof connection.profiles === 'object' && 
+                  'display_name' in connection.profiles ? {
           display_name: connection.profiles.display_name || '',
           photo_url: connection.profiles.photo_url || ''
         } : undefined
