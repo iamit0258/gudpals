@@ -42,7 +42,7 @@ export const useFriendsService = () => {
         .from('friend_requests')
         .select(`
           *,
-          profiles!friend_requests_sender_id_fkey (
+          profiles!sender_id (
             display_name,
             photo_url
           )
@@ -69,7 +69,7 @@ export const useFriendsService = () => {
       // Transform the data to match our interface
       const transformedData = data?.map(request => ({
         ...request,
-        profiles: request.profiles ? {
+        profiles: request.profiles && typeof request.profiles === 'object' && 'display_name' in request.profiles ? {
           display_name: request.profiles.display_name || '',
           photo_url: request.profiles.photo_url || ''
         } : undefined
@@ -92,7 +92,7 @@ export const useFriendsService = () => {
         .from('user_connections')
         .select(`
           *,
-          profiles!user_connections_user_id_1_fkey (
+          profiles!user_id_1 (
             display_name,
             photo_url
           )
@@ -117,7 +117,7 @@ export const useFriendsService = () => {
       // Transform the data to match our interface
       const transformedData = data?.map(connection => ({
         ...connection,
-        profiles: connection.profiles ? {
+        profiles: connection.profiles && typeof connection.profiles === 'object' && 'display_name' in connection.profiles ? {
           display_name: connection.profiles.display_name || '',
           photo_url: connection.profiles.photo_url || ''
         } : undefined

@@ -52,11 +52,13 @@ export const useAstrologyService = () => {
   const fetchAstrologers = async () => {
     try {
       setLoading(true);
+      
+      // First try with profiles join
       const { data, error } = await supabase
         .from('astrologers')
         .select(`
           *,
-          profiles!astrologers_user_id_fkey (
+          profiles (
             display_name,
             photo_url
           )
@@ -64,12 +66,24 @@ export const useAstrologyService = () => {
         .eq('is_available', true)
         .order('rating', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching astrologers with profiles:", error);
+        // Fallback to simple query without profiles
+        const { data: simpleData, error: simpleError } = await supabase
+          .from('astrologers')
+          .select('*')
+          .eq('is_available', true)
+          .order('rating', { ascending: false });
+        
+        if (simpleError) throw simpleError;
+        setAstrologers(simpleData || []);
+        return;
+      }
       
       // Transform the data to match our interface
       const transformedData = data?.map(astrologer => ({
         ...astrologer,
-        profiles: astrologer.profiles ? {
+        profiles: astrologer.profiles && typeof astrologer.profiles === 'object' && 'display_name' in astrologer.profiles ? {
           display_name: astrologer.profiles.display_name || '',
           photo_url: astrologer.profiles.photo_url || ''
         } : undefined
@@ -99,7 +113,7 @@ export const useAstrologyService = () => {
           *,
           astrologers (
             *,
-            profiles!astrologers_user_id_fkey (
+            profiles (
               display_name,
               photo_url
             )
@@ -108,14 +122,29 @@ export const useAstrologyService = () => {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching consultations with profiles:", error);
+        // Fallback to simple query without profiles
+        const { data: simpleData, error: simpleError } = await supabase
+          .from('astrology_consultations')
+          .select(`
+            *,
+            astrologers (*)
+          `)
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+        
+        if (simpleError) throw simpleError;
+        setConsultations(simpleData || []);
+        return;
+      }
       
       // Transform the data to match our interface
       const transformedData = data?.map(consultation => ({
         ...consultation,
         astrologers: consultation.astrologers ? {
           ...consultation.astrologers,
-          profiles: consultation.astrologers.profiles ? {
+          profiles: consultation.astrologers.profiles && typeof consultation.astrologers.profiles === 'object' && 'display_name' in consultation.astrologers.profiles ? {
             display_name: consultation.astrologers.profiles.display_name || '',
             photo_url: consultation.astrologers.profiles.photo_url || ''
           } : undefined
