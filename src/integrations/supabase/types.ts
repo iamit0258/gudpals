@@ -72,6 +72,127 @@ export type Database = {
         }
         Relationships: []
       }
+      astrologers: {
+        Row: {
+          created_at: string
+          experience_years: number | null
+          id: string
+          is_available: boolean | null
+          rate_per_minute: number | null
+          rating: number | null
+          specialization: string[] | null
+          total_consultations: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          experience_years?: number | null
+          id?: string
+          is_available?: boolean | null
+          rate_per_minute?: number | null
+          rating?: number | null
+          specialization?: string[] | null
+          total_consultations?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          experience_years?: number | null
+          id?: string
+          is_available?: boolean | null
+          rate_per_minute?: number | null
+          rating?: number | null
+          specialization?: string[] | null
+          total_consultations?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      astrology_chats: {
+        Row: {
+          consultation_id: string
+          created_at: string
+          id: string
+          message: string
+          message_type: string | null
+          sender_id: string
+        }
+        Insert: {
+          consultation_id: string
+          created_at?: string
+          id?: string
+          message: string
+          message_type?: string | null
+          sender_id: string
+        }
+        Update: {
+          consultation_id?: string
+          created_at?: string
+          id?: string
+          message?: string
+          message_type?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_chats_consultation"
+            columns: ["consultation_id"]
+            isOneToOne: false
+            referencedRelation: "astrology_consultations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      astrology_consultations: {
+        Row: {
+          astrologer_id: string
+          consultation_type: string | null
+          created_at: string
+          duration_minutes: number | null
+          ended_at: string | null
+          id: string
+          payment_status: string | null
+          started_at: string | null
+          status: string | null
+          total_cost: number | null
+          user_id: string
+        }
+        Insert: {
+          astrologer_id: string
+          consultation_type?: string | null
+          created_at?: string
+          duration_minutes?: number | null
+          ended_at?: string | null
+          id?: string
+          payment_status?: string | null
+          started_at?: string | null
+          status?: string | null
+          total_cost?: number | null
+          user_id: string
+        }
+        Update: {
+          astrologer_id?: string
+          consultation_type?: string | null
+          created_at?: string
+          duration_minutes?: number | null
+          ended_at?: string | null
+          id?: string
+          payment_status?: string | null
+          started_at?: string | null
+          status?: string | null
+          total_cost?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_consultations_astrologer"
+            columns: ["astrologer_id"]
+            isOneToOne: false
+            referencedRelation: "astrologers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cart_items: {
         Row: {
           cart_id: string
@@ -127,6 +248,222 @@ export type Database = {
           created_at?: string
           id?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      chat_messages: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean | null
+          message: string
+          message_type: string | null
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message: string
+          message_type?: string | null
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          message_type?: string | null
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
+      digital_literacy_courses: {
+        Row: {
+          content_url: string | null
+          created_at: string
+          description: string | null
+          difficulty_level: string | null
+          duration_minutes: number | null
+          id: string
+          instructor: string | null
+          is_published: boolean | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content_url?: string | null
+          created_at?: string
+          description?: string | null
+          difficulty_level?: string | null
+          duration_minutes?: number | null
+          id?: string
+          instructor?: string | null
+          is_published?: boolean | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content_url?: string | null
+          created_at?: string
+          description?: string | null
+          difficulty_level?: string | null
+          duration_minutes?: number | null
+          id?: string
+          instructor?: string | null
+          is_published?: boolean | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      employment_opportunities: {
+        Row: {
+          company_name: string | null
+          contact_info: Json | null
+          created_at: string
+          description: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          job_type: string | null
+          location: string | null
+          posted_by: string | null
+          requirements: string[] | null
+          salary_range: string | null
+          title: string
+        }
+        Insert: {
+          company_name?: string | null
+          contact_info?: Json | null
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          job_type?: string | null
+          location?: string | null
+          posted_by?: string | null
+          requirements?: string[] | null
+          salary_range?: string | null
+          title: string
+        }
+        Update: {
+          company_name?: string | null
+          contact_info?: Json | null
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          job_type?: string | null
+          location?: string | null
+          posted_by?: string | null
+          requirements?: string[] | null
+          salary_range?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      friend_requests: {
+        Row: {
+          created_at: string
+          id: string
+          message: string | null
+          receiver_id: string
+          sender_id: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          receiver_id: string
+          sender_id: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          receiver_id?: string
+          sender_id?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      games: {
+        Row: {
+          created_at: string
+          description: string | null
+          game_type: string | null
+          id: string
+          is_active: boolean | null
+          max_players: number | null
+          min_age: number | null
+          name: string
+          rules: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          game_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_players?: number | null
+          min_age?: number | null
+          name: string
+          rules?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          game_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_players?: number | null
+          min_age?: number | null
+          name?: string
+          rules?: string | null
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          action_url: string | null
+          created_at: string
+          id: string
+          is_read: boolean | null
+          message: string
+          title: string
+          type: string | null
+          user_id: string
+        }
+        Insert: {
+          action_url?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message: string
+          title: string
+          type?: string | null
+          user_id: string
+        }
+        Update: {
+          action_url?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          title?: string
+          type?: string | null
           user_id?: string
         }
         Relationships: []
@@ -202,6 +539,109 @@ export type Database = {
         }
         Relationships: []
       }
+      product_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: number
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: number
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
+      product_reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          product_id: number
+          rating: number | null
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          product_id: number
+          rating?: number | null
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          product_id?: number
+          rating?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_reviews_product"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          category_id: number | null
+          created_at: string
+          description: string | null
+          id: number
+          image_url: string | null
+          is_active: boolean | null
+          name: string
+          price: number
+          stock_quantity: number | null
+          updated_at: string
+        }
+        Insert: {
+          category_id?: number | null
+          created_at?: string
+          description?: string | null
+          id?: number
+          image_url?: string | null
+          is_active?: boolean | null
+          name: string
+          price: number
+          stock_quantity?: number | null
+          updated_at?: string
+        }
+        Update: {
+          category_id?: number | null
+          created_at?: string
+          description?: string | null
+          id?: number
+          image_url?: string | null
+          is_active?: boolean | null
+          name?: string
+          price?: number
+          stock_quantity?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_products_category"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "product_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -260,6 +700,114 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      travel_packages: {
+        Row: {
+          available_slots: number | null
+          created_at: string
+          description: string | null
+          destination: string
+          duration_days: number | null
+          end_date: string | null
+          id: string
+          images: string[] | null
+          included_services: string[] | null
+          is_active: boolean | null
+          max_participants: number | null
+          price: number | null
+          start_date: string | null
+          title: string
+        }
+        Insert: {
+          available_slots?: number | null
+          created_at?: string
+          description?: string | null
+          destination: string
+          duration_days?: number | null
+          end_date?: string | null
+          id?: string
+          images?: string[] | null
+          included_services?: string[] | null
+          is_active?: boolean | null
+          max_participants?: number | null
+          price?: number | null
+          start_date?: string | null
+          title: string
+        }
+        Update: {
+          available_slots?: number | null
+          created_at?: string
+          description?: string | null
+          destination?: string
+          duration_days?: number | null
+          end_date?: string | null
+          id?: string
+          images?: string[] | null
+          included_services?: string[] | null
+          is_active?: boolean | null
+          max_participants?: number | null
+          price?: number | null
+          start_date?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      user_connections: {
+        Row: {
+          connected_at: string
+          id: string
+          user_id_1: string
+          user_id_2: string
+        }
+        Insert: {
+          connected_at?: string
+          id?: string
+          user_id_1: string
+          user_id_2: string
+        }
+        Update: {
+          connected_at?: string
+          id?: string
+          user_id_1?: string
+          user_id_2?: string
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          astrology_preferences: Json | null
+          created_at: string
+          email_notifications: boolean | null
+          id: string
+          interests: string[] | null
+          language: string | null
+          notifications_enabled: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          astrology_preferences?: Json | null
+          created_at?: string
+          email_notifications?: boolean | null
+          id?: string
+          interests?: string[] | null
+          language?: string | null
+          notifications_enabled?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          astrology_preferences?: Json | null
+          created_at?: string
+          email_notifications?: boolean | null
+          id?: string
+          interests?: string[] | null
+          language?: string | null
+          notifications_enabled?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
