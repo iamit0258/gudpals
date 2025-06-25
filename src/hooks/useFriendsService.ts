@@ -65,13 +65,14 @@ export const useFriendsService = () => {
         return;
       }
       
-      // Transform the data to match our interface
+      // Transform the data to match our interface with proper null checks
       const transformedData = data?.map(request => ({
         ...request,
-        profiles: request.profiles && 
+        profiles: (request.profiles && 
                   request.profiles !== null &&
                   typeof request.profiles === 'object' && 
-                  'display_name' in request.profiles ? {
+                  'display_name' in request.profiles &&
+                  'photo_url' in request.profiles) ? {
           display_name: request.profiles.display_name || '',
           photo_url: request.profiles.photo_url || ''
         } : undefined
@@ -116,13 +117,14 @@ export const useFriendsService = () => {
         return;
       }
       
-      // Transform the data to match our interface
+      // Transform the data to match our interface with proper null checks
       const transformedData = data?.map(connection => ({
         ...connection,
-        profiles: connection.profiles && 
+        profiles: (connection.profiles && 
                   connection.profiles !== null &&
                   typeof connection.profiles === 'object' && 
-                  'display_name' in connection.profiles ? {
+                  'display_name' in connection.profiles &&
+                  'photo_url' in connection.profiles) ? {
           display_name: connection.profiles.display_name || '',
           photo_url: connection.profiles.photo_url || ''
         } : undefined
