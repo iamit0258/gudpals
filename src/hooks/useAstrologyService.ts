@@ -56,7 +56,7 @@ export const useAstrologyService = () => {
         .from('astrologers')
         .select(`
           *,
-          profiles:user_id (
+          profiles!astrologers_user_id_fkey (
             display_name,
             photo_url
           )
@@ -65,7 +65,17 @@ export const useAstrologyService = () => {
         .order('rating', { ascending: false });
 
       if (error) throw error;
-      setAstrologers(data || []);
+      
+      // Transform the data to match our interface
+      const transformedData = data?.map(astrologer => ({
+        ...astrologer,
+        profiles: astrologer.profiles ? {
+          display_name: astrologer.profiles.display_name || '',
+          photo_url: astrologer.profiles.photo_url || ''
+        } : undefined
+      })) || [];
+      
+      setAstrologers(transformedData);
     } catch (error) {
       console.error("Error fetching astrologers:", error);
       toast({
@@ -89,7 +99,7 @@ export const useAstrologyService = () => {
           *,
           astrologers (
             *,
-            profiles:user_id (
+            profiles!astrologers_user_id_fkey (
               display_name,
               photo_url
             )
@@ -99,7 +109,20 @@ export const useAstrologyService = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setConsultations(data || []);
+      
+      // Transform the data to match our interface
+      const transformedData = data?.map(consultation => ({
+        ...consultation,
+        astrologers: consultation.astrologers ? {
+          ...consultation.astrologers,
+          profiles: consultation.astrologers.profiles ? {
+            display_name: consultation.astrologers.profiles.display_name || '',
+            photo_url: consultation.astrologers.profiles.photo_url || ''
+          } : undefined
+        } : undefined
+      })) || [];
+      
+      setConsultations(transformedData);
     } catch (error) {
       console.error("Error fetching consultations:", error);
     }

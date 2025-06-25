@@ -51,8 +51,31 @@ export const useFriendsService = () => {
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setFriendRequests(data || []);
+      if (error) {
+        console.error("Error fetching friend requests:", error);
+        // If the foreign key doesn't work, fetch without profiles for now
+        const { data: simpleData, error: simpleError } = await supabase
+          .from('friend_requests')
+          .select('*')
+          .eq('receiver_id', user.id)
+          .eq('status', 'pending')
+          .order('created_at', { ascending: false });
+        
+        if (simpleError) throw simpleError;
+        setFriendRequests(simpleData || []);
+        return;
+      }
+      
+      // Transform the data to match our interface
+      const transformedData = data?.map(request => ({
+        ...request,
+        profiles: request.profiles ? {
+          display_name: request.profiles.display_name || '',
+          photo_url: request.profiles.photo_url || ''
+        } : undefined
+      })) || [];
+      
+      setFriendRequests(transformedData);
     } catch (error) {
       console.error("Error fetching friend requests:", error);
     }
@@ -65,7 +88,6 @@ export const useFriendsService = () => {
 
       setLoading(true);
 
-      // Fetch connections where user is either user_id_1 or user_id_2
       const { data, error } = await supabase
         .from('user_connections')
         .select(`
@@ -78,8 +100,30 @@ export const useFriendsService = () => {
         .or(`user_id_1.eq.${user.id},user_id_2.eq.${user.id}`)
         .order('connected_at', { ascending: false });
 
-      if (error) throw error;
-      setConnections(data || []);
+      if (error) {
+        console.error("Error fetching connections:", error);
+        // If the foreign key doesn't work, fetch without profiles for now
+        const { data: simpleData, error: simpleError } = await supabase
+          .from('user_connections')
+          .select('*')
+          .or(`user_id_1.eq.${user.id},user_id_2.eq.${user.id}`)
+          .order('connected_at', { ascending: false });
+        
+        if (simpleError) throw simpleError;
+        setConnections(simpleData || []);
+        return;
+      }
+      
+      // Transform the data to match our interface
+      const transformedData = data?.map(connection => ({
+        ...connection,
+        profiles: connection.profiles ? {
+          display_name: connection.profiles.display_name || '',
+          photo_url: connection.profiles.photo_url || ''
+        } : undefined
+      })) || [];
+      
+      setConnections(transformedData);
     } catch (error) {
       console.error("Error fetching connections:", error);
     } finally {

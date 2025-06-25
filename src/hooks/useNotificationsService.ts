@@ -124,9 +124,9 @@ export const useNotificationsService = () => {
 
   // Set up real-time subscription for new notifications
   useEffect(() => {
-    const { data: { user } } = supabase.auth.getUser();
-    
-    user.then(({ user }) => {
+    const setupRealtimeSubscription = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
       if (!user) return;
 
       const channel = supabase
@@ -155,8 +155,10 @@ export const useNotificationsService = () => {
       return () => {
         supabase.removeChannel(channel);
       };
-    });
-  }, []);
+    };
+
+    setupRealtimeSubscription();
+  }, [toast]);
 
   useEffect(() => {
     fetchNotifications();
