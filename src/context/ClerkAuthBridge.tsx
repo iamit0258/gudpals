@@ -90,21 +90,33 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       if (!clerkUser) throw new Error("No user logged in");
       
-      // Update Clerk user profile
+      console.log("Updating profile with data:", data);
+      
+      // Prepare updates for Clerk user
       const updates: any = {};
+      
       if (data.displayName) {
-        const names = data.displayName.split(' ');
-        updates.firstName = names[0];
+        const names = data.displayName.trim().split(' ');
+        updates.firstName = names[0] || '';
         if (names.length > 1) {
           updates.lastName = names.slice(1).join(' ');
+        } else {
+          updates.lastName = '';
         }
       }
       
-      await clerkUser.update(updates);
+      // Only update if we have changes to make
+      if (Object.keys(updates).length > 0) {
+        console.log("Updating Clerk user with:", updates);
+        await clerkUser.update(updates);
+        console.log("Clerk user updated successfully");
+      }
+      
       return { success: true };
-    } catch (error) {
+    } catch (error: any) {
       console.error("Profile update error:", error);
-      throw error;
+      // Return a more descriptive error
+      throw new Error(`Failed to update profile: ${error.message || 'Unknown error'}`);
     }
   };
 
