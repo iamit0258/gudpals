@@ -80,17 +80,22 @@ export const useAstrologyService = () => {
       }
       
       // Transform the data to match our interface with proper null checks
-      const transformedData = data?.map(astrologer => ({
-        ...astrologer,
-        profiles: (astrologer.profiles && 
-                  astrologer.profiles !== null &&
-                  typeof astrologer.profiles === 'object' && 
-                  'display_name' in astrologer.profiles && 
-                  'photo_url' in astrologer.profiles) ? {
-          display_name: astrologer.profiles.display_name || '',
-          photo_url: astrologer.profiles.photo_url || ''
-        } : undefined
-      })) || [];
+      const transformedData = data?.map(astrologer => {
+        // Safely check if profiles exists and has the required properties
+        const hasValidProfiles = astrologer.profiles && 
+                                astrologer.profiles !== null &&
+                                typeof astrologer.profiles === 'object' && 
+                                'display_name' in astrologer.profiles && 
+                                'photo_url' in astrologer.profiles;
+        
+        return {
+          ...astrologer,
+          profiles: hasValidProfiles ? {
+            display_name: astrologer.profiles?.display_name || '',
+            photo_url: astrologer.profiles?.photo_url || ''
+          } : undefined
+        };
+      }) || [];
       
       setAstrologers(transformedData);
     } catch (error) {
@@ -143,20 +148,29 @@ export const useAstrologyService = () => {
       }
       
       // Transform the data to match our interface with proper null checks
-      const transformedData = data?.map(consultation => ({
-        ...consultation,
-        astrologers: consultation.astrologers ? {
-          ...consultation.astrologers,
-          profiles: (consultation.astrologers.profiles && 
-                    consultation.astrologers.profiles !== null &&
-                    typeof consultation.astrologers.profiles === 'object' && 
-                    'display_name' in consultation.astrologers.profiles &&
-                    'photo_url' in consultation.astrologers.profiles) ? {
-            display_name: consultation.astrologers.profiles.display_name || '',
-            photo_url: consultation.astrologers.profiles.photo_url || ''
-          } : undefined
-        } : undefined
-      })) || [];
+      const transformedData = data?.map(consultation => {
+        if (!consultation.astrologers) {
+          return consultation;
+        }
+
+        // Safely check if astrologers.profiles exists and has the required properties
+        const hasValidProfiles = consultation.astrologers.profiles && 
+                                consultation.astrologers.profiles !== null &&
+                                typeof consultation.astrologers.profiles === 'object' && 
+                                'display_name' in consultation.astrologers.profiles &&
+                                'photo_url' in consultation.astrologers.profiles;
+
+        return {
+          ...consultation,
+          astrologers: {
+            ...consultation.astrologers,
+            profiles: hasValidProfiles ? {
+              display_name: consultation.astrologers.profiles?.display_name || '',
+              photo_url: consultation.astrologers.profiles?.photo_url || ''
+            } : undefined
+          }
+        };
+      }) || [];
       
       setConsultations(transformedData);
     } catch (error) {

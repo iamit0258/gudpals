@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, ReactNode } from "react";
 import { useUser, useAuth as useClerkAuth } from "@clerk/clerk-react";
+import { useUserSync } from "@/hooks/useUserSync";
 
 // Define the User type to match your existing structure
 interface User {
@@ -45,6 +46,9 @@ const AuthContext = createContext<AuthContextType>({
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { user: clerkUser, isLoaded } = useUser();
   const { signOut: clerkSignOut } = useClerkAuth();
+  
+  // Sync user data to Supabase database
+  useUserSync();
 
   // Transform Clerk user to match your existing User interface
   const user: User | null = clerkUser ? {
