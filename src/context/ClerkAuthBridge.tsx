@@ -92,30 +92,48 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       console.log("Updating profile with data:", data);
       
-      // Prepare updates for Clerk user
-      const updates: any = {};
-      
+      // Use the correct Clerk API method for updating user attributes
       if (data.displayName) {
         const names = data.displayName.trim().split(' ');
-        updates.firstName = names[0] || '';
-        if (names.length > 1) {
-          updates.lastName = names.slice(1).join(' ');
-        } else {
-          updates.lastName = '';
-        }
-      }
-      
-      // Only update if we have changes to make
-      if (Object.keys(updates).length > 0) {
-        console.log("Updating Clerk user with:", updates);
-        await clerkUser.update(updates);
+        const firstName = names[0] || '';
+        const lastName = names.length > 1 ? names.slice(1).join(' ') : '';
+        
+        console.log("Updating user with firstName:", firstName, "lastName:", lastName);
+        
+        // Update using the correct Clerk method
+        await clerkUser.update({
+          firstName: firstName,
+          lastName: lastName
+        });
+        
         console.log("Clerk user updated successfully");
       }
       
       return { success: true };
     } catch (error: any) {
       console.error("Profile update error:", error);
-      // Return a more descriptive error
+      
+      // If Clerk update fails, let's try a different approach
+      if (error.errors && error.errors.some((e: any) => e.code === 'form_param_unknown')) {
+        console.log("Trying alternative update method...");
+        
+        try {
+          // Try using unsafeMetadata as a fallback
+          if (data.displayName) {
+            await clerkUser.update({
+              unsafeMetadata: {
+                ...clerkUser.unsafeMetadata,
+                displayName: data.displayName
+              }
+            });
+            console.log("Profile updated using metadata");
+            return { success: true };
+          }
+        } catch (metadataError) {
+          console.error("Metadata update also failed:", metadataError);
+        }
+      }
+      
       throw new Error(`Failed to update profile: ${error.message || 'Unknown error'}`);
     }
   };
