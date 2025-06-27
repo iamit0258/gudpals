@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -37,53 +38,44 @@ export const useFriendsService = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // Simplified query without complex joins
       const { data, error } = await supabase
         .from('friend_requests')
-        .select(`
-          *,
-          profiles!sender_id (
-            display_name,
-            photo_url
-          )
-        `)
+        .select('*')
         .eq('receiver_id', user.id)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
       if (error) {
         console.error("Error fetching friend requests:", error);
-        // If the foreign key doesn't work, fetch without profiles for now
-        const { data: simpleData, error: simpleError } = await supabase
-          .from('friend_requests')
-          .select('*')
-          .eq('receiver_id', user.id)
-          .eq('status', 'pending')
-          .order('created_at', { ascending: false });
-        
-        if (simpleError) throw simpleError;
-        setFriendRequests(simpleData || []);
-        return;
+        throw error;
       }
       
-      // Transform the data to match our interface with proper null checks
-      const transformedData = data?.map(request => {
-        // Safely check if profiles exists and has the required properties
-        const hasValidProfiles = request.profiles && 
-                                request.profiles !== null &&
-                                typeof request.profiles === 'object' && 
-                                'display_name' in request.profiles &&
-                                'photo_url' in request.profiles;
-        
-        return {
-          ...request,
-          profiles: hasValidProfiles ? {
-            display_name: request.profiles?.display_name || '',
-            photo_url: request.profiles?.photo_url || ''
-          } : undefined
-        };
-      }) || [];
+      // Fetch profiles separately to avoid foreign key issues
+      const requestsWithProfiles = await Promise.all(
+        (data || []).map(async (request) => {
+          try {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('display_name, photo_url')
+              .eq('id', request.sender_id)
+              .single();
+            
+            return {
+              ...request,
+              profiles: profile ? {
+                display_name: profile.display_name || '',
+                photo_url: profile.photo_url || ''
+              } : undefined
+            };
+          } catch (profileError) {
+            console.error("Error fetching profile for request:", profileError);
+            return request;
+          }
+        })
+      );
       
-      setFriendRequests(transformedData);
+      setFriendRequests(requestsWithProfiles);
     } catch (error) {
       console.error("Error fetching friend requests:", error);
     }
@@ -96,51 +88,46 @@ export const useFriendsService = () => {
 
       setLoading(true);
 
+      // Simplified query without complex joins
       const { data, error } = await supabase
         .from('user_connections')
-        .select(`
-          *,
-          profiles!user_id_1 (
-            display_name,
-            photo_url
-          )
-        `)
+        .select('*')
         .or(`user_id_1.eq.${user.id},user_id_2.eq.${user.id}`)
         .order('connected_at', { ascending: false });
 
       if (error) {
         console.error("Error fetching connections:", error);
-        // If the foreign key doesn't work, fetch without profiles for now
-        const { data: simpleData, error: simpleError } = await supabase
-          .from('user_connections')
-          .select('*')
-          .or(`user_id_1.eq.${user.id},user_id_2.eq.${user.id}`)
-          .order('connected_at', { ascending: false });
-        
-        if (simpleError) throw simpleError;
-        setConnections(simpleData || []);
-        return;
+        throw error;
       }
       
-      // Transform the data to match our interface with proper null checks
-      const transformedData = data?.map(connection => {
-        // Safely check if profiles exists and has the required properties
-        const hasValidProfiles = connection.profiles && 
-                                connection.profiles !== null &&
-                                typeof connection.profiles === 'object' && 
-                                'display_name' in connection.profiles &&
-                                'photo_url' in connection.profiles;
-        
-        return {
-          ...connection,
-          profiles: hasValidProfiles ? {
-            display_name: connection.profiles?.display_name || '',
-            photo_url: connection.profiles?.photo_url || ''
-          } : undefined
-        };
-      }) || [];
+      // Fetch profiles separately for each connection
+      const connectionsWithProfiles = await Promise.all(
+        (data || []).map(async (connection) => {
+          try {
+            // Determine which user is the "other" user (not the current user)
+            const otherUserId = connection.user_id_1 === user.id ? connection.user_id_2 : connection.user_id_1;
+            
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('display_name, photo_url')
+              .eq('id', otherUserId)
+              .single();
+            
+            return {
+              ...connection,
+              profiles: profile ? {
+                display_name: profile.display_name || '',
+                photo_url: profile.photo_url || ''
+              } : undefined
+            };
+          } catch (profileError) {
+            console.error("Error fetching profile for connection:", profileError);
+            return connection;
+          }
+        })
+      );
       
-      setConnections(transformedData);
+      setConnections(connectionsWithProfiles);
     } catch (error) {
       console.error("Error fetching connections:", error);
     } finally {

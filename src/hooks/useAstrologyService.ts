@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -52,52 +53,43 @@ export const useAstrologyService = () => {
     try {
       setLoading(true);
       
-      // First try with profiles join
+      // Simplified query without complex joins to avoid relation errors
       const { data, error } = await supabase
         .from('astrologers')
-        .select(`
-          *,
-          profiles (
-            display_name,
-            photo_url
-          )
-        `)
+        .select('*')
         .eq('is_available', true)
         .order('rating', { ascending: false });
 
       if (error) {
-        console.error("Error fetching astrologers with profiles:", error);
-        // Fallback to simple query without profiles
-        const { data: simpleData, error: simpleError } = await supabase
-          .from('astrologers')
-          .select('*')
-          .eq('is_available', true)
-          .order('rating', { ascending: false });
-        
-        if (simpleError) throw simpleError;
-        setAstrologers(simpleData || []);
-        return;
+        console.error("Error fetching astrologers:", error);
+        throw error;
       }
       
-      // Transform the data to match our interface with proper null checks
-      const transformedData = data?.map(astrologer => {
-        // Safely check if profiles exists and has the required properties
-        const hasValidProfiles = astrologer.profiles && 
-                                astrologer.profiles !== null &&
-                                typeof astrologer.profiles === 'object' && 
-                                'display_name' in astrologer.profiles && 
-                                'photo_url' in astrologer.profiles;
-        
-        return {
-          ...astrologer,
-          profiles: hasValidProfiles ? {
-            display_name: astrologer.profiles?.display_name || '',
-            photo_url: astrologer.profiles?.photo_url || ''
-          } : undefined
-        };
-      }) || [];
+      // Fetch profiles separately to avoid foreign key issues
+      const astrologersWithProfiles = await Promise.all(
+        (data || []).map(async (astrologer) => {
+          try {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('display_name, photo_url')
+              .eq('id', astrologer.user_id)
+              .single();
+            
+            return {
+              ...astrologer,
+              profiles: profile ? {
+                display_name: profile.display_name || '',
+                photo_url: profile.photo_url || ''
+              } : undefined
+            };
+          } catch (profileError) {
+            console.error("Error fetching profile for astrologer:", profileError);
+            return astrologer;
+          }
+        })
+      );
       
-      setAstrologers(transformedData);
+      setAstrologers(astrologersWithProfiles);
     } catch (error) {
       console.error("Error fetching astrologers:", error);
       toast({
@@ -115,64 +107,58 @@ export const useAstrologyService = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // Simplified query without complex joins
       const { data, error } = await supabase
         .from('astrology_consultations')
-        .select(`
-          *,
-          astrologers (
-            *,
-            profiles (
-              display_name,
-              photo_url
-            )
-          )
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error("Error fetching consultations with profiles:", error);
-        // Fallback to simple query without profiles
-        const { data: simpleData, error: simpleError } = await supabase
-          .from('astrology_consultations')
-          .select(`
-            *,
-            astrologers (*)
-          `)
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
-        
-        if (simpleError) throw simpleError;
-        setConsultations(simpleData || []);
-        return;
+        console.error("Error fetching consultations:", error);
+        throw error;
       }
       
-      // Transform the data to match our interface with proper null checks
-      const transformedData = data?.map(consultation => {
-        if (!consultation.astrologers) {
-          return consultation;
-        }
+      // Fetch astrologer data and profiles separately
+      const consultationsWithDetails = await Promise.all(
+        (data || []).map(async (consultation) => {
+          try {
+            // Fetch astrologer data
+            const { data: astrologer } = await supabase
+              .from('astrologers')
+              .select('*')
+              .eq('id', consultation.astrologer_id)
+              .single();
 
-        // Safely check if astrologers.profiles exists and has the required properties
-        const hasValidProfiles = consultation.astrologers.profiles && 
-                                consultation.astrologers.profiles !== null &&
-                                typeof consultation.astrologers.profiles === 'object' && 
-                                'display_name' in consultation.astrologers.profiles &&
-                                'photo_url' in consultation.astrologers.profiles;
+            if (astrologer) {
+              // Fetch profile for the astrologer
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('display_name, photo_url')
+                .eq('id', astrologer.user_id)
+                .single();
 
-        return {
-          ...consultation,
-          astrologers: {
-            ...consultation.astrologers,
-            profiles: hasValidProfiles ? {
-              display_name: consultation.astrologers.profiles?.display_name || '',
-              photo_url: consultation.astrologers.profiles?.photo_url || ''
-            } : undefined
+              return {
+                ...consultation,
+                astrologers: {
+                  ...astrologer,
+                  profiles: profile ? {
+                    display_name: profile.display_name || '',
+                    photo_url: profile.photo_url || ''
+                  } : undefined
+                }
+              };
+            }
+
+            return consultation;
+          } catch (detailError) {
+            console.error("Error fetching consultation details:", detailError);
+            return consultation;
           }
-        };
-      }) || [];
+        })
+      );
       
-      setConsultations(transformedData);
+      setConsultations(consultationsWithDetails);
     } catch (error) {
       console.error("Error fetching consultations:", error);
     }
