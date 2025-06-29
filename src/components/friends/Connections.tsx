@@ -17,7 +17,6 @@ const mockConnections = [
       en: "Sunil Patil",
       hi: "सुनील पाटिल"
     },
-    avatar: "https://i.pravatar.cc/150?img=14",
     status: "online",
     lastSeen: "Active now"
   },
@@ -27,7 +26,6 @@ const mockConnections = [
       en: "Anuradha Gupta",
       hi: "अनुराधा गुप्ता"
     },
-    avatar: "https://i.pravatar.cc/150?img=15",
     status: "online",
     lastSeen: "Active now"
   },
@@ -37,7 +35,6 @@ const mockConnections = [
       en: "Vikas Sharma",
       hi: "विकास शर्मा"
     },
-    avatar: "https://i.pravatar.cc/150?img=16",
     status: "offline",
     lastSeen: "Last seen 2h ago"
   },
@@ -47,7 +44,6 @@ const mockConnections = [
       en: "Rekha Singh",
       hi: "रेखा सिंह"
     },
-    avatar: "https://i.pravatar.cc/150?img=17",
     status: "online",
     lastSeen: "Active now"
   },
@@ -57,7 +53,6 @@ const mockConnections = [
       en: "Kamal Joshi",
       hi: "कमल जोशी"
     },
-    avatar: "https://i.pravatar.cc/150?img=18",
     status: "offline",
     lastSeen: "Last seen yesterday"
   }
@@ -156,7 +151,7 @@ const Connections = () => {
   // Helper function to get initials safely
   const getInitial = (nameObj) => {
     const displayName = getDisplayName(nameObj);
-    return displayName ? displayName.charAt(0) : '';
+    return displayName ? displayName.charAt(0).toUpperCase() : 'U';
   };
 
   // Format timestamp for chat
@@ -188,8 +183,7 @@ const Connections = () => {
               <div className="flex items-center">
                 <div className="relative">
                   <Avatar className="h-12 w-12 mr-4">
-                    <AvatarImage src={connection.avatar} alt={getDisplayName(connection.name)} />
-                    <AvatarFallback>
+                    <AvatarFallback className="text-white bg-gradient-to-br from-green-500 to-blue-500">
                       {getInitial(connection.name)}
                     </AvatarFallback>
                   </Avatar>

@@ -12,21 +12,18 @@ const mockNearbyFriends = [
   {
     id: "1",
     name: "राम कुमार",
-    avatar: "https://i.pravatar.cc/150?img=1",
     distance: "0.5 km",
     lastSeen: "2 mins ago"
   },
   {
     id: "2",
     name: "सुनीता शर्मा",
-    avatar: "https://i.pravatar.cc/150?img=2",
     distance: "1.2 km",
     lastSeen: "5 mins ago"
   },
   {
     id: "3",
     name: "अनिल पटेल",
-    avatar: "https://i.pravatar.cc/150?img=3",
     distance: "2.4 km",
     lastSeen: "15 mins ago"
   }
@@ -118,8 +115,9 @@ const NearbyFriends = () => {
                 <CardContent className="p-4">
                   <div className="flex items-center">
                     <Avatar className="h-12 w-12 mr-4">
-                      <AvatarImage src={friend.avatar} alt={friend.name} />
-                      <AvatarFallback>{friend.name.charAt(0)}</AvatarFallback>
+                      <AvatarFallback className="text-white bg-gradient-to-br from-purple-500 to-pink-500">
+                        {friend.name.charAt(0)}
+                      </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
                       <h4 className="font-medium">{friend.name}</h4>

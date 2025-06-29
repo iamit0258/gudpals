@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { UserButton } from "@clerk/clerk-react";
@@ -16,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const Profile = () => {
   const { user, signOut, updateProfile } = useAuth();
@@ -52,10 +54,34 @@ const Profile = () => {
   
   // Load data from localStorage
   useEffect(() => {
-    // Load order history
+    // Load order history with some mock data if none exists
     const storedOrders = localStorage.getItem('orderHistory');
     if (storedOrders) {
       setOrderHistory(JSON.parse(storedOrders));
+    } else {
+      // Add some mock order data for demonstration
+      const mockOrders = [
+        {
+          id: "ORD-001",
+          date: "2024-01-15",
+          total: 299.99,
+          status: "Delivered",
+          items: [
+            { name: "Organic Turmeric Powder", quantity: 2, price: 149.99 }
+          ]
+        },
+        {
+          id: "ORD-002", 
+          date: "2024-01-10",
+          total: 599.50,
+          status: "Processing",
+          items: [
+            { name: "Ayurvedic Health Kit", quantity: 1, price: 599.50 }
+          ]
+        }
+      ];
+      setOrderHistory(mockOrders);
+      localStorage.setItem('orderHistory', JSON.stringify(mockOrders));
     }
     
     // Load astrology chats
@@ -346,7 +372,7 @@ const Profile = () => {
             <div className="flex items-start">
               <Avatar className="h-16 w-16 mr-4 bg-emerald-600">
                 <AvatarImage src={user.photoURL || ""} />
-                <AvatarFallback className="text-white text-xl">
+                <AvatarFallback className="text-white text-xl bg-gradient-to-br from-blue-500 to-purple-600">
                   {user.displayName ? user.displayName[0].toUpperCase() : "U"}
                 </AvatarFallback>
               </Avatar>
@@ -393,6 +419,54 @@ const Profile = () => {
             </div>
           </CardContent>
         </Card>
+        
+        {/* Order History Section */}
+        {orderHistory.length > 0 && (
+          <div className="space-y-1">
+            <h2 className="text-lg font-semibold px-1 py-2 bg-gray-50">My Orders</h2>
+            <Card>
+              <CardContent className="p-4">
+                <div className="space-y-4">
+                  {orderHistory.map((order: any) => (
+                    <Collapsible key={order.id} className="border rounded-lg p-3">
+                      <CollapsibleTrigger className="flex items-center justify-between w-full">
+                        <div className="flex items-center">
+                          <Package className="h-5 w-5 mr-3 text-blue-600" />
+                          <div className="text-left">
+                            <h3 className="font-medium">{order.id}</h3>
+                            <p className="text-sm text-gray-500">
+                              {order.date} • ₹{order.total} • {order.status}
+                            </p>
+                          </div>
+                        </div>
+                        <ChevronRight className="h-5 w-5 text-gray-400" />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <div className="mt-3 pt-3 border-t">
+                          <h4 className="font-medium mb-2">Order Items:</h4>
+                          <div className="space-y-2">
+                            {order.items.map((item: any, idx: number) => (
+                              <div key={idx} className="flex justify-between text-sm">
+                                <span>{item.name} x{item.quantity}</span>
+                                <span>₹{item.price}</span>
+                              </div>
+                            ))}
+                          </div>
+                          <div className="mt-3 pt-2 border-t">
+                            <div className="flex justify-between font-medium">
+                              <span>Total</span>
+                              <span>₹{order.total}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
         
         {/* Astrology Consultations Section */}
         {Object.keys(astrologyChats).length > 0 && (

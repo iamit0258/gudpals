@@ -9,36 +9,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/auth";
 import { useLanguage } from "@/context/language/LanguageContext";
 
-const mockRequests = [
-  {
-    id: "1",
-    name: "अमित शर्मा",
-    avatar: "https://i.pravatar.cc/150?img=11",
-    time: "2 hours ago"
-  },
-  {
-    id: "2",
-    name: "प्रिया वर्मा",
-    avatar: "https://i.pravatar.cc/150?img=12",
-    time: "1 day ago"
-  },
-  {
-    id: "3",
-    name: "राहुल मिश्रा",
-    avatar: "https://i.pravatar.cc/150?img=13",
-    time: "3 days ago"
-  }
-];
-
 const FriendRequests = () => {
-  const [requests, setRequests] = useState(mockRequests);
+  const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const { user } = useAuth();
   const { t } = useLanguage();
 
   useEffect(() => {
-    // In a real implementation, this would fetch friend requests from Supabase
+    // For now, we'll show no friend requests since mock data was removed
     setLoading(false);
   }, [user]);
 
@@ -91,8 +70,9 @@ const FriendRequests = () => {
           <CardContent className="p-4">
             <div className="flex items-center">
               <Avatar className="h-12 w-12 mr-4">
-                <AvatarImage src={request.avatar} alt={request.name} />
-                <AvatarFallback>{request.name.charAt(0)}</AvatarFallback>
+                <AvatarFallback className="text-white bg-gradient-to-br from-blue-500 to-purple-600">
+                  {request.name ? request.name.charAt(0).toUpperCase() : "U"}
+                </AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <h3 className="font-medium">{request.name}</h3>
