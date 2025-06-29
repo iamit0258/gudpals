@@ -1,82 +1,61 @@
 
-import React, { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import React, { useEffect } from "react";
+import { Card } from "@/components/ui/card";
+import { useLanguage } from "@/context/language/LanguageContext";
+import { useFriendsService } from "@/hooks/useFriendsService";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Check, X, MessageCircle, Phone } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/context/auth";
-import { useLanguage } from "@/context/language/LanguageContext";
-
-const mockRequests = [
-  {
-    id: "1",
-    name: "अमित शर्मा",
-    avatar: "https://i.pravatar.cc/150?img=11",
-    time: "2 hours ago"
-  },
-  {
-    id: "2",
-    name: "प्रिया वर्मा",
-    avatar: "https://i.pravatar.cc/150?img=12",
-    time: "1 day ago"
-  },
-  {
-    id: "3",
-    name: "राहुल मिश्रा",
-    avatar: "https://i.pravatar.cc/150?img=13",
-    time: "3 days ago"
-  }
-];
 
 const FriendRequests = () => {
-  const [requests, setRequests] = useState(mockRequests);
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
-  const { user } = useAuth();
   const { t } = useLanguage();
+  const { toast } = useToast();
+  const { friendRequests, loading, respondToFriendRequest } = useFriendsService();
 
-  useEffect(() => {
-    // In a real implementation, this would fetch friend requests from Supabase
-    setLoading(false);
-  }, [user]);
-
-  const handleAccept = (id) => {
-    toast({
-      title: t("request_accepted"),
-      description: t("friend_added_success"),
-    });
-    setRequests(requests.filter(req => req.id !== id));
+  const handleAccept = async (requestId: string) => {
+    await respondToFriendRequest(requestId, 'accept');
   };
 
-  const handleReject = (id) => {
-    toast({
-      title: t("request_declined"),
-      description: t("friend_request_declined"),
-    });
-    setRequests(requests.filter(req => req.id !== id));
+  const handleReject = async (requestId: string) => {
+    await respondToFriendRequest(requestId, 'reject');
   };
 
-  const handleMessage = (name) => {
+  const handleMessage = (name: string) => {
     toast({
       title: t("opening_chat"),
       description: `${t("chat_with")} ${name}`,
     });
   };
 
-  const handleCall = (name) => {
+  const handleCall = (name: string) => {
     toast({
       title: t("calling"),
       description: `${t("calling")} ${name}...`,
     });
   };
 
+  const getInitials = (name: string) => {
+    if (!name) return "?";
+    return name.charAt(0).toUpperCase();
+  };
+
+  const getTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return "Just now";
+    if (diffInHours < 24) return `${diffInHours} hours ago`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `${diffInDays} days ago`;
+  };
+
   if (loading) {
     return <div className="p-4 text-center">{t("loading")}...</div>;
   }
 
-  if (requests.length === 0) {
+  if (friendRequests.length === 0) {
     return (
       <div className="p-8 text-center text-muted-foreground">
         <p>{t("no_friend_requests")}</p>
@@ -86,17 +65,21 @@ const FriendRequests = () => {
 
   return (
     <div className="p-4 space-y-4">
-      {requests.map((request) => (
+      {friendRequests.map((request) => (
         <Card key={request.id} className="overflow-hidden">
-          <CardContent className="p-4">
+          <div className="p-4">
             <div className="flex items-center">
               <Avatar className="h-12 w-12 mr-4">
-                <AvatarImage src={request.avatar} alt={request.name} />
-                <AvatarFallback>{request.name.charAt(0)}</AvatarFallback>
+                <AvatarFallback className="bg-primary text-white font-semibold">
+                  {getInitials(request.profiles?.display_name || "Unknown")}
+                </AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <h3 className="font-medium">{request.name}</h3>
-                <p className="text-xs text-muted-foreground">{request.time}</p>
+                <h3 className="font-medium">{request.profiles?.display_name || "Unknown User"}</h3>
+                <p className="text-xs text-muted-foreground">{getTimeAgo(request.created_at)}</p>
+                {request.message && (
+                  <p className="text-sm text-muted-foreground mt-1">"{request.message}"</p>
+                )}
               </div>
             </div>
             
@@ -126,7 +109,7 @@ const FriendRequests = () => {
                   variant="ghost" 
                   size="sm" 
                   className="text-primary hover:bg-primary/10"
-                  onClick={() => handleMessage(request.name)}
+                  onClick={() => handleMessage(request.profiles?.display_name || "Unknown")}
                 >
                   <MessageCircle className="h-4 w-4" />
                 </Button>
@@ -134,13 +117,13 @@ const FriendRequests = () => {
                   variant="ghost" 
                   size="sm" 
                   className="text-primary hover:bg-primary/10"
-                  onClick={() => handleCall(request.name)}
+                  onClick={() => handleCall(request.profiles?.display_name || "Unknown")}
                 >
                   <Phone className="h-4 w-4" />
                 </Button>
               </div>
             </div>
-          </CardContent>
+          </div>
         </Card>
       ))}
     </div>
