@@ -1,119 +1,79 @@
 
-import * as React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { SignedIn, SignedOut } from "@clerk/clerk-react";
-import { AuthProvider, useAuth } from "@/context/ClerkAuthBridge";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/context/ClerkAuthBridge";
 import { LanguageProvider } from "@/context/language/LanguageContext";
-
-// Pages
 import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import ClerkLogin from "./pages/auth/ClerkLogin";
-import ClerkRegister from "./pages/auth/ClerkRegister";
-import Profile from "./pages/profile/Profile";
-import Friends from "./pages/friends/Friends";
 import Products from "./pages/products/Products";
 import ProductDetail from "./pages/products/ProductDetail";
 import Checkout from "./pages/checkout/Checkout";
+import PaymentPage from "./pages/payment/PaymentPage";
+import Profile from "./pages/profile/Profile";
 import Sessions from "./pages/sessions/Sessions";
-import DigitalLiteracy from "./pages/digitalLiteracy/DigitalLiteracy";
-import Activities from "./pages/activities/Activities";
-import Employment from "./pages/employment/Employment";
-import Travel from "./pages/travel/Travel";
-import Settings from "./pages/settings/Settings";
-import Games from "./pages/games/Games";
-import Events from "./pages/events/Events";
 import Astrology from "./pages/astrology/Astrology";
 import AstrologyChat from "./pages/astrology/AstrologyChat";
 import AstrologyPayment from "./pages/astrology/AstrologyPayment";
+import Activities from "./pages/activities/Activities";
+import Events from "./pages/events/Events";
+import Friends from "./pages/friends/Friends";
+import Learn from "./pages/learn/Learn";
+import DigitalLiteracy from "./pages/digitalLiteracy/DigitalLiteracy";
+import Games from "./pages/games/Games";
+import Travel from "./pages/travel/Travel";
+import Employment from "./pages/employment/Employment";
+import Settings from "./pages/settings/Settings";
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import Verify from "./pages/auth/Verify";
+import ClerkLogin from "./pages/auth/ClerkLogin";
+import ClerkRegister from "./pages/auth/ClerkRegister";
+import NotFound from "./pages/NotFound";
 
-// Protected route component
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <>
-      <SignedIn>
-        {children}
-      </SignedIn>
-      <SignedOut>
-        <Navigate to="/sign-in" replace />
-      </SignedOut>
-    </>
-  );
-};
+const queryClient = new QueryClient();
 
-// Create the app content component
-const AppContent = () => {
-  return (
-    <>
-      <Toaster />
-      <Sonner />
-      <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<Index />} />
-        <Route path="/sign-in" element={<ClerkLogin />} />
-        <Route path="/sign-up" element={<ClerkRegister />} />
-        
-        {/* Protected routes */}
-        <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
-        <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
-        <Route path="/products/:productId" element={<ProtectedRoute><ProductDetail /></ProtectedRoute>} />
-        <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
-        <Route path="/sessions" element={<ProtectedRoute><Sessions /></ProtectedRoute>} />
-        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-        <Route path="/digitalLiteracy" element={<ProtectedRoute><DigitalLiteracy /></ProtectedRoute>} />
-        <Route path="/activities" element={<ProtectedRoute><Activities /></ProtectedRoute>} />
-        <Route path="/employment" element={<ProtectedRoute><Employment /></ProtectedRoute>} />
-        <Route path="/travel" element={<ProtectedRoute><Travel /></ProtectedRoute>} />
-        <Route path="/games" element={<ProtectedRoute><Games /></ProtectedRoute>} />
-        <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
-        <Route path="/astrology" element={<ProtectedRoute><Astrology /></ProtectedRoute>} />
-        <Route path="/astrology/chat" element={<ProtectedRoute><AstrologyChat /></ProtectedRoute>} />
-        <Route path="/astrology/payment" element={<ProtectedRoute><AstrologyPayment /></ProtectedRoute>} />
-        
-        {/* Legacy routes for compatibility */}
-        <Route path="/login" element={<Navigate to="/sign-in" replace />} />
-        <Route path="/register" element={<Navigate to="/sign-up" replace />} />
-        <Route path="/verify" element={<Navigate to="/sign-in" replace />} />
-        
-        {/* 404 route */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </>
-  );
-};
-
-// Create a new query client instance
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      refetchOnWindowFocus: false,
-    },
-  },
-});
-
-// Main App component
-const App = () => {
-  return (
-    <React.StrictMode>
-      <QueryClientProvider client={queryClient}>
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <LanguageProvider>
+      <AuthProvider>
         <TooltipProvider>
+          <Toaster />
+          <Sonner />
           <BrowserRouter>
-            <LanguageProvider>
-              <AuthProvider>
-                <AppContent />
-              </AuthProvider>
-            </LanguageProvider>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/products" element={<Products />} />
+              <Route path="/products/:id" element={<ProductDetail />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/payment" element={<PaymentPage />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/sessions" element={<Sessions />} />
+              <Route path="/astrology" element={<Astrology />} />
+              <Route path="/astrology/chat" element={<AstrologyChat />} />
+              <Route path="/astrology/payment" element={<AstrologyPayment />} />
+              <Route path="/activities" element={<Activities />} />
+              <Route path="/events" element={<Events />} />
+              <Route path="/friends" element={<Friends />} />
+              <Route path="/learn" element={<Learn />} />
+              <Route path="/digital-literacy" element={<DigitalLiteracy />} />
+              <Route path="/games" element={<Games />} />
+              <Route path="/travel" element={<Travel />} />
+              <Route path="/employment" element={<Employment />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/verify" element={<Verify />} />
+              <Route path="/sign-in" element={<ClerkLogin />} />
+              <Route path="/sign-up" element={<ClerkRegister />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
           </BrowserRouter>
         </TooltipProvider>
-      </QueryClientProvider>
-    </React.StrictMode>
-  );
-};
+      </AuthProvider>
+    </LanguageProvider>
+  </QueryClientProvider>
+);
 
 export default App;

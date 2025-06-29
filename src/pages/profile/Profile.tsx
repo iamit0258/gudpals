@@ -26,6 +26,7 @@ const Profile = () => {
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [astrologyChats, setAstrologyChats] = useState<any>({});
+  const [isUpdating, setIsUpdating] = useState(false);
   
   // Settings state
   const [textSize, setTextSize] = useState("medium");
@@ -37,10 +38,17 @@ const Profile = () => {
   });
   
   // User profile state
-  const [displayName, setDisplayName] = useState(user?.displayName || "");
+  const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState('Retired teacher who loves gardening and meeting new people');
   const [interestTags, setInterestTags] = useState(['gardening', 'reading', 'travel']);
   const [newInterest, setNewInterest] = useState('');
+  
+  // Initialize profile data when user is available
+  useEffect(() => {
+    if (user) {
+      setDisplayName(user.displayName || "");
+    }
+  }, [user]);
   
   // Load data from localStorage
   useEffect(() => {
@@ -87,8 +95,14 @@ const Profile = () => {
   };
   
   const handleSaveProfile = async () => {
+    if (isUpdating) return; // Prevent double submission
+    
+    setIsUpdating(true);
     try {
-      await updateProfile({ displayName });
+      console.log("Saving profile with displayName:", displayName);
+      
+      // Update profile through Clerk
+      await updateProfile({ displayName: displayName.trim() });
       
       // Save other profile info to localStorage for demo
       const profileData = {
@@ -102,13 +116,15 @@ const Profile = () => {
         description: "Your profile has been successfully updated"
       });
       setShowEditDialog(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating profile:", error);
       toast({
         title: "Update Failed",
-        description: "Failed to update profile. Please try again.",
+        description: error.message || "Failed to update profile. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      setIsUpdating(false);
     }
   };
   
@@ -501,9 +517,9 @@ const Profile = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Edit Profile Dialog */}
+      {/* Edit Profile Dialog - Enhanced */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Edit Profile</DialogTitle>
             <DialogDescription>
@@ -517,7 +533,8 @@ const Profile = () => {
               <Input 
                 value={displayName} 
                 onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="Your name"
+                placeholder="Enter your name"
+                disabled={isUpdating}
               />
             </div>
             
@@ -528,6 +545,7 @@ const Profile = () => {
                 onChange={(e) => setBio(e.target.value)}
                 placeholder="Tell us about yourself"
                 className="min-h-[100px]"
+                disabled={isUpdating}
               />
             </div>
             
@@ -540,6 +558,7 @@ const Profile = () => {
                     <button 
                       className="ml-1 text-blue-400 hover:text-blue-600"
                       onClick={() => handleRemoveInterest(tag)}
+                      disabled={isUpdating}
                     >
                       ×
                     </button>
@@ -553,8 +572,14 @@ const Profile = () => {
                   onChange={(e) => setNewInterest(e.target.value)}
                   placeholder="Add interest"
                   onKeyDown={(e) => e.key === 'Enter' && handleAddInterest()}
+                  disabled={isUpdating}
                 />
-                <Button type="button" size="sm" onClick={handleAddInterest}>
+                <Button 
+                  type="button" 
+                  size="sm" 
+                  onClick={handleAddInterest} 
+                  disabled={isUpdating}
+                >
                   Add
                 </Button>
               </div>
@@ -563,9 +588,14 @@ const Profile = () => {
           
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
+              <Button variant="outline" disabled={isUpdating}>Cancel</Button>
             </DialogClose>
-            <Button onClick={handleSaveProfile}>Save Changes</Button>
+            <Button 
+              onClick={handleSaveProfile} 
+              disabled={isUpdating || !displayName.trim()}
+            >
+              {isUpdating ? "Saving..." : "Save Changes"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

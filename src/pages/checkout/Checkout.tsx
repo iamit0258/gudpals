@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import MobileLayout from "@/components/layout/MobileLayout";
@@ -35,7 +34,7 @@ const Checkout = () => {
   
   const form = useForm({
     defaultValues: {
-      paymentMethod: "cod",
+      paymentMethod: "online",
       addressType: "home",
       name: "अशोक कुमार",
       phone: "9876543210",
@@ -94,35 +93,54 @@ const Checkout = () => {
       return;
     }
     
-    setLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-      setOrderComplete(true);
-      
-      // Store the order in localStorage for demo purposes
-      const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
-      const newOrder = {
-        id: Date.now(),
-        items: cartItems,
-        address: data,
-        total: calculateTotal(),
-        status: 'Processing',
-        date: new Date().toISOString()
-      };
-      
-      orderHistory.push(newOrder);
-      localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
-      
-      // Clear cart after successful order
-      localStorage.setItem('cart', JSON.stringify([]));
-      
-      toast({
-        title: t("order_placed"),
-        description: t("order_success_message"),
+    // Check payment method and proceed accordingly
+    if (data.paymentMethod === "online") {
+      // Navigate to payment gateway
+      navigate("/payment", {
+        state: {
+          amount: calculateTotal(),
+          orderDetails: {
+            items: cartItems,
+            address: data,
+            subtotal: calculateSubtotal(),
+            deliveryFee: calculateDeliveryFee(),
+            total: calculateTotal()
+          }
+        }
       });
-    }, 1500);
+    } else {
+      // Cash on delivery - process order directly
+      setLoading(true);
+      
+      // Simulate API call
+      setTimeout(() => {
+        setLoading(false);
+        setOrderComplete(true);
+        
+        // Store the order in localStorage for demo purposes
+        const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
+        const newOrder = {
+          id: Date.now(),
+          items: cartItems,
+          address: data,
+          total: calculateTotal(),
+          status: 'Processing',
+          date: new Date().toISOString(),
+          paymentMethod: 'Cash on Delivery'
+        };
+        
+        orderHistory.push(newOrder);
+        localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
+        
+        // Clear cart after successful order
+        localStorage.setItem('cart', JSON.stringify([]));
+        
+        toast({
+          title: t("order_placed"),
+          description: t("order_success_message"),
+        });
+      }, 1500);
+    }
   };
   
   if (orderComplete) {
@@ -251,17 +269,6 @@ const Checkout = () => {
                           defaultValue={field.value}
                           className="flex flex-col space-y-1"
                         >
-                          <Card className={`cursor-pointer ${field.value === 'cod' ? 'border-primary' : ''}`}>
-                            <CardContent className="p-3 flex items-center">
-                              <RadioGroupItem value="cod" id="cod" className="mr-3" />
-                              <FormLabel htmlFor="cod" className="flex-1 cursor-pointer">
-                                <div className="flex items-center">
-                                  <CreditCard className="h-4 w-4 mr-2 text-dhayan-teal" />
-                                  <span>{t("cash_on_delivery")}</span>
-                                </div>
-                              </FormLabel>
-                            </CardContent>
-                          </Card>
                           <Card className={`cursor-pointer ${field.value === 'online' ? 'border-primary' : ''}`}>
                             <CardContent className="p-3 flex items-center">
                               <RadioGroupItem value="online" id="online" className="mr-3" />
@@ -269,6 +276,18 @@ const Checkout = () => {
                                 <div className="flex items-center">
                                   <CreditCard className="h-4 w-4 mr-2 text-dhayan-purple" />
                                   <span>{t("online_payment")}</span>
+                                </div>
+                                <p className="text-xs text-gray-500 ml-6">Credit Card, Debit Card, UPI, Net Banking</p>
+                              </FormLabel>
+                            </CardContent>
+                          </Card>
+                          <Card className={`cursor-pointer ${field.value === 'cod' ? 'border-primary' : ''}`}>
+                            <CardContent className="p-3 flex items-center">
+                              <RadioGroupItem value="cod" id="cod" className="mr-3" />
+                              <FormLabel htmlFor="cod" className="flex-1 cursor-pointer">
+                                <div className="flex items-center">
+                                  <CreditCard className="h-4 w-4 mr-2 text-dhayan-teal" />
+                                  <span>{t("cash_on_delivery")}</span>
                                 </div>
                               </FormLabel>
                             </CardContent>
