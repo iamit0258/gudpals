@@ -159,7 +159,7 @@ const Checkout = () => {
   
   return (
     <MobileLayout>
-      <div className="pb-32">
+      <div className="pb-24">
         <div className="p-4 border-b">
           <Button variant="ghost" onClick={() => navigate("/products")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -234,7 +234,7 @@ const Checkout = () => {
         </div>
         
         {/* Payment and Delivery */}
-        <div className="p-4">
+        <div className="p-4 pb-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
               {/* Payment Method */}
@@ -373,19 +373,19 @@ const Checkout = () => {
                   <span className="text-xs mt-1">{t("easy_returns")}</span>
                 </div>
               </div>
-              
-              {/* Submit Button */}
-              <div className="fixed bottom-0 left-0 right-0 bg-white p-4 border-t">
-                <Button 
-                  type="submit" 
-                  className="w-full bg-primary hover:bg-dhayan-teal-dark text-white"
-                  disabled={loading || cartItems.length === 0}
-                >
-                  {loading ? t("processing") : t("place_order")}
-                </Button>
-              </div>
             </form>
           </Form>
+        </div>
+        
+        {/* Submit Button - Fixed at bottom with proper spacing */}
+        <div className="fixed bottom-16 left-0 right-0 bg-white p-4 border-t max-w-md mx-auto">
+          <Button 
+            onClick={form.handleSubmit(handleSubmit)}
+            className="w-full bg-primary hover:bg-dhayan-teal-dark text-white"
+            disabled={loading || cartItems.length === 0}
+          >
+            {loading ? t("processing") : t("place_order")}
+          </Button>
         </div>
       </div>
     </MobileLayout>
