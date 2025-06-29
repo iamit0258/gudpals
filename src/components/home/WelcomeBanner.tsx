@@ -1,5 +1,6 @@
 
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
@@ -7,6 +8,11 @@ import { useLanguage } from "@/context/language/LanguageContext";
 
 const WelcomeBanner = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
+
+  const handleGetStarted = () => {
+    navigate("/profile");
+  };
 
   return (
     <div className="relative">
@@ -46,7 +52,10 @@ const WelcomeBanner = () => {
                 {t("help_personalize")}
               </p>
             </div>
-            <Button className="bg-primary hover:bg-dhayan-teal-dark text-white rounded-full">
+            <Button 
+              onClick={handleGetStarted}
+              className="bg-primary hover:bg-dhayan-teal-dark text-white rounded-full"
+            >
               {t("get_started")} <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           </div>
