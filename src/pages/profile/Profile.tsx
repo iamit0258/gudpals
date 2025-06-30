@@ -6,7 +6,7 @@ import MobileLayout from "@/components/layout/MobileLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, Package, ChevronRight, User, Type, Eye, Globe, ShoppingBag, CreditCard, MapPin, Bell, Shield, HelpCircle, Info, MessageSquare, Settings } from "lucide-react";
+import { LogOut, ChevronRight, User, Type, Globe, ShoppingBag, CreditCard, MapPin, Bell, Shield, HelpCircle, Info, MessageSquare, Settings } from "lucide-react";
 import { useAuth } from "@/context/ClerkAuthBridge";
 import { useLanguage } from "@/context/language/LanguageContext";
 import { Separator } from "@/components/ui/separator";
@@ -17,22 +17,26 @@ import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import MyOrders from "@/components/profile/MyOrders";
+import PaymentMethods from "@/components/profile/PaymentMethods";
+import ShippingAddresses from "@/components/profile/ShippingAddresses";
+import PrivacySecurity from "@/components/profile/PrivacySecurity";
+import About from "@/components/profile/About";
 
 const Profile = () => {
   const { user, signOut, updateProfile } = useAuth();
   const { t, language, setLanguage } = useLanguage();
-  const [orderHistory, setOrderHistory] = useState([]);
   const navigate = useNavigate();
   const { toast } = useToast();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [astrologyChats, setAstrologyChats] = useState<any>({});
   const [isUpdating, setIsUpdating] = useState(false);
+  const [activeTab, setActiveTab] = useState("profile");
   
   // Settings state
   const [textSize, setTextSize] = useState("medium");
-  const [highContrast, setHighContrast] = useState(false);
   const [notifications, setNotifications] = useState({
     orders: true,
     sessions: true,
@@ -53,37 +57,7 @@ const Profile = () => {
   }, [user]);
   
   // Load data from localStorage
-  useEffect(() => {
-    // Load order history with some mock data if none exists
-    const storedOrders = localStorage.getItem('orderHistory');
-    if (storedOrders) {
-      setOrderHistory(JSON.parse(storedOrders));
-    } else {
-      // Add some mock order data for demonstration
-      const mockOrders = [
-        {
-          id: "ORD-001",
-          date: "2024-01-15",
-          total: 299.99,
-          status: "Delivered",
-          items: [
-            { name: "Organic Turmeric Powder", quantity: 2, price: 149.99 }
-          ]
-        },
-        {
-          id: "ORD-002", 
-          date: "2024-01-10",
-          total: 599.50,
-          status: "Processing",
-          items: [
-            { name: "Ayurvedic Health Kit", quantity: 1, price: 599.50 }
-          ]
-        }
-      ];
-      setOrderHistory(mockOrders);
-      localStorage.setItem('orderHistory', JSON.stringify(mockOrders));
-    }
-    
+  useEffect(() => {    
     // Load astrology chats
     const storedChats = localStorage.getItem('astrologyChats');
     if (storedChats) {
@@ -121,16 +95,14 @@ const Profile = () => {
   };
   
   const handleSaveProfile = async () => {
-    if (isUpdating) return; // Prevent double submission
+    if (isUpdating) return;
     
     setIsUpdating(true);
     try {
       console.log("Saving profile with displayName:", displayName);
       
-      // Update profile through Clerk
       await updateProfile({ displayName: displayName.trim() });
       
-      // Save other profile info to localStorage for demo
       const profileData = {
         bio,
         interests: interestTags
@@ -171,7 +143,6 @@ const Profile = () => {
     const nextSize = sizes[(currentIndex + 1) % sizes.length];
     setTextSize(nextSize);
     
-    // Apply text size to document
     document.documentElement.style.fontSize = 
       nextSize === "small" ? "14px" : 
       nextSize === "large" ? "18px" : "16px";
@@ -179,22 +150,6 @@ const Profile = () => {
     toast({
       title: "Text Size Changed",
       description: `Text size set to ${nextSize}`
-    });
-  };
-
-  const handleHighContrastToggle = () => {
-    setHighContrast(!highContrast);
-    
-    // Apply high contrast theme
-    if (!highContrast) {
-      document.documentElement.classList.add('high-contrast');
-    } else {
-      document.documentElement.classList.remove('high-contrast');
-    }
-    
-    toast({
-      title: "High Contrast",
-      description: `High contrast ${!highContrast ? 'enabled' : 'disabled'}`
     });
   };
 
@@ -207,30 +162,6 @@ const Profile = () => {
     });
   };
 
-  const handleMyOrders = () => {
-    navigate('/checkout');
-    toast({
-      title: "My Orders",
-      description: "Viewing your order history"
-    });
-  };
-
-  const handlePaymentMethods = () => {
-    navigate('/profile/payment-methods');
-    toast({
-      title: "Payment Methods",
-      description: "Opening payment methods (Demo)"
-    });
-  };
-
-  const handleShippingAddresses = () => {
-    navigate('/profile/addresses');
-    toast({
-      title: "Shipping Addresses",
-      description: "Opening addresses (Demo)"
-    });
-  };
-
   const handleNotifications = () => {
     toast({
       title: "Notification Settings",
@@ -238,24 +169,10 @@ const Profile = () => {
     });
   };
 
-  const handlePrivacySecurity = () => {
-    toast({
-      title: "Privacy & Security",
-      description: "Opening privacy settings (Demo)"
-    });
-  };
-
   const handleHelpSupport = () => {
     toast({
       title: "Help & Support",
       description: "Opening support center (Demo)"
-    });
-  };
-
-  const handleAbout = () => {
-    toast({
-      title: "About Dhayan",
-      description: "Version 1.0.0 - Built with ❤️ for seniors"
     });
   };
 
@@ -287,7 +204,6 @@ const Profile = () => {
   };
   
   const handleAstrologyChatView = (astrologerId: string) => {
-    // Store the selected astrologer in localStorage before navigating
     const astrologers = [
       { id: "1", name: "Ravi Sharma", specialty: "Vedic Astrology", initials: "RS" },
       { id: "2", name: "Priya Patel", specialty: "Tarot Reading", initials: "PP" },
@@ -303,52 +219,21 @@ const Profile = () => {
     }
   };
 
-  const profileActions = [
-    {
-      section: "Accessibility",
-      items: [
-        { 
-          icon: Type, 
-          label: `Text Size (${textSize})`, 
-          onClick: handleTextSizeChange,
-          hasToggle: false
-        },
-        { 
-          icon: Eye, 
-          label: "High Contrast", 
-          onClick: handleHighContrastToggle,
-          hasToggle: true,
-          isToggled: highContrast
-        },
-        { 
-          icon: Globe, 
-          label: `Language (${language === "en" ? "English" : "हिंदी"})`, 
-          onClick: handleLanguageChange,
-          hasToggle: false
-        },
-      ]
+  const accessibilitySettings = [
+    { 
+      icon: Type, 
+      label: `Text Size (${textSize})`, 
+      onClick: handleTextSizeChange,
+      hasToggle: false
     },
-    {
-      section: "Account Settings",
-      items: [
-        { icon: ShoppingBag, label: "My Orders", onClick: handleMyOrders },
-        { icon: CreditCard, label: "Payment Methods", onClick: handlePaymentMethods },
-        { icon: MapPin, label: "Shipping Addresses", onClick: handleShippingAddresses },
-        { 
-          icon: Bell, 
-          label: "Notifications", 
-          onClick: handleNotifications,
-          hasToggle: true,
-          isToggled: notifications.orders
-        },
-        { icon: Shield, label: "Privacy & Security", onClick: handlePrivacySecurity },
-        { icon: HelpCircle, label: "Help & Support", onClick: handleHelpSupport },
-        { icon: Info, label: "About", onClick: handleAbout },
-      ]
-    }
+    { 
+      icon: Globe, 
+      label: `Language (${language === "en" ? "English" : "हिंदी"})`, 
+      onClick: handleLanguageChange,
+      hasToggle: false
+    },
   ];
   
-  // Get astrologer data from astrology ID
   const getAstrologerName = (id: string) => {
     const astrologers = [
       { id: "1", name: "Ravi Sharma" },
@@ -365,210 +250,236 @@ const Profile = () => {
   return (
     <MobileLayout>
       <div className="p-4 space-y-6">
-        <h1 className="text-2xl font-bold mb-4">My Profile</h1>
-        
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-start">
-              <Avatar className="h-16 w-16 mr-4 bg-emerald-600">
-                <AvatarImage src={user.photoURL || ""} />
-                <AvatarFallback className="text-white text-xl bg-gradient-to-br from-blue-500 to-purple-600">
-                  {user.displayName ? user.displayName[0].toUpperCase() : "U"}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <h2 className="text-xl font-semibold">{user.displayName || "User"}</h2>
-                <p className="text-gray-600">{user.email || user.phoneNumber || "No contact info"}</p>
-                <div className="flex items-center gap-2 mt-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="text-xs"
-                    onClick={handleEditProfile}
-                  >
-                    <User className="h-3 w-3 mr-1" />
-                    Edit Profile
-                  </Button>
-                  <UserButton 
-                    appearance={{
-                      elements: {
-                        avatarBox: "w-8 h-8"
-                      }
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="profile">Profile</TabsTrigger>
+            <TabsTrigger value="settings">Account Settings</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="profile" className="space-y-6">
+            <h1 className="text-2xl font-bold">My Profile</h1>
             
-            <p className="mt-4 text-sm text-gray-600">{bio}</p>
-            
-            <div className="mt-3">
-              <h3 className="text-sm font-medium text-gray-500 mb-2">
-                Interests
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {interestTags.map((tag, index) => (
-                  <span 
-                    key={index} 
-                    className="px-2 py-1 bg-blue-50 text-blue-600 rounded-md text-xs"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Order History Section */}
-        {orderHistory.length > 0 && (
-          <div className="space-y-1">
-            <h2 className="text-lg font-semibold px-1 py-2 bg-gray-50">My Orders</h2>
             <Card>
-              <CardContent className="p-4">
-                <div className="space-y-4">
-                  {orderHistory.map((order: any) => (
-                    <Collapsible key={order.id} className="border rounded-lg p-3">
-                      <CollapsibleTrigger className="flex items-center justify-between w-full">
-                        <div className="flex items-center">
-                          <Package className="h-5 w-5 mr-3 text-blue-600" />
-                          <div className="text-left">
-                            <h3 className="font-medium">{order.id}</h3>
-                            <p className="text-sm text-gray-500">
-                              {order.date} • ₹{order.total} • {order.status}
-                            </p>
-                          </div>
-                        </div>
-                        <ChevronRight className="h-5 w-5 text-gray-400" />
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <div className="mt-3 pt-3 border-t">
-                          <h4 className="font-medium mb-2">Order Items:</h4>
-                          <div className="space-y-2">
-                            {order.items.map((item: any, idx: number) => (
-                              <div key={idx} className="flex justify-between text-sm">
-                                <span>{item.name} x{item.quantity}</span>
-                                <span>₹{item.price}</span>
-                              </div>
-                            ))}
-                          </div>
-                          <div className="mt-3 pt-2 border-t">
-                            <div className="flex justify-between font-medium">
-                              <span>Total</span>
-                              <span>₹{order.total}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </CollapsibleContent>
-                    </Collapsible>
-                  ))}
+              <CardContent className="p-6">
+                <div className="flex items-start">
+                  <Avatar className="h-16 w-16 mr-4 bg-emerald-600">
+                    <AvatarImage src={user.photoURL || ""} />
+                    <AvatarFallback className="text-white text-xl bg-gradient-to-br from-blue-500 to-purple-600">
+                      {user.displayName ? user.displayName[0].toUpperCase() : "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <h2 className="text-xl font-semibold">{user.displayName || "User"}</h2>
+                    <p className="text-gray-600">{user.email || user.phoneNumber || "No contact info"}</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="text-xs"
+                        onClick={handleEditProfile}
+                      >
+                        <User className="h-3 w-3 mr-1" />
+                        Edit Profile
+                      </Button>
+                      <UserButton 
+                        appearance={{
+                          elements: {
+                            avatarBox: "w-8 h-8"
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-        
-        {/* Astrology Consultations Section */}
-        {Object.keys(astrologyChats).length > 0 && (
-          <div className="space-y-1">
-            <h2 className="text-lg font-semibold px-1 py-2 bg-gray-50">My Astrology Consultations</h2>
-            <Card>
-              <CardContent className="p-4">
-                {Object.keys(astrologyChats).map((astrologerId) => (
-                  <Collapsible key={astrologerId} className="mb-3 border rounded-lg p-2">
-                    <CollapsibleTrigger className="flex items-center justify-between w-full p-2">
-                      <div className="flex items-center">
-                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-green-500 to-teal-600 flex items-center justify-center text-white font-bold mr-3">
-                          {getAstrologerName(astrologerId).substring(0, 2)}
-                        </div>
-                        <div>
-                          <h3 className="font-medium">{getAstrologerName(astrologerId)}</h3>
-                          <p className="text-xs text-gray-500">
-                            {astrologyChats[astrologerId].length} messages
-                          </p>
-                        </div>
-                      </div>
-                      <ChevronRight className="h-5 w-5 text-gray-400" />
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <div className="mt-2 p-2">
-                        <div className="max-h-40 overflow-y-auto border rounded-lg p-2 bg-gray-50 mb-3">
-                          {astrologyChats[astrologerId].slice(0, 2).map((msg: any, idx: number) => (
-                            <div key={idx} className="mb-2 text-sm">
-                              <span className="font-semibold">{msg.sender === 'user' ? 'You' : getAstrologerName(astrologerId)}:</span> {msg.text}
-                            </div>
-                          ))}
-                          {astrologyChats[astrologerId].length > 2 && (
-                            <div className="text-sm text-gray-500">And {astrologyChats[astrologerId].length - 2} more messages...</div>
-                          )}
-                        </div>
-                        <Button 
-                          className="w-full bg-green-600 hover:bg-green-700"
-                          onClick={() => handleAstrologyChatView(astrologerId)}
-                          size="sm"
-                        >
-                          <MessageSquare className="h-4 w-4 mr-2" />
-                          Continue Conversation
-                        </Button>
-                      </div>
-                    </CollapsibleContent>
-                  </Collapsible>
-                ))}
-              </CardContent>
-            </Card>
-          </div>
-        )}
-        
-        {profileActions.map((section, sectionIndex) => (
-          <div key={sectionIndex} className="space-y-1">
-            <h2 className="text-lg font-semibold px-1 py-2 bg-gray-50">{section.section}</h2>
-            <Card className="overflow-hidden">
-              <CardContent className="p-0">
-                <nav>
-                  <ul>
-                    {section.items.map((item, index) => (
-                      <li key={index}>
-                        <Button 
-                          variant="ghost" 
-                          className="w-full flex items-center justify-between p-4 rounded-none h-auto"
-                          onClick={item.onClick}
-                        >
-                          <div className="flex items-center">
-                            <item.icon className="h-5 w-5 mr-3 text-gray-500" />
-                            <span>{item.label}</span>
-                          </div>
-                          <div className="flex items-center">
-                            {item.hasToggle && (
-                              <Switch 
-                                checked={item.isToggled || false}
-                                onCheckedChange={() => item.onClick()}
-                                className="mr-2"
-                              />
-                            )}
-                            <ChevronRight className="h-4 w-4 text-gray-400" />
-                          </div>
-                        </Button>
-                        {index < section.items.length - 1 && <Separator />}
-                      </li>
+                
+                <p className="mt-4 text-sm text-gray-600">{bio}</p>
+                
+                <div className="mt-3">
+                  <h3 className="text-sm font-medium text-gray-500 mb-2">
+                    Interests
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {interestTags.map((tag, index) => (
+                      <span 
+                        key={index} 
+                        className="px-2 py-1 bg-blue-50 text-blue-600 rounded-md text-xs"
+                      >
+                        {tag}
+                      </span>
                     ))}
-                  </ul>
-                </nav>
+                  </div>
+                </div>
               </CardContent>
             </Card>
-          </div>
-        ))}
-        
-        <Button 
-          variant="outline" 
-          className="w-full mt-6 flex items-center justify-between text-red-500 border-red-200 hover:bg-red-50"
-          onClick={handleLogout}
-        >
-          <div className="flex items-center">
-            <LogOut className="h-5 w-5 mr-3" />
-            <span>{t("logout")}</span>
-          </div>
-          <ChevronRight className="h-4 w-4" />
-        </Button>
+            
+            {/* Astrology Consultations Section */}
+            {Object.keys(astrologyChats).length > 0 && (
+              <div className="space-y-1">
+                <h2 className="text-lg font-semibold px-1 py-2 bg-gray-50">My Astrology Consultations</h2>
+                <Card>
+                  <CardContent className="p-4">
+                    {Object.keys(astrologyChats).map((astrologerId) => (
+                      <Collapsible key={astrologerId} className="mb-3 border rounded-lg p-2">
+                        <CollapsibleTrigger className="flex items-center justify-between w-full p-2">
+                          <div className="flex items-center">
+                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-green-500 to-teal-600 flex items-center justify-center text-white font-bold mr-3">
+                              {getAstrologerName(astrologerId).substring(0, 2)}
+                            </div>
+                            <div>
+                              <h3 className="font-medium">{getAstrologerName(astrologerId)}</h3>
+                              <p className="text-xs text-gray-500">
+                                {astrologyChats[astrologerId].length} messages
+                              </p>
+                            </div>
+                          </div>
+                          <ChevronRight className="h-5 w-5 text-gray-400" />
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <div className="mt-2 p-2">
+                            <div className="max-h-40 overflow-y-auto border rounded-lg p-2 bg-gray-50 mb-3">
+                              {astrologyChats[astrologerId].slice(0, 2).map((msg: any, idx: number) => (
+                                <div key={idx} className="mb-2 text-sm">
+                                  <span className="font-semibold">{msg.sender === 'user' ? 'You' : getAstrologerName(astrologerId)}:</span> {msg.text}
+                                </div>
+                              ))}
+                              {astrologyChats[astrologerId].length > 2 && (
+                                <div className="text-sm text-gray-500">And {astrologyChats[astrologerId].length - 2} more messages...</div>
+                              )}
+                            </div>
+                            <Button 
+                              className="w-full bg-green-600 hover:bg-green-700"
+                              onClick={() => handleAstrologyChatView(astrologerId)}
+                              size="sm"
+                            >
+                              <MessageSquare className="h-4 w-4 mr-2" />
+                              Continue Conversation
+                            </Button>
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    ))}
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+            
+            {/* Accessibility Section */}
+            <div className="space-y-1">
+              <h2 className="text-lg font-semibold px-1 py-2 bg-gray-50">Accessibility</h2>
+              <Card className="overflow-hidden">
+                <CardContent className="p-0">
+                  <nav>
+                    <ul>
+                      {accessibilitySettings.map((item, index) => (
+                        <li key={index}>
+                          <Button 
+                            variant="ghost" 
+                            className="w-full flex items-center justify-between p-4 rounded-none h-auto"
+                            onClick={item.onClick}
+                          >
+                            <div className="flex items-center">
+                              <item.icon className="h-5 w-5 mr-3 text-gray-500" />
+                              <span>{item.label}</span>
+                            </div>
+                            <ChevronRight className="h-4 w-4 text-gray-400" />
+                          </Button>
+                          {index < accessibilitySettings.length - 1 && <Separator />}
+                        </li>
+                      ))}
+                    </ul>
+                  </nav>
+                </CardContent>
+              </Card>
+            </div>
+            
+            <Button 
+              variant="outline" 
+              className="w-full mt-6 flex items-center justify-between text-red-500 border-red-200 hover:bg-red-50"
+              onClick={handleLogout}
+            >
+              <div className="flex items-center">
+                <LogOut className="h-5 w-5 mr-3" />
+                <span>{t("logout")}</span>
+              </div>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </TabsContent>
+          
+          <TabsContent value="settings" className="space-y-6">
+            <h1 className="text-2xl font-bold">Account Settings</h1>
+            
+            <Tabs defaultValue="orders" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="orders" className="text-xs">Orders</TabsTrigger>
+                <TabsTrigger value="payment" className="text-xs">Payment</TabsTrigger>
+                <TabsTrigger value="shipping" className="text-xs">Shipping</TabsTrigger>
+              </TabsList>
+              <TabsList className="grid w-full grid-cols-3 mt-2">
+                <TabsTrigger value="notifications" className="text-xs">Notifications</TabsTrigger>
+                <TabsTrigger value="privacy" className="text-xs">Privacy</TabsTrigger>
+                <TabsTrigger value="about" className="text-xs">About</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="orders" className="mt-4">
+                <MyOrders />
+              </TabsContent>
+              
+              <TabsContent value="payment" className="mt-4">
+                <PaymentMethods />
+              </TabsContent>
+              
+              <TabsContent value="shipping" className="mt-4">
+                <ShippingAddresses />
+              </TabsContent>
+              
+              <TabsContent value="notifications" className="mt-4">
+                <Card>
+                  <CardContent className="p-4 space-y-4">
+                    <h2 className="text-lg font-semibold">Notification Preferences</h2>
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label>Order Updates</Label>
+                        <p className="text-sm text-muted-foreground">Get notified about order status</p>
+                      </div>
+                      <Switch 
+                        checked={notifications.orders}
+                        onCheckedChange={(value) => setNotifications(prev => ({ ...prev, orders: value }))}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label>Session Reminders</Label>
+                        <p className="text-sm text-muted-foreground">Reminders for upcoming sessions</p>
+                      </div>
+                      <Switch 
+                        checked={notifications.sessions}
+                        onCheckedChange={(value) => setNotifications(prev => ({ ...prev, sessions: value }))}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label>Marketing</Label>
+                        <p className="text-sm text-muted-foreground">Promotional offers and updates</p>
+                      </div>
+                      <Switch 
+                        checked={notifications.marketing}
+                        onCheckedChange={(value) => setNotifications(prev => ({ ...prev, marketing: value }))}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="privacy" className="mt-4">
+                <PrivacySecurity />
+              </TabsContent>
+              
+              <TabsContent value="about" className="mt-4">
+                <About />
+              </TabsContent>
+            </Tabs>
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Logout Confirmation Dialog */}

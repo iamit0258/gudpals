@@ -15,17 +15,22 @@ export const useUserSync = () => {
       console.log("Syncing user to database:", user.id);
 
       // Check if user profile already exists
-      const { data: existingProfile } = await supabase
+      const { data: existingProfile, error: selectError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
+
+      if (selectError && selectError.code !== 'PGRST116') {
+        console.error("Error checking existing profile:", selectError);
+        throw selectError;
+      }
 
       const profileData = {
         id: user.id,
         display_name: user.firstName && user.lastName 
           ? `${user.firstName} ${user.lastName}` 
-          : user.firstName || user.username || user.emailAddresses?.[0]?.emailAddress || '',
+          : user.firstName || user.username || user.emailAddresses?.[0]?.emailAddress || 'User',
         email: user.emailAddresses?.[0]?.emailAddress || null,
         phone_number: user.phoneNumbers?.[0]?.phoneNumber || null,
         photo_url: user.imageUrl || null,
@@ -71,11 +76,14 @@ export const useUserSync = () => {
       }
     } catch (error) {
       console.error("Error syncing user to database:", error);
-      toast({
-        title: "Sync Error",
-        description: "There was an issue syncing your profile data",
-        variant: "destructive",
-      });
+      // Only show toast for non-table related errors
+      if (!error.message?.includes('relation "profiles" does not exist')) {
+        toast({
+          title: "Sync Error",
+          description: "There was an issue syncing your profile data",
+          variant: "destructive",
+        });
+      }
     }
   };
 
