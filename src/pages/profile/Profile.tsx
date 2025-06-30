@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { UserButton } from "@clerk/clerk-react";
@@ -79,7 +78,7 @@ const Profile = () => {
         <div className="p-4 flex flex-col items-center justify-center h-[80vh]">
           <h2 className="text-xl font-semibold text-center mb-4">{t("please_sign_in")}</h2>
           <Button
-            className="bg-dhayan-purple hover:bg-dhayan-purple-dark text-white w-full max-w-xs"
+            className="bg-purple-600 hover:bg-purple-700 text-white w-full max-w-xs"
             onClick={() => navigate("/sign-in")}
           >
             {t("sign_in")}

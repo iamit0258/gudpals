@@ -28,18 +28,18 @@ const About = () => {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Info className="h-5 w-5" />
-            <span>About Dhayan</span>
+            <span>About GUDPAL'S</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="text-center space-y-2">
-            <h3 className="text-2xl font-bold text-dhayan-purple">Dhayan</h3>
+            <h3 className="text-2xl font-bold text-purple-600">GUDPAL'S</h3>
             <p className="text-sm text-muted-foreground">Version 1.0.0</p>
             <p className="text-sm">Built with ❤️ for seniors</p>
           </div>
           
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Dhayan is a comprehensive platform designed specifically for senior citizens, 
+            GUDPAL'S is a comprehensive platform designed specifically for senior citizens, 
             offering health products, social connections, learning opportunities, and 
             personalized experiences to enhance quality of life.
           </p>
@@ -72,7 +72,7 @@ const About = () => {
           <Button 
             variant="outline" 
             className="w-full justify-between"
-            onClick={() => handleOpenLink("https://dhayan.community", "Community Forum")}
+            onClick={() => handleOpenLink("https://gudpals.community", "Community Forum")}
           >
             Community Forum
             <ExternalLink className="h-4 w-4" />
@@ -80,7 +80,7 @@ const About = () => {
           <Button 
             variant="outline" 
             className="w-full justify-between"
-            onClick={() => handleOpenLink("https://dhayan.app/feedback", "Feedback")}
+            onClick={() => handleOpenLink("https://gudpals.app/feedback", "Feedback")}
           >
             Send Feedback
             <ExternalLink className="h-4 w-4" />
@@ -99,7 +99,7 @@ const About = () => {
           <Button 
             variant="outline" 
             className="w-full justify-between"
-            onClick={() => handleOpenLink("https://dhayan.app/privacy", "Privacy Policy")}
+            onClick={() => handleOpenLink("https://gudpals.app/privacy", "Privacy Policy")}
           >
             Privacy Policy
             <ExternalLink className="h-4 w-4" />
@@ -107,7 +107,7 @@ const About = () => {
           <Button 
             variant="outline" 
             className="w-full justify-between"
-            onClick={() => handleOpenLink("https://dhayan.app/terms", "Terms of Service")}
+            onClick={() => handleOpenLink("https://gudpals.app/terms", "Terms of Service")}
           >
             Terms of Service
             <ExternalLink className="h-4 w-4" />

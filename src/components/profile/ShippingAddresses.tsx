@@ -4,6 +4,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, Plus, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import AddAddressDialog from "./AddAddressDialog";
+import EditAddressDialog from "./EditAddressDialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 const ShippingAddresses = () => {
   const [addresses, setAddresses] = useState([
@@ -26,23 +29,37 @@ const ShippingAddresses = () => {
       isDefault: false
     }
   ]);
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingAddress, setEditingAddress] = useState(null);
   const { toast } = useToast();
 
-  const handleAddAddress = () => {
-    toast({
-      title: "Add Address",
-      description: "Address form would open here (Demo)"
-    });
+  const handleAddAddress = (newAddress: any) => {
+    setAddresses(addresses => [...addresses, newAddress]);
   };
 
-  const handleEditAddress = (id: string) => {
-    toast({
-      title: "Edit Address",
-      description: "Address edit form would open here (Demo)"
-    });
+  const handleEditAddress = (id: string, updatedAddress: any) => {
+    setAddresses(addresses => 
+      addresses.map(addr => addr.id === id ? updatedAddress : addr)
+    );
+  };
+
+  const handleOpenEditDialog = (address: any) => {
+    setEditingAddress(address);
+    setShowEditDialog(true);
   };
 
   const handleRemoveAddress = (id: string) => {
+    const address = addresses.find(addr => addr.id === id);
+    if (address?.isDefault && addresses.length > 1) {
+      toast({
+        title: "Cannot Remove Default",
+        description: "Please set another address as default first",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setAddresses(addresses => addresses.filter(addr => addr.id !== id));
     toast({
       title: "Address Removed",
@@ -67,7 +84,7 @@ const ShippingAddresses = () => {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold">Shipping Addresses</h2>
-        <Button onClick={handleAddAddress} size="sm">
+        <Button onClick={() => setShowAddDialog(true)} size="sm">
           <Plus className="h-4 w-4 mr-2" />
           Add New
         </Button>
@@ -98,18 +115,35 @@ const ShippingAddresses = () => {
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  onClick={() => handleEditAddress(address.id)}
+                  onClick={() => handleOpenEditDialog(address)}
                 >
                   <Edit className="h-4 w-4" />
                 </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => handleRemoveAddress(address.id)}
-                  className="text-red-600 hover:text-red-700"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Remove Address</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to remove this address? This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => handleRemoveAddress(address.id)}>
+                        Remove
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
             {!address.isDefault && (
@@ -125,6 +159,19 @@ const ShippingAddresses = () => {
           </CardContent>
         </Card>
       ))}
+
+      <AddAddressDialog
+        open={showAddDialog}
+        onOpenChange={setShowAddDialog}
+        onAddAddress={handleAddAddress}
+      />
+
+      <EditAddressDialog
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        onEditAddress={handleEditAddress}
+        address={editingAddress}
+      />
     </div>
   );
 };
