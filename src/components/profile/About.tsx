@@ -33,7 +33,7 @@ const About = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="text-center space-y-2">
-            <h3 className="text-2xl font-bold text-purple-600">GUDPAL'S</h3>
+            <h3 className="text-2xl font-bold text-primary">GUDPAL'S</h3>
             <p className="text-sm text-muted-foreground">Version 1.0.0</p>
             <p className="text-sm">Built with ❤️ for seniors</p>
           </div>
