@@ -74,7 +74,7 @@ const LoginForm = () => {
       <div className="space-y-2">
         <Label htmlFor="phone">Phone Number</Label>
         <div className="flex">
-          <div className="bg-gray-100 border border-r-0 border-input rounded-l-md px-3 flex items-center text-sm text-dhayan-gray-dark">
+          <div className="bg-gray-100 border border-r-0 border-input rounded-l-md px-3 flex items-center text-sm text-muted-foreground">
             +91
           </div>
           <Input
@@ -83,7 +83,7 @@ const LoginForm = () => {
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))}
             placeholder="Enter your phone number"
-            className="rounded-l-none focus-visible:ring-dhayan-purple"
+            className="rounded-l-none focus-visible:ring-primary"
             maxLength={10}
             required
             autoComplete="tel"
@@ -114,7 +114,7 @@ const LoginForm = () => {
       
       <Button 
         type="submit" 
-        className="w-full bg-dhayan-purple hover:bg-dhayan-purple-dark text-white transition-all"
+        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground transition-all"
         disabled={isLoading || !isValidPhone}
       >
         {isLoading ? (

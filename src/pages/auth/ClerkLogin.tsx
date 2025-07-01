@@ -4,7 +4,7 @@ import { SignIn } from "@clerk/clerk-react";
 
 const ClerkLogin = () => {
   return (
-    <div className="min-h-screen bg-dhayan-purple-light/20 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-muted/20 flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-6">
           <img 
@@ -13,7 +13,7 @@ const ClerkLogin = () => {
             className="h-24 mx-auto mb-2"
           />
           <h2 className="text-2xl font-bold">Welcome to GUDPALS</h2>
-          <p className="text-dhayan-gray mt-2">Sign in to access your account</p>
+          <p className="text-muted-foreground mt-2">Sign in to access your account</p>
         </div>
         
         <SignIn 
@@ -24,7 +24,7 @@ const ClerkLogin = () => {
               card: "shadow-md",
               headerTitle: "text-center",
               socialButtonsBlockButton: "w-full",
-              formButtonPrimary: "bg-dhayan-purple hover:bg-dhayan-purple-dark",
+              formButtonPrimary: "bg-primary hover:bg-primary/90",
             }
           }}
         />
