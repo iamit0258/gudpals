@@ -21,13 +21,13 @@ export const useUserSync = () => {
         .eq('id', user.id)
         .maybeSingle();
 
-      if (selectError && selectError.code !== 'PGRST116') {
+      if (selectError) {
         console.error("Error checking existing profile:", selectError);
         throw selectError;
       }
 
       const profileData = {
-        id: user.id,
+        id: user.id, // Now using TEXT format, no conversion needed
         display_name: user.firstName && user.lastName 
           ? `${user.firstName} ${user.lastName}` 
           : user.firstName || user.username || user.emailAddresses?.[0]?.emailAddress || 'User',
@@ -74,16 +74,15 @@ export const useUserSync = () => {
           description: "Your profile has been set up successfully",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error syncing user to database:", error);
-      // Only show toast for non-table related errors
-      if (!error.message?.includes('relation "profiles" does not exist')) {
-        toast({
-          title: "Sync Error",
-          description: "There was an issue syncing your profile data",
-          variant: "destructive",
-        });
-      }
+      
+      // Show user-friendly error message
+      toast({
+        title: "Sync Error",
+        description: "There was an issue syncing your profile data. Please try refreshing the page.",
+        variant: "destructive",
+      });
     }
   };
 

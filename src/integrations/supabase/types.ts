@@ -644,31 +644,34 @@ export type Database = {
       }
       profiles: {
         Row: {
-          created_at: string
+          created_at: string | null
           display_name: string | null
           email: string | null
           id: string
-          last_login_at: string
+          last_login_at: string | null
           phone_number: string | null
           photo_url: string | null
+          updated_at: string | null
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           display_name?: string | null
           email?: string | null
           id: string
-          last_login_at?: string
+          last_login_at?: string | null
           phone_number?: string | null
           photo_url?: string | null
+          updated_at?: string | null
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           display_name?: string | null
           email?: string | null
           id?: string
-          last_login_at?: string
+          last_login_at?: string | null
           phone_number?: string | null
           photo_url?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
