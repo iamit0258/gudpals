@@ -76,12 +76,18 @@ const Profile = () => {
     return (
       <MobileLayout>
         <div className="p-4 flex flex-col items-center justify-center h-[80vh]">
-          <h2 className="text-xl font-semibold text-center mb-4">{t("please_sign_in")}</h2>
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 bg-gradient-to-br from-dhayan-purple to-dhayan-teal rounded-full flex items-center justify-center mx-auto mb-4">
+              <User className="w-10 h-10 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Welcome to Your Profile</h2>
+            <p className="text-gray-600 text-sm">Sign in to access your account and personalize your GUDPALS experience</p>
+          </div>
           <Button
-            className="bg-purple-600 hover:bg-purple-700 text-white w-full max-w-xs"
+            className="bg-dhayan-teal hover:bg-dhayan-teal/90 text-white w-full max-w-xs py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
             onClick={() => navigate("/sign-in")}
           >
-            {t("sign_in")}
+            Sign In to Continue
           </Button>
         </div>
       </MobileLayout>
