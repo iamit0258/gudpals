@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/ClerkAuthBridge";
 import { LanguageProvider } from "@/context/language/LanguageContext";
+import VoiceAssistantLayout from "@/components/layout/VoiceAssistantLayout";
 import Index from "./pages/Index";
 import Products from "./pages/products/Products";
 import ProductDetail from "./pages/products/ProductDetail";
@@ -42,33 +42,35 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/products" element={<Products />} />
-              <Route path="/products/:id" element={<ProductDetail />} />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/payment" element={<PaymentPage />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/sessions" element={<Sessions />} />
-              <Route path="/astrology" element={<Astrology />} />
-              <Route path="/astrology/chat" element={<AstrologyChat />} />
-              <Route path="/astrology/payment" element={<AstrologyPayment />} />
-              <Route path="/activities" element={<Activities />} />
-              <Route path="/events" element={<Events />} />
-              <Route path="/friends" element={<Friends />} />
-              <Route path="/learn" element={<Learn />} />
-              <Route path="/digital-literacy" element={<DigitalLiteracy />} />
-              <Route path="/games" element={<Games />} />
-              <Route path="/travel" element={<Travel />} />
-              <Route path="/employment" element={<Employment />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/verify" element={<Verify />} />
-              <Route path="/sign-in" element={<ClerkLogin />} />
-              <Route path="/sign-up" element={<ClerkRegister />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <VoiceAssistantLayout>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/products" element={<Products />} />
+                <Route path="/products/:id" element={<ProductDetail />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/payment" element={<PaymentPage />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/sessions" element={<Sessions />} />
+                <Route path="/astrology" element={<Astrology />} />
+                <Route path="/astrology/chat" element={<AstrologyChat />} />
+                <Route path="/astrology/payment" element={<AstrologyPayment />} />
+                <Route path="/activities" element={<Activities />} />
+                <Route path="/events" element={<Events />} />
+                <Route path="/friends" element={<Friends />} />
+                <Route path="/learn" element={<Learn />} />
+                <Route path="/digital-literacy" element={<DigitalLiteracy />} />
+                <Route path="/games" element={<Games />} />
+                <Route path="/travel" element={<Travel />} />
+                <Route path="/employment" element={<Employment />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/verify" element={<Verify />} />
+                <Route path="/sign-in" element={<ClerkLogin />} />
+                <Route path="/sign-up" element={<ClerkRegister />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </VoiceAssistantLayout>
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>
