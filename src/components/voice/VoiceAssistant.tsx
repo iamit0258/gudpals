@@ -16,78 +16,192 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isEnabled, setIsEnabled] = useState(true);
   const [currentMessage, setCurrentMessage] = useState('');
+  const [micPermission, setMicPermission] = useState<'granted' | 'denied' | 'prompt'>('prompt');
   const location = useLocation();
   const { toast } = useToast();
   
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const synthRef = useRef<SpeechSynthesis | null>(null);
+  const isInitializedRef = useRef(false);
 
   useEffect(() => {
-    // Initialize speech recognition
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognitionConstructor = window.SpeechRecognition || window.webkitSpeechRecognition;
-      recognitionRef.current = new SpeechRecognitionConstructor();
-      recognitionRef.current.continuous = false;
-      recognitionRef.current.interimResults = false;
-      recognitionRef.current.lang = 'en-US';
-
-      recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
-        const transcript = event.results[0][0].transcript;
-        handleVoiceCommand(transcript);
-      };
-
-      recognitionRef.current.onerror = (event: SpeechRecognitionErrorEvent) => {
-        console.error('Speech recognition error:', event.error);
-        setIsListening(false);
-        toast({
-          title: "Voice Recognition Error",
-          description: "Please try again or check your microphone settings.",
-          variant: "destructive"
-        });
-      };
-
-      recognitionRef.current.onend = () => {
-        setIsListening(false);
-      };
-    }
-
-    // Initialize speech synthesis
-    if ('speechSynthesis' in window) {
-      synthRef.current = window.speechSynthesis;
-    }
-
-    // Welcome message when component mounts
-    setTimeout(() => {
-      speak("Hello! I'm your GUDPALS voice assistant. Say 'help' to learn what I can do, or click the microphone to start.");
-    }, 1000);
-
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-      if (synthRef.current) {
-        synthRef.current.cancel();
-      }
-    };
+    initializeVoiceAssistant();
+    return cleanup;
   }, []);
+
+  const initializeVoiceAssistant = async () => {
+    if (isInitializedRef.current) return;
+    
+    try {
+      // Check microphone permission
+      const permissionResult = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+      setMicPermission(permissionResult.state);
+      
+      // Initialize speech synthesis first
+      if ('speechSynthesis' in window) {
+        synthRef.current = window.speechSynthesis;
+        
+        // Wait for voices to load
+        if (synthRef.current.getVoices().length === 0) {
+          await new Promise<void>((resolve) => {
+            const checkVoices = () => {
+              if (synthRef.current && synthRef.current.getVoices().length > 0) {
+                resolve();
+              } else {
+                setTimeout(checkVoices, 100);
+              }
+            };
+            checkVoices();
+          });
+        }
+      }
+
+      // Initialize speech recognition
+      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognitionConstructor = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognitionRef.current = new SpeechRecognitionConstructor();
+        
+        recognitionRef.current.continuous = false;
+        recognitionRef.current.interimResults = false;
+        recognitionRef.current.lang = 'en-US';
+        recognitionRef.current.maxAlternatives = 1;
+
+        recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
+          const transcript = event.results[0][0].transcript;
+          console.log('Voice command received:', transcript);
+          handleVoiceCommand(transcript);
+        };
+
+        recognitionRef.current.onerror = (event: SpeechRecognitionErrorEvent) => {
+          console.error('Speech recognition error:', event.error);
+          setIsListening(false);
+          
+          let errorMessage = "Voice recognition had an issue. Please try again.";
+          
+          switch (event.error) {
+            case 'network':
+              errorMessage = "Network issue detected. Please check your connection and try again.";
+              break;
+            case 'not-allowed':
+              errorMessage = "Microphone access denied. Please allow microphone access and try again.";
+              setMicPermission('denied');
+              break;
+            case 'no-speech':
+              errorMessage = "No speech detected. Please speak clearly and try again.";
+              break;
+            case 'audio-capture':
+              errorMessage = "Microphone not available. Please check your microphone and try again.";
+              break;
+          }
+          
+          toast({
+            title: "Voice Recognition Error",
+            description: errorMessage,
+            variant: "destructive"
+          });
+        };
+
+        recognitionRef.current.onstart = () => {
+          console.log('Speech recognition started');
+          setIsListening(true);
+        };
+
+        recognitionRef.current.onend = () => {
+          console.log('Speech recognition ended');
+          setIsListening(false);
+        };
+      }
+
+      isInitializedRef.current = true;
+      
+      // Welcome message after initialization
+      setTimeout(() => {
+        speak("Hello! I'm your GUDPALS voice assistant. I'm here to help you navigate the app. Say 'help' to learn what I can do, or click the microphone to start.");
+      }, 1500);
+
+    } catch (error) {
+      console.error('Error initializing voice assistant:', error);
+      toast({
+        title: "Voice Assistant Error",
+        description: "Failed to initialize voice assistant. Some features may not work.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const cleanup = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+    }
+    if (synthRef.current) {
+      synthRef.current.cancel();
+    }
+    isInitializedRef.current = false;
+  };
 
   const speak = (text: string) => {
     if (!synthRef.current || !isEnabled) return;
 
     synthRef.current.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.voice = synthRef.current.getVoices().find(voice => voice.lang === 'en-US') || null;
-    utterance.rate = 0.8;
-    utterance.pitch = 1;
     
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
+    // Configure for a soft, pleasant voice
+    const voices = synthRef.current.getVoices();
+    
+    // Try to find a female voice for softer tone
+    const preferredVoice = voices.find(voice => 
+      voice.lang.startsWith('en') && 
+      (voice.name.includes('Female') || voice.name.includes('woman') || voice.name.includes('Samantha') || voice.name.includes('Victoria'))
+    ) || voices.find(voice => voice.lang.startsWith('en')) || voices[0];
+    
+    if (preferredVoice) {
+      utterance.voice = preferredVoice;
+    }
+    
+    // Configure for soft, pleasant speech
+    utterance.rate = 0.85; // Slightly slower for clarity
+    utterance.pitch = 1.1; // Slightly higher pitch for warmth
+    utterance.volume = 0.8; // Softer volume
+    
+    utterance.onstart = () => {
+      console.log('Speech synthesis started');
+      setIsSpeaking(true);
+    };
+    
+    utterance.onend = () => {
+      console.log('Speech synthesis ended');
+      setIsSpeaking(false);
+    };
+    
+    utterance.onerror = (event) => {
+      console.error('Speech synthesis error:', event);
+      setIsSpeaking(false);
+    };
     
     setCurrentMessage(text);
     synthRef.current.speak(utterance);
   };
 
-  const startListening = () => {
+  const requestMicrophonePermission = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach(track => track.stop()); // Stop the stream immediately
+      setMicPermission('granted');
+      return true;
+    } catch (error) {
+      console.error('Microphone permission denied:', error);
+      setMicPermission('denied');
+      toast({
+        title: "Microphone Access Required",
+        description: "Please allow microphone access to use voice commands.",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
+  const startListening = async () => {
     if (!recognitionRef.current) {
       toast({
         title: "Voice Recognition Not Available",
@@ -97,20 +211,43 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
       return;
     }
 
-    setIsListening(true);
-    recognitionRef.current.start();
-    speak("I'm listening...");
+    // Check microphone permission
+    if (micPermission !== 'granted') {
+      const granted = await requestMicrophonePermission();
+      if (!granted) return;
+    }
+
+    try {
+      // Stop any ongoing recognition
+      if (isListening) {
+        recognitionRef.current.stop();
+        return;
+      }
+
+      console.log('Starting speech recognition');
+      recognitionRef.current.start();
+      speak("I'm listening... Please speak now.");
+      
+    } catch (error) {
+      console.error('Error starting speech recognition:', error);
+      setIsListening(false);
+      toast({
+        title: "Voice Recognition Error",
+        description: "Failed to start listening. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const stopListening = () => {
-    if (recognitionRef.current) {
+    if (recognitionRef.current && isListening) {
+      console.log('Stopping speech recognition');
       recognitionRef.current.stop();
     }
-    setIsListening(false);
   };
 
   const handleVoiceCommand = async (command: string) => {
-    console.log('Voice command received:', command);
+    console.log('Processing voice command:', command);
     
     try {
       const response = await voiceAssistantService.processCommand(command, location.pathname);
@@ -131,12 +268,17 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
   };
 
   const toggleVoiceAssistant = () => {
-    setIsEnabled(!isEnabled);
-    if (!isEnabled) {
-      speak("Voice assistant enabled. How can I help you?");
+    const newState = !isEnabled;
+    setIsEnabled(newState);
+    
+    if (newState) {
+      speak("Voice assistant enabled. How can I help you today?");
     } else {
       synthRef.current?.cancel();
       setIsSpeaking(false);
+      if (isListening) {
+        stopListening();
+      }
     }
   };
 
@@ -150,8 +292,11 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
       <div className="flex flex-col items-end gap-2">
         {/* Current message display */}
         {currentMessage && isSpeaking && (
-          <div className="bg-dhayan-teal text-white px-4 py-2 rounded-lg shadow-lg max-w-xs text-sm">
-            {currentMessage}
+          <div className="bg-dhayan-teal text-white px-4 py-2 rounded-lg shadow-lg max-w-xs text-sm animate-pulse">
+            <div className="flex items-center gap-2">
+              <Volume2 className="h-4 w-4" />
+              <span>{currentMessage}</span>
+            </div>
           </div>
         )}
         
@@ -161,7 +306,8 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
             onClick={showHelp}
             size="sm"
             variant="outline"
-            className="bg-white shadow-lg hover:bg-dhayan-teal hover:text-white"
+            className="bg-white shadow-lg hover:bg-dhayan-teal hover:text-white transition-colors"
+            title="Get help"
           >
             <HelpCircle className="h-4 w-4" />
           </Button>
@@ -171,9 +317,10 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
             size="sm"
             variant="outline"
             className={cn(
-              "bg-white shadow-lg",
-              isEnabled ? "hover:bg-dhayan-teal hover:text-white" : "bg-gray-200"
+              "bg-white shadow-lg transition-colors",
+              isEnabled ? "hover:bg-dhayan-teal hover:text-white" : "bg-gray-200 text-gray-500"
             )}
+            title={isEnabled ? "Disable voice assistant" : "Enable voice assistant"}
           >
             {isEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
           </Button>
@@ -186,12 +333,21 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
               "shadow-lg transition-all duration-200",
               isListening 
                 ? "bg-red-500 hover:bg-red-600 animate-pulse" 
-                : "bg-dhayan-teal hover:bg-dhayan-teal/90"
+                : "bg-dhayan-teal hover:bg-dhayan-teal/90",
+              !isEnabled && "opacity-50 cursor-not-allowed"
             )}
+            title={isListening ? "Stop listening" : "Start listening"}
           >
             {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
           </Button>
         </div>
+
+        {/* Microphone permission warning */}
+        {micPermission === 'denied' && (
+          <div className="bg-yellow-100 text-yellow-800 px-3 py-2 rounded-lg text-xs max-w-xs">
+            Microphone access is required for voice commands. Please allow access in your browser settings.
+          </div>
+        )}
       </div>
     </div>
   );
