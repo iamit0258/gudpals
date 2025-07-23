@@ -1,7 +1,7 @@
 
 /// <reference types="vite/client" />
 
-// Speech Recognition API type declarations
+// Speech Recognition API type declarations - Updated for VoiceAssistant compatibility
 interface SpeechRecognition extends EventTarget {
   continuous: boolean;
   interimResults: boolean;
