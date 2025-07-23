@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Mic, MicOff, Volume2, VolumeX, HelpCircle } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { voiceAssistantService } from '@/services/voiceAssistantService';
@@ -18,7 +18,6 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
   const [currentMessage, setCurrentMessage] = useState('');
   const [micPermission, setMicPermission] = useState<'granted' | 'denied' | 'prompt'>('prompt');
   const location = useLocation();
-  const navigate = useNavigate();
   const { toast } = useToast();
   
   const recognitionRef = useRef<SpeechRecognition | null>(null);
@@ -258,7 +257,7 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
         // Handle navigation or other actions
         setTimeout(() => {
           if (response.action?.type === 'navigate' && response.action.path) {
-            navigate(response.action.path);
+            window.location.href = response.action.path;
           }
         }, 2000);
       }
