@@ -6,6 +6,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/ClerkAuthBridge";
 import { LanguageProvider } from "@/context/language/LanguageContext";
 import VoiceAssistantLayout from "@/components/layout/VoiceAssistantLayout";
+import ErrorBoundary from "@/components/common/ErrorBoundary";
+import { Suspense } from "react";
+import { PageLoadingSkeleton } from "@/components/ui/loading-states";
 import Index from "./pages/Index";
 import Products from "./pages/products/Products";
 import ProductDetail from "./pages/products/ProductDetail";
@@ -32,50 +35,62 @@ import ClerkLogin from "./pages/auth/ClerkLogin";
 import ClerkRegister from "./pages/auth/ClerkRegister";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 3,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes (updated from cacheTime)
+    },
+  },
+});
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <LanguageProvider>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <VoiceAssistantLayout>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/products" element={<Products />} />
-                <Route path="/products/:id" element={<ProductDetail />} />
-                <Route path="/checkout" element={<Checkout />} />
-                <Route path="/payment" element={<PaymentPage />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/sessions" element={<Sessions />} />
-                <Route path="/astrology" element={<Astrology />} />
-                <Route path="/astrology/chat" element={<AstrologyChat />} />
-                <Route path="/astrology/payment" element={<AstrologyPayment />} />
-                <Route path="/activities" element={<Activities />} />
-                <Route path="/events" element={<Events />} />
-                <Route path="/friends" element={<Friends />} />
-                <Route path="/learn" element={<Learn />} />
-                <Route path="/digital-literacy" element={<DigitalLiteracy />} />
-                <Route path="/games" element={<Games />} />
-                <Route path="/travel" element={<Travel />} />
-                <Route path="/employment" element={<Employment />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/verify" element={<Verify />} />
-                <Route path="/sign-in" element={<ClerkLogin />} />
-                <Route path="/sign-up" element={<ClerkRegister />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </VoiceAssistantLayout>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
-    </LanguageProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <LanguageProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <VoiceAssistantLayout>
+                <Suspense fallback={<PageLoadingSkeleton />}>
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/products" element={<Products />} />
+                    <Route path="/products/:id" element={<ProductDetail />} />
+                    <Route path="/checkout" element={<Checkout />} />
+                    <Route path="/payment" element={<PaymentPage />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/sessions" element={<Sessions />} />
+                    <Route path="/astrology" element={<Astrology />} />
+                    <Route path="/astrology/chat" element={<AstrologyChat />} />
+                    <Route path="/astrology/payment" element={<AstrologyPayment />} />
+                    <Route path="/activities" element={<Activities />} />
+                    <Route path="/events" element={<Events />} />
+                    <Route path="/friends" element={<Friends />} />
+                    <Route path="/learn" element={<Learn />} />
+                    <Route path="/digital-literacy" element={<DigitalLiteracy />} />
+                    <Route path="/games" element={<Games />} />
+                    <Route path="/travel" element={<Travel />} />
+                    <Route path="/employment" element={<Employment />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/verify" element={<Verify />} />
+                    <Route path="/sign-in" element={<ClerkLogin />} />
+                    <Route path="/sign-up" element={<ClerkRegister />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </VoiceAssistantLayout>
+            </TooltipProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </LanguageProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

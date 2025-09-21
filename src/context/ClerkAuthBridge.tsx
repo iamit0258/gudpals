@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, ReactNode } from "react";
 import { useUser, useAuth as useClerkAuth } from "@clerk/clerk-react";
+import { useNavigate } from "react-router-dom";
 import { useUserSync } from "@/hooks/useUserSync";
 
 // Define the User type to match your existing structure
@@ -46,6 +47,7 @@ const AuthContext = createContext<AuthContextType>({
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { user: clerkUser, isLoaded } = useUser();
   const { signOut: clerkSignOut } = useClerkAuth();
+  const navigate = useNavigate();
   
   // Sync user data to Supabase database
   useUserSync();
@@ -152,7 +154,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     // Redirect to sign up if not authenticated
     if (!user) {
-      window.location.href = "/sign-up";
+      navigate("/sign-up");
     }
   };
 

@@ -51,7 +51,11 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
       </main>
 
       {!hideNavigation && (
-        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t max-w-md mx-auto shadow-lg">
+        <nav 
+          className="fixed bottom-0 left-0 right-0 bg-white border-t max-w-md mx-auto shadow-lg backdrop-blur-md"
+          role="navigation"
+          aria-label="Main navigation"
+        >
           <ul className="flex justify-around items-center h-16">
             {navItems.map(item => {
               const isActive = location.pathname === item.path;
@@ -60,20 +64,22 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
                   <Link 
                     to={item.path} 
                     className={cn(
-                      "flex flex-col items-center p-2 rounded-lg transition-colors",
+                      "flex flex-col items-center p-2 rounded-lg transition-all duration-200 focus-ring",
+                      "hover:bg-primary/10 active:scale-95",
                       isActive 
-                        ? "text-primary font-medium" 
+                        ? "text-primary font-medium bg-primary/5" 
                         : "text-gray-500 hover:text-primary"
                     )} 
                     aria-current={isActive ? "page" : undefined}
+                    aria-label={`${item.name} ${isActive ? '(current page)' : ''}`}
                   >
                     <item.icon className={cn(
-                      "h-6 w-6", 
+                      "h-6 w-6 transition-transform", 
                       isActive 
-                        ? "text-primary" 
+                        ? "text-primary scale-110" 
                         : "text-gray-500"
                     )} />
-                    <span className="text-xs mt-1">{item.name}</span>
+                    <span className="text-xs mt-1 font-medium">{item.name}</span>
                   </Link>
                 </li>
               );
