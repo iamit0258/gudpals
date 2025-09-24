@@ -5,7 +5,9 @@ import { Mic, MicOff, Volume2, VolumeX, HelpCircle } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { voiceAssistantService } from '@/services/voiceAssistantService';
+import MobileVoiceAssistant from './MobileVoiceAssistant';
 
 interface VoiceAssistantProps {
   className?: string;
@@ -20,6 +22,7 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const synthRef = useRef<SpeechSynthesis | null>(null);
@@ -288,12 +291,30 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
     speak(helpMessage);
   };
 
+  // Use mobile version on mobile devices
+  if (isMobile) {
+    return (
+      <MobileVoiceAssistant
+        className={className}
+        isListening={isListening}
+        isSpeaking={isSpeaking}
+        isEnabled={isEnabled}
+        currentMessage={currentMessage}
+        micPermission={micPermission}
+        onStartListening={startListening}
+        onStopListening={stopListening}
+        onToggleEnabled={toggleVoiceAssistant}
+        onShowHelp={showHelp}
+      />
+    );
+  }
+
   return (
     <div className={cn("fixed bottom-4 right-4 z-50", className)}>
       <div className="flex flex-col items-end gap-2">
         {/* Current message display */}
         {currentMessage && isSpeaking && (
-          <div className="bg-dhayan-teal text-white px-4 py-2 rounded-lg shadow-lg max-w-xs text-sm animate-pulse">
+          <div className="bg-primary text-white px-4 py-2 rounded-lg shadow-lg max-w-xs text-sm animate-pulse">
             <div className="flex items-center gap-2">
               <Volume2 className="h-4 w-4" />
               <span>{currentMessage}</span>
@@ -307,8 +328,9 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
             onClick={showHelp}
             size="sm"
             variant="outline"
-            className="bg-white shadow-lg hover:bg-dhayan-teal hover:text-white transition-colors"
+            className="bg-white shadow-lg hover:bg-primary hover:text-white transition-colors focus-ring"
             title="Get help"
+            aria-label="Get voice command help"
           >
             <HelpCircle className="h-4 w-4" />
           </Button>
@@ -318,10 +340,11 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
             size="sm"
             variant="outline"
             className={cn(
-              "bg-white shadow-lg transition-colors",
-              isEnabled ? "hover:bg-dhayan-teal hover:text-white" : "bg-gray-200 text-gray-500"
+              "bg-white shadow-lg transition-colors focus-ring",
+              isEnabled ? "hover:bg-primary hover:text-white" : "bg-gray-200 text-gray-500"
             )}
             title={isEnabled ? "Disable voice assistant" : "Enable voice assistant"}
+            aria-label={isEnabled ? "Disable voice assistant" : "Enable voice assistant"}
           >
             {isEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
           </Button>
@@ -331,13 +354,14 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
             disabled={!isEnabled}
             size="lg"
             className={cn(
-              "shadow-lg transition-all duration-200",
+              "shadow-lg transition-all duration-200 focus-ring",
               isListening 
                 ? "bg-red-500 hover:bg-red-600 animate-pulse" 
-                : "bg-dhayan-teal hover:bg-dhayan-teal/90",
+                : "bg-primary hover:bg-primary/90",
               !isEnabled && "opacity-50 cursor-not-allowed"
             )}
             title={isListening ? "Stop listening" : "Start listening"}
+            aria-label={isListening ? "Stop listening" : "Start listening"}
           >
             {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
           </Button>
