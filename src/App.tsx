@@ -33,6 +33,7 @@ import Register from "./pages/auth/Register";
 import Verify from "./pages/auth/Verify";
 import ClerkLogin from "./pages/auth/ClerkLogin";
 import ClerkRegister from "./pages/auth/ClerkRegister";
+import Onboarding from "./pages/auth/Onboarding";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -81,6 +82,7 @@ const App = () => (
                     <Route path="/verify" element={<Verify />} />
                     <Route path="/sign-in" element={<ClerkLogin />} />
                     <Route path="/sign-up" element={<ClerkRegister />} />
+                    <Route path="/onboarding" element={<Onboarding />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>

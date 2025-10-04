@@ -1,8 +1,9 @@
 
-import React, { createContext, useContext, ReactNode } from "react";
+import React, { createContext, useContext, ReactNode, useEffect } from "react";
 import { useUser, useAuth as useClerkAuth } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import { useUserSync } from "@/hooks/useUserSync";
+import { supabase } from "@/integrations/supabase/client";
 
 // Define the User type to match your existing structure
 interface User {
@@ -163,6 +164,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     console.log("Registration handled by Clerk components");
     return { error: null, status: "success" };
   };
+
+  // Check onboarding status and redirect if needed
+  useEffect(() => {
+    const checkOnboarding = async () => {
+      if (isLoaded && user && clerkUser) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("profile_completed")
+          .eq("id", clerkUser.id)
+          .maybeSingle();
+
+        // Only redirect to onboarding if profile exists but not completed
+        // and we're not already on the onboarding page
+        if (profile && !profile.profile_completed && window.location.pathname !== "/onboarding") {
+          navigate("/onboarding");
+        }
+      }
+    };
+
+    checkOnboarding();
+  }, [isLoaded, user, clerkUser, navigate]);
 
   return (
     <AuthContext.Provider
