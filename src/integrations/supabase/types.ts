@@ -649,33 +649,51 @@ export type Database = {
       }
       profiles: {
         Row: {
+          age: number | null
           created_at: string | null
           display_name: string | null
           email: string | null
+          hobbies: string[] | null
           id: string
+          interests: string[] | null
           last_login_at: string | null
+          location: string | null
           phone_number: string | null
           photo_url: string | null
+          profile_completed: boolean | null
+          provider: string | null
           updated_at: string | null
         }
         Insert: {
+          age?: number | null
           created_at?: string | null
           display_name?: string | null
           email?: string | null
+          hobbies?: string[] | null
           id: string
+          interests?: string[] | null
           last_login_at?: string | null
+          location?: string | null
           phone_number?: string | null
           photo_url?: string | null
+          profile_completed?: boolean | null
+          provider?: string | null
           updated_at?: string | null
         }
         Update: {
+          age?: number | null
           created_at?: string | null
           display_name?: string | null
           email?: string | null
+          hobbies?: string[] | null
           id?: string
+          interests?: string[] | null
           last_login_at?: string | null
+          location?: string | null
           phone_number?: string | null
           photo_url?: string | null
+          profile_completed?: boolean | null
+          provider?: string | null
           updated_at?: string | null
         }
         Relationships: []
