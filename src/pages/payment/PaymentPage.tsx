@@ -2,10 +2,11 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import MobileLayout from "@/components/layout/MobileLayout";
-import PaymentGateway from "@/components/payment/PaymentGateway";
+import StripeCheckout from "@/components/payment/StripeCheckout";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const PaymentPage = () => {
   const navigate = useNavigate();
@@ -17,6 +18,8 @@ const PaymentPage = () => {
   // Get payment amount from navigation state or default to demo amount
   const amount = location.state?.amount || 999;
   const orderDetails = location.state?.orderDetails;
+  const productId = location.state?.productId;
+  const consultationId = location.state?.consultationId;
 
   const handlePaymentSuccess = (data: any) => {
     setPaymentData(data);
@@ -96,10 +99,12 @@ const PaymentPage = () => {
           <h1 className="text-2xl font-bold">Payment</h1>
         </div>
         
-        <PaymentGateway
+        <StripeCheckout
           amount={amount}
-          onPaymentSuccess={handlePaymentSuccess}
-          onPaymentCancel={handlePaymentCancel}
+          productId={productId}
+          consultationId={consultationId}
+          onSuccess={handlePaymentSuccess}
+          onCancel={handlePaymentCancel}
         />
       </div>
     </MobileLayout>
