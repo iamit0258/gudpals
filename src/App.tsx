@@ -14,6 +14,8 @@ import Products from "./pages/products/Products";
 import ProductDetail from "./pages/products/ProductDetail";
 import Checkout from "./pages/checkout/Checkout";
 import PaymentPage from "./pages/payment/PaymentPage";
+import PaymentSuccess from "./pages/payment/PaymentSuccess";
+import PaymentCanceled from "./pages/payment/PaymentCanceled";
 import Profile from "./pages/profile/Profile";
 import Sessions from "./pages/sessions/Sessions";
 import Astrology from "./pages/astrology/Astrology";
@@ -63,6 +65,8 @@ const App = () => (
                     <Route path="/products/:id" element={<ProductDetail />} />
                     <Route path="/checkout" element={<Checkout />} />
                     <Route path="/payment" element={<PaymentPage />} />
+                    <Route path="/payment-success" element={<PaymentSuccess />} />
+                    <Route path="/payment-canceled" element={<PaymentCanceled />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/sessions" element={<Sessions />} />
                     <Route path="/astrology" element={<Astrology />} />

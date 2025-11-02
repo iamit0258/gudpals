@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
 
     if (!user) throw new Error("User not authenticated");
 
-    const { productId, quantity = 1, consultationId } = await req.json();
+    const { productId, quantity = 1, consultationId, cartItems } = await req.json();
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2023-10-16",
@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
     let orderAmount = 0;
 
     if (productId) {
-      // Product purchase
+      // Single product purchase
       const { data: product } = await supabaseClient
         .from('products')
         .select('*')
@@ -46,16 +46,14 @@ Deno.serve(async (req) => {
 
       lineItems.push({
         price_data: {
-          currency: "usd",
+          currency: "inr",
           product_data: { name: product.name },
           unit_amount: Math.round(product.price * 100),
         },
         quantity,
       });
       orderAmount = product.price * quantity;
-    }
-
-    if (consultationId) {
+    } else if (consultationId) {
       // Astrology consultation payment
       const { data: consultation } = await supabaseClient
         .from('astrology_consultations')
@@ -67,13 +65,28 @@ Deno.serve(async (req) => {
 
       lineItems.push({
         price_data: {
-          currency: "usd",
+          currency: "inr",
           product_data: { name: "Astrology Consultation" },
           unit_amount: Math.round(consultation.total_cost * 100),
         },
         quantity: 1,
       });
       orderAmount = consultation.total_cost;
+    } else if (cartItems && Array.isArray(cartItems)) {
+      // Cart checkout - multiple items
+      for (const item of cartItems) {
+        lineItems.push({
+          price_data: {
+            currency: "inr",
+            product_data: { name: item.title || item.name },
+            unit_amount: Math.round(item.price * 100),
+          },
+          quantity: item.quantity,
+        });
+        orderAmount += item.price * item.quantity;
+      }
+    } else {
+      throw new Error("No valid payment items provided");
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -85,6 +98,7 @@ Deno.serve(async (req) => {
         user_id: user.id,
         product_id: productId || "",
         consultation_id: consultationId || "",
+        cart_items: cartItems ? JSON.stringify(cartItems) : "",
       }
     });
 
