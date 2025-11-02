@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/
 import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/context/language/LanguageContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -83,7 +84,7 @@ const Checkout = () => {
     }
   };
   
-  const handleSubmit = (data: any) => {
+  const handleSubmit = async (data: any) => {
     if (cartItems.length === 0) {
       toast({
         title: "Cart is empty",
@@ -93,28 +94,57 @@ const Checkout = () => {
       return;
     }
     
-    // Check payment method and proceed accordingly
-    if (data.paymentMethod === "online") {
-      // Navigate to payment gateway
-      navigate("/payment", {
-        state: {
-          amount: calculateTotal(),
-          orderDetails: {
-            items: cartItems,
-            address: data,
-            subtotal: calculateSubtotal(),
-            deliveryFee: calculateDeliveryFee(),
-            total: calculateTotal()
-          }
+    setLoading(true);
+    
+    try {
+      // Check payment method and proceed accordingly
+      if (data.paymentMethod === "online") {
+        // Process Stripe payment for cart items
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          toast({
+            title: "Authentication Required",
+            description: "Please log in to continue",
+            variant: "destructive",
+          });
+          navigate("/login");
+          return;
         }
-      });
-    } else {
-      // Cash on delivery - process order directly
-      setLoading(true);
-      
-      // Simulate API call
-      setTimeout(() => {
-        setLoading(false);
+
+        const response = await supabase.functions.invoke('create-payment', {
+          body: { 
+            cartItems: cartItems.map(item => ({
+              title: item.title,
+              price: item.price,
+              quantity: item.quantity,
+              id: item.id
+            }))
+          },
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        if (response.error) throw response.error;
+
+        if (response.data?.url) {
+          // Clear cart and redirect to Stripe
+          localStorage.setItem('cart', JSON.stringify([]));
+          window.open(response.data.url, '_blank');
+          
+          toast({
+            title: "Redirecting to Payment",
+            description: "You will be redirected to complete your payment",
+          });
+          
+          // Navigate to home after a delay
+          setTimeout(() => {
+            navigate("/");
+          }, 2000);
+        }
+      } else {
+        // Cash on delivery - process order directly
         setOrderComplete(true);
         
         // Store the order in localStorage for demo purposes
@@ -139,7 +169,16 @@ const Checkout = () => {
           title: t("order_placed"),
           description: t("order_success_message"),
         });
-      }, 1500);
+      }
+    } catch (error: any) {
+      console.error("Checkout error:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to process payment",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
   
