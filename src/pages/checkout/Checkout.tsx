@@ -12,6 +12,7 @@ import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/context/language/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/context/ClerkAuthBridge";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ const Checkout = () => {
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
+  const { user } = useAuth();
   
   // Load cart from localStorage
   useEffect(() => {
@@ -99,19 +101,7 @@ const Checkout = () => {
     try {
       // Check payment method and proceed accordingly
       if (data.paymentMethod === "online") {
-        // Process Stripe payment for cart items
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session) {
-          toast({
-            title: "Authentication Required",
-            description: "Please log in to continue",
-            variant: "destructive",
-          });
-          navigate("/login");
-          return;
-        }
-
+        // Process Stripe payment for cart items (guest-friendly)
         const response = await supabase.functions.invoke('create-payment', {
           body: { 
             cartItems: cartItems.map(item => ({
@@ -119,11 +109,9 @@ const Checkout = () => {
               price: item.price,
               quantity: item.quantity,
               id: item.id
-            }))
-          },
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
+            })),
+            userEmail: user?.email || undefined,
+          }
         });
 
         if (response.error) throw response.error;

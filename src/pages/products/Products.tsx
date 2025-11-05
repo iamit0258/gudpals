@@ -31,9 +31,12 @@ const Products = () => {
     }
   }, []);
   
-  // Save cart to localStorage whenever it changes
+  // Save cart to localStorage whenever it changes (throttled)
   React.useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart));
+    const id = requestAnimationFrame(() => {
+      localStorage.setItem('cart', JSON.stringify(cart));
+    });
+    return () => cancelAnimationFrame(id);
   }, [cart]);
   
   React.useEffect(() => {
@@ -123,8 +126,24 @@ const Products = () => {
   };
   
   const handleBuyNow = (product) => {
-    // Add to cart first
-    handleAddToCart(product);
+    // Compute updated cart and persist immediately
+    const existingItem = cart.find(item => item.id === product.id);
+    let updatedCart;
+    if (existingItem) {
+      updatedCart = cart.map(item => 
+        item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+      );
+    } else {
+      updatedCart = [...cart, {
+        id: product.id,
+        title: language === "en" ? product.title_en : product.title_hi,
+        price: product.price,
+        image: product.image,
+        quantity: 1
+      }];
+    }
+    setCart(updatedCart);
+    localStorage.setItem('cart', JSON.stringify(updatedCart));
     // Navigate to checkout
     navigate("/checkout");
   };

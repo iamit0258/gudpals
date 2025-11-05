@@ -18,14 +18,16 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
 
-    const authHeader = req.headers.get("Authorization")!;
-    const token = authHeader.replace("Bearer ", "");
-    const { data } = await supabaseClient.auth.getUser(token);
-    const user = data.user;
+    const authHeader = req.headers.get("Authorization");
+    let user: any = null;
+    if (authHeader) {
+      const token = authHeader.replace("Bearer ", "");
+      const { data } = await supabaseClient.auth.getUser(token);
+      user = data.user;
+    }
 
-    if (!user) throw new Error("User not authenticated");
+    const { productId, quantity = 1, consultationId, cartItems, userEmail } = await req.json();
 
-    const { productId, quantity = 1, consultationId, cartItems } = await req.json();
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2023-10-16",
@@ -89,13 +91,16 @@ Deno.serve(async (req) => {
       throw new Error("No valid payment items provided");
     }
 
+    const customerEmail = (user && user.email) ? user.email : (userEmail || undefined);
+
     const session = await stripe.checkout.sessions.create({
       line_items: lineItems,
       mode: "payment",
       success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get("origin")}/payment-canceled`,
+      customer_email: customerEmail,
       metadata: {
-        user_id: user.id,
+        user_id: user ? user.id : "",
         product_id: productId || "",
         consultation_id: consultationId || "",
         cart_items: cartItems ? JSON.stringify(cartItems) : "",
@@ -109,12 +114,14 @@ Deno.serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    await supabaseService.from("orders").insert({
-      user_id: user.id,
-      total_amount: orderAmount,
-      payment_intent_id: session.id,
-      status: "pending",
-    });
+    if (user && user.id) {
+      await supabaseService.from("orders").insert({
+        user_id: user.id,
+        total_amount: orderAmount,
+        payment_intent_id: session.id,
+        status: "pending",
+      });
+    }
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
