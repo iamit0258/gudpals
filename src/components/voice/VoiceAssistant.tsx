@@ -41,23 +41,30 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
       const permissionResult = await navigator.permissions.query({ name: 'microphone' as PermissionName });
       setMicPermission(permissionResult.state);
       
-      // Initialize speech synthesis first
+      // Initialize speech synthesis
       if ('speechSynthesis' in window) {
         synthRef.current = window.speechSynthesis;
         
-        // Wait for voices to load
-        if (synthRef.current.getVoices().length === 0) {
-          await new Promise<void>((resolve) => {
-            const checkVoices = () => {
-              if (synthRef.current && synthRef.current.getVoices().length > 0) {
-                resolve();
-              } else {
-                setTimeout(checkVoices, 100);
-              }
-            };
-            checkVoices();
-          });
+        // Load voices (this is async in some browsers)
+        const loadVoices = () => {
+          const voices = synthRef.current?.getVoices() || [];
+          if (voices.length > 0) {
+            console.log('Speech synthesis voices loaded:', voices.length);
+          }
+        };
+        
+        loadVoices();
+        
+        // Some browsers fire this event when voices are loaded
+        if (synthRef.current.onvoiceschanged !== undefined) {
+          synthRef.current.onvoiceschanged = loadVoices;
         }
+      } else {
+        console.warn('Speech synthesis not supported in this browser');
+        toast({
+          title: "Voice Assistant Limited",
+          description: "Text-to-speech is not supported in your browser. Voice commands will still work.",
+        });
       }
 
       // Initialize speech recognition
@@ -96,6 +103,9 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
             case 'audio-capture':
               errorMessage = "Microphone not available. Please check your microphone and try again.";
               break;
+            case 'aborted':
+              // Silent error - user stopped listening
+              return;
           }
           
           toast({
@@ -114,14 +124,17 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
           console.log('Speech recognition ended');
           setIsListening(false);
         };
+      } else {
+        console.warn('Speech recognition not supported in this browser');
+        toast({
+          title: "Voice Commands Not Available",
+          description: "Speech recognition is not supported in your browser.",
+          variant: "destructive"
+        });
       }
 
       isInitializedRef.current = true;
-      
-      // Welcome message after initialization
-      setTimeout(() => {
-        speak("Hello! I'm your GUDPALS voice assistant. I'm here to help you navigate the app. Say 'help' to learn what I can do, or click the microphone to start.");
-      }, 1500);
+      console.log('Voice assistant initialized successfully');
 
     } catch (error) {
       console.error('Error initializing voice assistant:', error);
@@ -145,46 +158,71 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
   };
 
   const speak = (text: string) => {
-    if (!synthRef.current || !isEnabled) return;
-
-    synthRef.current.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    
-    // Configure for a soft, pleasant voice
-    const voices = synthRef.current.getVoices();
-    
-    // Try to find a female voice for softer tone
-    const preferredVoice = voices.find(voice => 
-      voice.lang.startsWith('en') && 
-      (voice.name.includes('Female') || voice.name.includes('woman') || voice.name.includes('Samantha') || voice.name.includes('Victoria'))
-    ) || voices.find(voice => voice.lang.startsWith('en')) || voices[0];
-    
-    if (preferredVoice) {
-      utterance.voice = preferredVoice;
+    if (!synthRef.current || !isEnabled) {
+      console.log('Speech synthesis not available or disabled');
+      return;
     }
-    
-    // Configure for soft, pleasant speech
-    utterance.rate = 0.85; // Slightly slower for clarity
-    utterance.pitch = 1.1; // Slightly higher pitch for warmth
-    utterance.volume = 0.8; // Softer volume
-    
-    utterance.onstart = () => {
-      console.log('Speech synthesis started');
-      setIsSpeaking(true);
-    };
-    
-    utterance.onend = () => {
-      console.log('Speech synthesis ended');
+
+    try {
+      // Cancel any ongoing speech
+      synthRef.current.cancel();
+      
+      const utterance = new SpeechSynthesisUtterance(text);
+      
+      // Configure for a soft, pleasant voice
+      const voices = synthRef.current.getVoices();
+      
+      if (voices.length === 0) {
+        console.warn('No voices available yet, using default');
+      } else {
+        // Try to find a female voice for softer tone
+        const preferredVoice = voices.find(voice => 
+          voice.lang.startsWith('en') && 
+          (voice.name.includes('Female') || voice.name.includes('woman') || voice.name.includes('Samantha') || voice.name.includes('Victoria'))
+        ) || voices.find(voice => voice.lang.startsWith('en')) || voices[0];
+        
+        if (preferredVoice) {
+          utterance.voice = preferredVoice;
+          console.log('Using voice:', preferredVoice.name);
+        }
+      }
+      
+      // Configure for soft, pleasant speech
+      utterance.rate = 0.85; // Slightly slower for clarity
+      utterance.pitch = 1.1; // Slightly higher pitch for warmth
+      utterance.volume = 0.8; // Softer volume
+      
+      utterance.onstart = () => {
+        console.log('Speech synthesis started');
+        setIsSpeaking(true);
+      };
+      
+      utterance.onend = () => {
+        console.log('Speech synthesis ended');
+        setIsSpeaking(false);
+      };
+      
+      utterance.onerror = (event) => {
+        console.error('Speech synthesis error:', event);
+        setIsSpeaking(false);
+        
+        // Only show error toast for non-trivial errors
+        if (event.error !== 'canceled' && event.error !== 'interrupted') {
+          toast({
+            title: "Speech Error",
+            description: "Unable to speak the message. Please try again.",
+            variant: "destructive"
+          });
+        }
+      };
+      
+      setCurrentMessage(text);
+      synthRef.current.speak(utterance);
+      console.log('Speaking:', text.substring(0, 50) + '...');
+    } catch (error) {
+      console.error('Error in speak function:', error);
       setIsSpeaking(false);
-    };
-    
-    utterance.onerror = (event) => {
-      console.error('Speech synthesis error:', event);
-      setIsSpeaking(false);
-    };
-    
-    setCurrentMessage(text);
-    synthRef.current.speak(utterance);
+    }
   };
 
   const requestMicrophonePermission = async () => {
@@ -276,13 +314,21 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
     setIsEnabled(newState);
     
     if (newState) {
-      speak("Voice assistant enabled. How can I help you today?");
+      toast({
+        title: "Voice Assistant Enabled",
+        description: "Click the microphone button and speak your command.",
+      });
+      speak("Voice assistant enabled. I'm ready to help! Click the microphone button and say 'help' to learn what I can do.");
     } else {
       synthRef.current?.cancel();
       setIsSpeaking(false);
       if (isListening) {
         stopListening();
       }
+      toast({
+        title: "Voice Assistant Disabled",
+        description: "Voice commands are now turned off.",
+      });
     }
   };
 
