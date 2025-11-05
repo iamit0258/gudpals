@@ -59,13 +59,8 @@ const PaymentGateway: React.FC<PaymentGatewayProps> = ({
         if (error) throw error;
         
         if (data?.url) {
-          // Redirect to Stripe Checkout in new tab
-          window.open(data.url, '_blank');
-          
-          toast({
-            title: "Redirecting to Payment",
-            description: "Complete your payment in the new tab",
-          });
+          // Redirect to Stripe Checkout
+          window.location.href = data.url;
         }
       } catch (error: any) {
         console.error("Payment error:", error);
