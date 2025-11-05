@@ -119,17 +119,7 @@ const Checkout = () => {
         if (response.data?.url) {
           // Clear cart and redirect to Stripe
           localStorage.setItem('cart', JSON.stringify([]));
-          window.open(response.data.url, '_blank');
-          
-          toast({
-            title: "Redirecting to Payment",
-            description: "You will be redirected to complete your payment",
-          });
-          
-          // Navigate to home after a delay
-          setTimeout(() => {
-            navigate("/");
-          }, 2000);
+          window.location.href = response.data.url;
         }
       } else {
         // Cash on delivery - process order directly
