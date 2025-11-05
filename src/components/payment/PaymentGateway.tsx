@@ -30,12 +30,8 @@ const PaymentGateway: React.FC<PaymentGatewayProps> = ({
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!session) {
-          toast({
-            title: "Authentication Required",
-            description: "Please log in to continue",
-            variant: "destructive",
-          });
-          return;
+          // Proceed without Supabase session (guest checkout via email)
+          // We'll still attempt to create a session without auth header
         }
 
         const payload: any = {};
@@ -48,12 +44,16 @@ const PaymentGateway: React.FC<PaymentGatewayProps> = ({
         } else if (cartItems) {
           payload.cartItems = cartItems;
         }
+        // Include email from Clerk if available via window.Clerk (optional best-effort)
+        try {
+          // @ts-ignore
+          const clerkEmail = window?.Clerk?.user?.primaryEmailAddress?.emailAddress;
+          if (clerkEmail) payload.userEmail = clerkEmail;
+        } catch {}
+
 
         const { data, error } = await supabase.functions.invoke("create-payment", {
           body: payload,
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
         });
 
         if (error) throw error;

@@ -158,9 +158,12 @@ const ProductDetail = () => {
     }
   }, []);
   
-  // Save cart to localStorage whenever it changes
+  // Save cart to localStorage whenever it changes (throttled by requestAnimationFrame)
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart));
+    const id = requestAnimationFrame(() => {
+      localStorage.setItem('cart', JSON.stringify(cart));
+    });
+    return () => cancelAnimationFrame(id);
   }, [cart]);
   
   if (!product) {
@@ -235,7 +238,7 @@ const ProductDetail = () => {
   };
   
   const handleBuyNow = () => {
-    // Add current product to cart first
+    // Add current product to cart first and persist immediately
     const cartItem = {
       id: product.id,
       title: getLocalizedTitle(),
@@ -244,17 +247,22 @@ const ProductDetail = () => {
       image: product.images[0]
     };
     
-    // Add to cart if not already there
     const existingItemIndex = cart.findIndex(item => item.id === product.id);
+    let nextCart = [] as any[];
     
     if (existingItemIndex === -1) {
-      setCart([...cart, cartItem]);
+      nextCart = [...cart, cartItem];
     } else {
-      // Update quantity if already in cart
-      const updatedCart = [...cart];
-      updatedCart[existingItemIndex].quantity += quantity;
-      setCart(updatedCart);
+      nextCart = [...cart];
+      nextCart[existingItemIndex] = {
+        ...nextCart[existingItemIndex],
+        quantity: nextCart[existingItemIndex].quantity + quantity,
+      };
     }
+    
+    setCart(nextCart);
+    // Persist to localStorage before navigation to avoid race conditions
+    localStorage.setItem('cart', JSON.stringify(nextCart));
     
     toast({
       title: t("proceeding_to_checkout"),
