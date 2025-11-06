@@ -20,9 +20,9 @@ serve(async (req) => {
 
     console.log('Processing chat request:', { message, language });
 
-    const openaiApiKey = Deno.env.get('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');
-    if (!openaiApiKey) {
-      throw new Error('OPENAI_API_KEY not configured');
+    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    if (!lovableApiKey) {
+      throw new Error('LOVABLE_API_KEY not configured');
     }
 
     // Determine system prompt based on language
@@ -30,26 +30,25 @@ serve(async (req) => {
       ? 'आप एक सहायक AI सहायक हैं। कृपया उपयोगकर्ता की भाषा में जवाब दें। यदि वे हिंदी में बोलते हैं, तो हिंदी में जवाब दें। यदि वे अंग्रेजी में बोलते हैं, तो अंग्रेजी में जवाब दें।'
       : 'You are a helpful AI assistant. Please respond in the same language the user speaks. If they speak in Hindi, respond in Hindi. If they speak in English, respond in English.';
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openaiApiKey}`,
+        'Authorization': `Bearer ${lovableApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'google/gemini-2.5-flash',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: message }
         ],
-        temperature: 0.7,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenAI API error:', errorText);
-      throw new Error(`OpenAI API error: ${errorText}`);
+      console.error('Lovable AI API error:', errorText);
+      throw new Error(`Lovable AI API error: ${errorText}`);
     }
 
     const data = await response.json();
