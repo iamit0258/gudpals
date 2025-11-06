@@ -20,7 +20,7 @@ serve(async (req) => {
 
     console.log('Processing chat request:', { message, language });
 
-    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
+    const openaiApiKey = Deno.env.get('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');
     if (!openaiApiKey) {
       throw new Error('OPENAI_API_KEY not configured');
     }
