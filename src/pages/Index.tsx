@@ -55,6 +55,13 @@ const Index = () => {
       color: "bg-gradient-to-br from-purple-300 to-indigo-400"
     }
   ];
+
+  /* 
+
+  Testing the contribution feature
+  Aman Pandey
+
+  **/
   
   return (
     <MobileLayout>
