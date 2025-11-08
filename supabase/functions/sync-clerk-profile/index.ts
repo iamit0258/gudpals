@@ -11,11 +11,22 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Verify Clerk authentication
+    const authHeader = req.headers.get("Authorization");
+    const authenticatedUserId = await verifyClerkToken(authHeader);
+    
     const { userId, displayName, email, phoneNumber, photoUrl } = await req.json();
 
     if (!userId) {
       throw new Error('User ID is required');
     }
+
+    // CRITICAL: Verify the authenticated user matches the userId being synced
+    if (authenticatedUserId !== userId) {
+      throw new Error('Unauthorized: Cannot sync profile for another user');
+    }
+
+    console.log('Syncing profile for authenticated user:', userId);
 
     // Create Supabase client with service role key (bypasses RLS)
     const supabaseAdmin = createClient(
