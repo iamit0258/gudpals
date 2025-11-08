@@ -14,61 +14,29 @@ export const useUserSync = () => {
     try {
       console.log("Syncing user to database:", user.id);
 
-      // Check if user profile already exists
-      const { data: existingProfile, error: selectError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle();
+      const displayName = user.firstName && user.lastName 
+        ? `${user.firstName} ${user.lastName}` 
+        : user.firstName || user.username || user.emailAddresses?.[0]?.emailAddress || 'User';
 
-      if (selectError) {
-        console.error("Error checking existing profile:", selectError);
-        throw selectError;
+      // Call edge function with service role to sync profile
+      const { data, error } = await supabase.functions.invoke('sync-clerk-profile', {
+        body: {
+          userId: user.id,
+          displayName,
+          email: user.emailAddresses?.[0]?.emailAddress || null,
+          phoneNumber: user.phoneNumbers?.[0]?.phoneNumber || null,
+          photoUrl: user.imageUrl || null,
+        }
+      });
+
+      if (error) {
+        console.error("Error syncing profile:", error);
+        throw error;
       }
 
-      const profileData = {
-        id: user.id, // Now using TEXT format, no conversion needed
-        display_name: user.firstName && user.lastName 
-          ? `${user.firstName} ${user.lastName}` 
-          : user.firstName || user.username || user.emailAddresses?.[0]?.emailAddress || 'User',
-        email: user.emailAddresses?.[0]?.emailAddress || null,
-        phone_number: user.phoneNumbers?.[0]?.phoneNumber || null,
-        photo_url: user.imageUrl || null,
-        last_login_at: new Date().toISOString(),
-      };
-
-      if (existingProfile) {
-        // Update existing profile
-        const { error } = await supabase
-          .from('profiles')
-          .update({
-            display_name: profileData.display_name,
-            email: profileData.email,
-            phone_number: profileData.phone_number,
-            photo_url: profileData.photo_url,
-            last_login_at: profileData.last_login_at,
-          })
-          .eq('id', user.id);
-
-        if (error) {
-          console.error("Error updating user profile:", error);
-          throw error;
-        }
-
-        console.log("User profile updated successfully");
-      } else {
-        // Create new profile
-        const { error } = await supabase
-          .from('profiles')
-          .insert(profileData);
-
-        if (error) {
-          console.error("Error creating user profile:", error);
-          throw error;
-        }
-
-        console.log("User profile created successfully");
-        
+      console.log("User profile synced successfully:", data);
+      
+      if (data.action === 'created') {
         toast({
           title: "Welcome!",
           description: "Your profile has been set up successfully",
