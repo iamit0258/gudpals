@@ -3,7 +3,7 @@ import { createRemoteJWKSet, jwtVerify } from "https://deno.land/x/jose@v5.2.0/i
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-clerk-authorization',
 };
 
 // Verify Clerk JWT token
@@ -46,8 +46,8 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Verify Clerk authentication
-    const authHeader = req.headers.get("Authorization");
+    // Verify Clerk authentication using custom header to avoid Supabase JWT conflict
+    const authHeader = req.headers.get("x-clerk-authorization");
     const authenticatedUserId = await verifyClerkToken(authHeader);
     
     const { userId, displayName, email, phoneNumber, photoUrl } = await req.json();

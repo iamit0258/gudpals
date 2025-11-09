@@ -104,7 +104,7 @@ const Checkout = () => {
       if (data.paymentMethod === "online") {
         // Process Stripe payment for cart items (guest-friendly)
         const clerkToken = await getToken();
-        const headers = clerkToken ? { Authorization: `Bearer ${clerkToken}` } : undefined;
+        const headers = clerkToken ? { 'X-Clerk-Authorization': `Bearer ${clerkToken}` } : undefined;
 
         const response = await supabase.functions.invoke('create-payment', {
           headers,
