@@ -1,9 +1,44 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
+import { createRemoteJWKSet, jwtVerify } from "https://deno.land/x/jose@v5.2.0/index.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Verify Clerk JWT token
+async function verifyClerkToken(authHeader: string | null): Promise<string> {
+  if (!authHeader?.startsWith('Bearer ')) {
+    throw new Error('Missing or invalid authorization header');
+  }
+
+  const token = authHeader.replace('Bearer ', '');
+  const clerkSecretKey = Deno.env.get('CLERK_SECRET_KEY');
+  
+  if (!clerkSecretKey) {
+    throw new Error('CLERK_SECRET_KEY not configured');
+  }
+
+  try {
+    const clerkFrontendApi = Deno.env.get('CLERK_FRONTEND_API');
+    if (!clerkFrontendApi) {
+      throw new Error('CLERK_FRONTEND_API not configured');
+    }
+
+    const jwksUrl = `https://${clerkFrontendApi}/.well-known/jwks.json`;
+    const JWKS = createRemoteJWKSet(new URL(jwksUrl));
+    const { payload } = await jwtVerify(token, JWKS);
+    
+    if (!payload.sub) {
+      throw new Error('Invalid token: missing subject');
+    }
+
+    return payload.sub;
+  } catch (error) {
+    console.error('Clerk token verification failed:', error);
+    throw new Error('Invalid or expired authentication token');
+  }
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
