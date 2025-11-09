@@ -22,7 +22,7 @@ export const useUserSync = () => {
       // Call edge function with Clerk token in Authorization header
       const token = await getToken();
       const { data, error } = await supabase.functions.invoke('sync-clerk-profile', {
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        headers: token ? { 'X-Clerk-Authorization': `Bearer ${token}` } : undefined,
         body: {
           userId: user.id,
           displayName,
