@@ -1,11 +1,12 @@
 
 import { useEffect } from "react";
-import { useUser } from "@clerk/clerk-react";
+import { useUser, useAuth as useClerkAuth } from "@clerk/clerk-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export const useUserSync = () => {
   const { user, isLoaded } = useUser();
+  const { getToken } = useClerkAuth();
   const { toast } = useToast();
 
   const syncUserToDatabase = async () => {
@@ -18,8 +19,10 @@ export const useUserSync = () => {
         ? `${user.firstName} ${user.lastName}` 
         : user.firstName || user.username || user.emailAddresses?.[0]?.emailAddress || 'User';
 
-      // Call edge function with service role to sync profile
+      // Call edge function with Clerk token in Authorization header
+      const token = await getToken();
       const { data, error } = await supabase.functions.invoke('sync-clerk-profile', {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         body: {
           userId: user.id,
           displayName,
