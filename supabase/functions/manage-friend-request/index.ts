@@ -22,11 +22,12 @@ async function verifyClerkToken(authHeader: string | null): Promise<string> {
   }
 
   try {
-    const isLive = clerkSecretKey.startsWith('sk_live_');
-    const jwksUrl = isLive 
-      ? 'https://clerk.your-domain.com/.well-known/jwks.json'
-      : `https://api.clerk.com/v1/jwks`;
+    const clerkFrontendApi = Deno.env.get('CLERK_FRONTEND_API');
+    if (!clerkFrontendApi) {
+      throw new Error('CLERK_FRONTEND_API not configured');
+    }
 
+    const jwksUrl = `https://${clerkFrontendApi}/.well-known/jwks.json`;
     const JWKS = createRemoteJWKSet(new URL(jwksUrl));
     const { payload } = await jwtVerify(token, JWKS);
     
