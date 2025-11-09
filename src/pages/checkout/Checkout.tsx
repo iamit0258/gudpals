@@ -39,11 +39,11 @@ const Checkout = () => {
     defaultValues: {
       paymentMethod: "online",
       addressType: "home",
-      name: "अशोक कुमार",
-      phone: "9876543210",
-      address: "123, पार्क व्यू अपार्टमेंट, सेक्टर 15",
-      city: "नई दिल्ली",
-      pincode: "110001"
+      name: "",
+      phone: "",
+      address: "",
+      city: "",
+      pincode: ""
     }
   });
   
