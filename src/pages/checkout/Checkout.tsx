@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/context/language/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/ClerkAuthBridge";
+import { useAuth as useClerkAuth } from "@clerk/clerk-react";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ const Checkout = () => {
   const [loading, setLoading] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
   const { user } = useAuth();
-  
+  const { getToken } = useClerkAuth();
   // Load cart from localStorage
   useEffect(() => {
     const savedCart = localStorage.getItem('cart');
@@ -102,8 +103,12 @@ const Checkout = () => {
       // Check payment method and proceed accordingly
       if (data.paymentMethod === "online") {
         // Process Stripe payment for cart items (guest-friendly)
+        const clerkToken = await getToken();
+        const headers = clerkToken ? { Authorization: `Bearer ${clerkToken}` } : undefined;
+
         const response = await supabase.functions.invoke('create-payment', {
-          body: { 
+          headers,
+          body: {
             cartItems: cartItems.map(item => ({
               title: item.title,
               price: item.price,
