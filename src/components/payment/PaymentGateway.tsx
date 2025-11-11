@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth as useClerkAuth } from "@clerk/clerk-react";
 
 interface PaymentGatewayProps {
   amount: number;
@@ -23,6 +24,7 @@ const PaymentGateway: React.FC<PaymentGatewayProps> = ({
   onPaymentCancel
 }) => {
   const { toast } = useToast();
+  const { getToken } = useClerkAuth();
 
   useEffect(() => {
     const initiateStripePayment = async () => {
@@ -52,8 +54,12 @@ const PaymentGateway: React.FC<PaymentGatewayProps> = ({
         } catch {}
 
 
+        const clerkToken = await getToken?.();
+        const headers = clerkToken ? { 'X-Clerk-Authorization': `Bearer ${clerkToken}` } : undefined;
+
         const { data, error } = await supabase.functions.invoke("create-payment", {
           body: payload,
+          headers,
         });
 
         if (error) throw error;
