@@ -2,11 +2,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Mic, MicOff, Volume2, VolumeX, HelpCircle } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { hybridVoiceService } from '@/services/hybridVoiceService';
+import { voiceAssistantService } from '@/services/voiceAssistantService';
 import MobileVoiceAssistant from './MobileVoiceAssistant';
 
 interface VoiceAssistantProps {
@@ -19,13 +19,14 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
   const [isEnabled, setIsEnabled] = useState(true);
   const [currentMessage, setCurrentMessage] = useState('');
   const [micPermission, setMicPermission] = useState<'granted' | 'denied' | 'prompt'>('prompt');
-  const [detectedLanguage, setDetectedLanguage] = useState<string>('en');
   const location = useLocation();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const isMobile = useIsMobile();
   
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const synthRef = useRef<SpeechSynthesis | null>(null);
   const isInitializedRef = useRef(false);
-  const isProcessingRef = useRef(false);
 
   useEffect(() => {
     initializeVoiceAssistant();
@@ -40,47 +41,187 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
       const permissionResult = await navigator.permissions.query({ name: 'microphone' as PermissionName });
       setMicPermission(permissionResult.state);
       
+      // Initialize speech synthesis
+      if ('speechSynthesis' in window) {
+        synthRef.current = window.speechSynthesis;
+        
+        // Load voices (this is async in some browsers)
+        const loadVoices = () => {
+          const voices = synthRef.current?.getVoices() || [];
+          if (voices.length > 0) {
+            console.log('Speech synthesis voices loaded:', voices.length);
+          }
+        };
+        
+        loadVoices();
+        
+        // Some browsers fire this event when voices are loaded
+        if (synthRef.current.onvoiceschanged !== undefined) {
+          synthRef.current.onvoiceschanged = loadVoices;
+        }
+      } else {
+        console.warn('Speech synthesis not supported in this browser');
+        toast({
+          title: "Voice Assistant Limited",
+          description: "Text-to-speech is not supported in your browser. Voice commands will still work.",
+        });
+      }
+
+      // Initialize speech recognition
+      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognitionConstructor = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognitionRef.current = new SpeechRecognitionConstructor();
+        
+        recognitionRef.current.continuous = false;
+        recognitionRef.current.interimResults = false;
+        recognitionRef.current.lang = 'en-US';
+        recognitionRef.current.maxAlternatives = 1;
+
+        recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
+          const transcript = event.results[0][0].transcript;
+          console.log('Voice command received:', transcript);
+          handleVoiceCommand(transcript);
+        };
+
+        recognitionRef.current.onerror = (event: SpeechRecognitionErrorEvent) => {
+          console.error('Speech recognition error:', event.error);
+          setIsListening(false);
+          
+          let errorMessage = "Voice recognition had an issue. Please try again.";
+          
+          switch (event.error) {
+            case 'network':
+              errorMessage = "Network issue detected. Please check your connection and try again.";
+              break;
+            case 'not-allowed':
+              errorMessage = "Microphone access denied. Please allow microphone access and try again.";
+              setMicPermission('denied');
+              break;
+            case 'no-speech':
+              errorMessage = "No speech detected. Please speak clearly and try again.";
+              break;
+            case 'audio-capture':
+              errorMessage = "Microphone not available. Please check your microphone and try again.";
+              break;
+            case 'aborted':
+              // Silent error - user stopped listening
+              return;
+          }
+          
+          toast({
+            title: "Voice Recognition Error",
+            description: errorMessage,
+            variant: "destructive"
+          });
+        };
+
+        recognitionRef.current.onstart = () => {
+          console.log('Speech recognition started');
+          setIsListening(true);
+        };
+
+        recognitionRef.current.onend = () => {
+          console.log('Speech recognition ended');
+          setIsListening(false);
+        };
+      } else {
+        console.warn('Speech recognition not supported in this browser');
+        toast({
+          title: "Voice Commands Not Available",
+          description: "Speech recognition is not supported in your browser.",
+          variant: "destructive"
+        });
+      }
+
       isInitializedRef.current = true;
-      console.log('Hybrid voice assistant initialized successfully');
+      console.log('Voice assistant initialized successfully');
 
     } catch (error) {
       console.error('Error initializing voice assistant:', error);
       toast({
         title: "Voice Assistant Error",
-        description: "Failed to initialize voice assistant.",
+        description: "Failed to initialize voice assistant. Some features may not work.",
         variant: "destructive"
       });
     }
   };
 
   const cleanup = () => {
-    hybridVoiceService.cleanup();
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+    }
+    if (synthRef.current) {
+      synthRef.current.cancel();
+    }
     isInitializedRef.current = false;
   };
 
-  const speak = async (text: string) => {
-    if (!isEnabled) {
-      console.log('Voice assistant disabled');
+  const speak = (text: string) => {
+    if (!synthRef.current || !isEnabled) {
+      console.log('Speech synthesis not available or disabled');
       return;
     }
 
     try {
-      setIsSpeaking(true);
+      // Cancel any ongoing speech
+      synthRef.current.cancel();
+      
+      const utterance = new SpeechSynthesisUtterance(text);
+      
+      // Configure for a soft, pleasant voice
+      const voices = synthRef.current.getVoices();
+      
+      if (voices.length === 0) {
+        console.warn('No voices available yet, using default');
+      } else {
+        // Try to find a female voice for softer tone
+        const preferredVoice = voices.find(voice => 
+          voice.lang.startsWith('en') && 
+          (voice.name.includes('Female') || voice.name.includes('woman') || voice.name.includes('Samantha') || voice.name.includes('Victoria'))
+        ) || voices.find(voice => voice.lang.startsWith('en')) || voices[0];
+        
+        if (preferredVoice) {
+          utterance.voice = preferredVoice;
+          console.log('Using voice:', preferredVoice.name);
+        }
+      }
+      
+      // Configure for soft, pleasant speech
+      utterance.rate = 0.85; // Slightly slower for clarity
+      utterance.pitch = 1.1; // Slightly higher pitch for warmth
+      utterance.volume = 0.8; // Softer volume
+      
+      utterance.onstart = () => {
+        console.log('Speech synthesis started');
+        setIsSpeaking(true);
+      };
+      
+      utterance.onend = () => {
+        console.log('Speech synthesis ended');
+        setIsSpeaking(false);
+      };
+      
+      utterance.onerror = (event) => {
+        console.error('Speech synthesis error:', event);
+        setIsSpeaking(false);
+        
+        // Only show error toast for non-trivial errors
+        if (event.error !== 'canceled' && event.error !== 'interrupted') {
+          toast({
+            title: "Speech Error",
+            description: "Unable to speak the message. Please try again.",
+            variant: "destructive"
+          });
+        }
+      };
+      
       setCurrentMessage(text);
-      
-      const audioBase64 = await hybridVoiceService.textToSpeech(text, detectedLanguage);
-      await hybridVoiceService.playAudio(audioBase64);
-      
-      setIsSpeaking(false);
-      console.log('Speech completed');
+      synthRef.current.speak(utterance);
+      console.log('Speaking:', text.substring(0, 50) + '...');
     } catch (error) {
       console.error('Error in speak function:', error);
       setIsSpeaking(false);
-      toast({
-        title: "Speech Error",
-        description: "Unable to speak the message. Please try again.",
-        variant: "destructive"
-      });
     }
   };
 
@@ -103,95 +244,70 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
   };
 
   const startListening = async () => {
+    if (!recognitionRef.current) {
+      toast({
+        title: "Voice Recognition Not Available",
+        description: "Your browser doesn't support voice recognition.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     // Check microphone permission
     if (micPermission !== 'granted') {
       const granted = await requestMicrophonePermission();
       if (!granted) return;
     }
 
-    if (isProcessingRef.current) {
-      console.log('Already processing, ignoring request');
-      return;
-    }
-
     try {
-      setIsListening(true);
-      console.log('Starting recording...');
-      
-      await hybridVoiceService.startRecording();
-      toast({
-        title: "Listening",
-        description: "Speak now... (Hindi or English)",
-      });
-      
-    } catch (error) {
-      console.error('Error starting recording:', error);
-      setIsListening(false);
-      toast({
-        title: "Recording Error",
-        description: "Failed to start recording. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const stopListening = async () => {
-    if (!isListening || isProcessingRef.current) return;
-
-    try {
-      isProcessingRef.current = true;
-      setIsListening(false);
-      
-      console.log('Stopping recording...');
-      const recording = await hybridVoiceService.stopRecording();
-      
-      toast({
-        title: "Processing",
-        description: "Transcribing your speech...",
-      });
-
-      // Transcribe audio
-      const { text, language } = await hybridVoiceService.transcribeAudio(recording.base64Audio);
-      console.log('Transcription:', text, 'Language:', language);
-      setDetectedLanguage(language);
-      
-      if (!text.trim()) {
-        toast({
-          title: "No Speech Detected",
-          description: "Please try again and speak clearly.",
-          variant: "destructive"
-        });
-        isProcessingRef.current = false;
+      // Stop any ongoing recognition
+      if (isListening) {
+        recognitionRef.current.stop();
         return;
       }
 
-      setCurrentMessage(text);
-      
-      // Get AI response
-      toast({
-        title: "Thinking",
-        description: "Getting AI response...",
-      });
-      
-      const reply = await hybridVoiceService.getAIResponse(text, language);
-      console.log('AI Reply:', reply);
-      
-      // Speak the response
-      await speak(reply);
-      
-      isProcessingRef.current = false;
+      console.log('Starting speech recognition');
+      recognitionRef.current.start();
+      speak("I'm listening... Please speak now.");
       
     } catch (error) {
-      console.error('Error processing voice:', error);
-      isProcessingRef.current = false;
+      console.error('Error starting speech recognition:', error);
+      setIsListening(false);
       toast({
-        title: "Processing Error",
-        description: "Failed to process your speech. Please try again.",
+        title: "Voice Recognition Error",
+        description: "Failed to start listening. Please try again.",
         variant: "destructive"
       });
     }
   };
 
+  const stopListening = () => {
+    if (recognitionRef.current && isListening) {
+      console.log('Stopping speech recognition');
+      recognitionRef.current.stop();
+    }
+  };
+
+  const handleVoiceCommand = async (command: string) => {
+    console.log('Processing voice command:', command);
+    
+    try {
+      const response = await voiceAssistantService.processCommand(command, location.pathname);
+      speak(response.message);
+      
+      if (response.action) {
+        // Handle navigation or other actions using React Router
+        setTimeout(() => {
+          if (response.action?.type === 'navigate' && response.action.path) {
+            navigate(response.action.path);
+          }
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('Error processing voice command:', error);
+      speak("I'm sorry, I didn't understand that. Please try again or say 'help' for available commands.");
+    }
+  };
 
   const toggleVoiceAssistant = () => {
     const newState = !isEnabled;
@@ -200,10 +316,11 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
     if (newState) {
       toast({
         title: "Voice Assistant Enabled",
-        description: "Hybrid AI voice assistant with Hindi/English support",
+        description: "Click the microphone button and speak your command.",
       });
+      speak("Voice assistant enabled. I'm ready to help! Click the microphone button and say 'help' to learn what I can do.");
     } else {
-      hybridVoiceService.stopAudio();
+      synthRef.current?.cancel();
       setIsSpeaking(false);
       if (isListening) {
         stopListening();
@@ -216,7 +333,7 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
   };
 
   const showHelp = () => {
-    const helpMessage = "I am your AI assistant. I can speak and understand both Hindi and English. Just press the microphone button and speak naturally.";
+    const helpMessage = voiceAssistantService.getContextualHelp(location.pathname);
     speak(helpMessage);
   };
 

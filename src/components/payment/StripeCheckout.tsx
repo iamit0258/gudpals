@@ -4,7 +4,6 @@ import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth as useClerkAuth } from "@clerk/clerk-react";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
@@ -104,22 +103,29 @@ interface StripeCheckoutProps {
 const StripeCheckout = ({ amount, productId, consultationId, onSuccess, onCancel }: StripeCheckoutProps) => {
   const [clientSecret, setClientSecret] = React.useState<string | null>(null);
   const { toast } = useToast();
-  const { getToken } = useClerkAuth();
 
   React.useEffect(() => {
-    const createPaymentSession = async () => {
+    const createPaymentIntent = async () => {
       try {
-        const clerkToken = await getToken?.();
-        const headers = clerkToken ? { 'X-Clerk-Authorization': `Bearer ${clerkToken}` } : undefined;
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          toast({
+            title: "Authentication Required",
+            description: "Please log in to continue",
+            variant: "destructive",
+          });
+          return;
+        }
 
         const { data, error } = await supabase.functions.invoke("create-payment", {
           body: { productId, consultationId, quantity: 1 },
-          headers,
         });
 
         if (error) throw error;
         
         if (data?.url) {
+          // Redirect to Stripe Checkout
           window.location.href = data.url;
         }
       } catch (error: any) {
@@ -132,8 +138,8 @@ const StripeCheckout = ({ amount, productId, consultationId, onSuccess, onCancel
       }
     };
 
-    createPaymentSession();
-  }, [amount, productId, consultationId, toast, getToken]);
+    createPaymentIntent();
+  }, [amount, productId, consultationId, toast]);
 
   if (!clientSecret) {
     return (

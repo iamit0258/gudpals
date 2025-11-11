@@ -1,46 +1,11 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { createRemoteJWKSet, jwtVerify } from "https://deno.land/x/jose@v5.2.0/index.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-clerk-authorization",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-// Verify Clerk JWT token
-async function verifyClerkToken(authHeader: string | null): Promise<string> {
-  if (!authHeader?.startsWith('Bearer ')) {
-    throw new Error('Missing or invalid authorization header');
-  }
-
-  const token = authHeader.replace('Bearer ', '');
-  const clerkSecretKey = Deno.env.get('CLERK_SECRET_KEY');
-  
-  if (!clerkSecretKey) {
-    throw new Error('CLERK_SECRET_KEY not configured');
-  }
-
-  try {
-    const clerkFrontendApi = Deno.env.get('CLERK_FRONTEND_API');
-    if (!clerkFrontendApi) {
-      throw new Error('CLERK_FRONTEND_API not configured');
-    }
-
-    const jwksUrl = `https://${clerkFrontendApi}/.well-known/jwks.json`;
-    const JWKS = createRemoteJWKSet(new URL(jwksUrl));
-    const { payload } = await jwtVerify(token, JWKS);
-    
-    if (!payload.sub) {
-      throw new Error('Invalid token: missing subject');
-    }
-
-    return payload.sub;
-  } catch (error) {
-    console.error('Clerk token verification failed:', error);
-    throw new Error('Invalid or expired authentication token');
-  }
-}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -48,16 +13,17 @@ serve(async (req) => {
   }
 
   try {
-    // Verify Clerk authentication using custom header to avoid Supabase JWT conflict
-    const authHeader = req.headers.get("x-clerk-authorization");
-    const userId = await verifyClerkToken(authHeader);
-    
-    console.log('Authenticated user:', userId);
-
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
+
+    const authHeader = req.headers.get("Authorization")!;
+    const token = authHeader.replace("Bearer ", "");
+    const { data } = await supabaseClient.auth.getUser(token);
+    const user = data.user;
+
+    if (!user) throw new Error("User not authenticated");
 
     const { consultationId, message, messageType = "text" } = await req.json();
 
@@ -70,8 +36,8 @@ serve(async (req) => {
 
     if (!consultation) throw new Error("Consultation not found");
 
-    const isParticipant = consultation.user_id === userId || 
-                         consultation.astrologers.user_id === userId;
+    const isParticipant = consultation.user_id === user.id || 
+                         consultation.astrologers.user_id === user.id;
 
     if (!isParticipant) throw new Error("Unauthorized");
 
@@ -80,7 +46,7 @@ serve(async (req) => {
       .from('astrology_chats')
       .insert({
         consultation_id: consultationId,
-        sender_id: userId,
+        sender_id: user.id,
         message,
         message_type: messageType,
       })
