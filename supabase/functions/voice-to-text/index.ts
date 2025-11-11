@@ -58,7 +58,7 @@ serve(async (req) => {
     const blob = new Blob([binaryAudio], { type: 'audio/webm' })
     formData.append('file', blob, 'audio.webm')
     formData.append('model', 'whisper-1')
-    formData.append('language', 'en')
+    // Auto-detect language (supports Hindi, English, and many others)
 
     // Send to OpenAI
     const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
@@ -78,8 +78,14 @@ serve(async (req) => {
     const result = await response.json()
     console.log('Transcription successful:', result.text)
 
+    // Detect language based on transcription
+    const detectedLanguage = result.language || 'en';
+
     return new Response(
-      JSON.stringify({ text: result.text }),
+      JSON.stringify({ 
+        text: result.text,
+        language: detectedLanguage
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
