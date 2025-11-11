@@ -5,11 +5,10 @@ import { ClerkProvider } from '@clerk/clerk-react';
 import App from './App.tsx';
 import './index.css';
 
-// Replace this with your actual Clerk publishable key from https://dashboard.clerk.com
 const PUBLISHABLE_KEY = "pk_test_YWNlLXdlZXZpbC05OC5jbGVyay5hY2NvdW50cy5kZXYk";
 
-if (!PUBLISHABLE_KEY || PUBLISHABLE_KEY.startsWith("pk_test_REPLACE")) {
-  throw new Error("Missing Clerk Publishable Key - Please add your key from Clerk Dashboard");
+if (!PUBLISHABLE_KEY) {
+  throw new Error("Missing Clerk Publishable Key");
 }
 
 const rootElement = document.getElementById("root");
