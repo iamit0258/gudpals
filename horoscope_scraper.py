@@ -1,87 +1,181 @@
 import requests
 from bs4 import BeautifulSoup
 import time
+import os
+from supabase import create_client, Client
+import re
+import datetime
+
+# Supabase Credentials (should be in env vars for production/GitHub Actions)
+# Using the ones found in the project for now to ensure it works locally
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://yzjzcvcyneufijjpzbdc.supabase.co")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6anpjdmN5bmV1ZmlqanB6YmRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM3MjA5NDQsImV4cCI6MjA3OTI5Njk0NH0.878YVMQMOjttMoKeIwaubU8ory0eUeaelEtmZdehX-4")
+
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def get_daily_horoscope():
-    signs = [
-        "aries", "taurus", "gemini", "cancer", "leo", "virgo", 
-        "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces"
-    ]
+    base_url = "https://www.hindustantimes.com/astrology/horoscope"
     
-    base_url = "https://timesofindia.indiatimes.com/astrology/horoscope"
+    # HT Date format in URL usually: november-22-2025
+    current_date = datetime.datetime.now()
+    date_str = current_date.strftime('%B-%d-%Y').lower() # e.g., november-22-2025
+    display_date = current_date.strftime('%Y-%m-%d')
     
-    print(f"Fetching daily horoscopes for {time.strftime('%Y-%m-%d')}...\n")
+    print(f"Fetching daily horoscopes for {display_date} from Hindustan Times...\n")
     
-    for sign in signs:
-        try:
-            # Step 1: Get the sign's main page
-            sign_url = f"{base_url}/{sign}"
-            response = requests.get(sign_url)
-            response.raise_for_status()
-            
-            soup = BeautifulSoup(response.content, 'html.parser')
-            
-            # Step 2: Find the link to the daily horoscope article
-            # Looking for a link that contains "daily-horoscope-today"
-            article_link = None
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    }
+    
+    try:
+        # Step 1: Get the main horoscope page to find the daily article
+        response = requests.get(base_url, headers=headers)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.content, 'html.parser')
+        
+        article_link = None
+        
+        # Look for a link that contains "horoscope-today" and the date string
+        # Example: horoscope-today-for-november-22-2025...
+        for a in soup.find_all('a', href=True):
+            href = a['href']
+            if "horoscope-today" in href and date_str in href:
+                article_link = href
+                if not article_link.startswith('http'):
+                    article_link = f"https://www.hindustantimes.com{article_link}"
+                break
+        
+        # Fallback: Try finding just "horoscope-today" if exact date match fails (sometimes URL format differs)
+        if not article_link:
+            print("Exact date match not found, looking for generic 'horoscope-today' link...")
             for a in soup.find_all('a', href=True):
-                if f"{sign}-daily-horoscope-today" in a['href']:
-                    article_link = a['href']
-                    break
-            
-            if not article_link:
-                print(f"Could not find daily horoscope link for {sign.capitalize()}")
-                continue
-                
-            # Handle relative URLs if necessary (though TOI usually uses absolute)
-            if not article_link.startswith('http'):
-                article_link = f"https://timesofindia.indiatimes.com{article_link}"
-                
-            # Step 3: Fetch the article page
-            article_response = requests.get(article_link)
-            article_response.raise_for_status()
-            article_soup = BeautifulSoup(article_response.content, 'html.parser')
-            
-            # Step 4: Extract the horoscope text
-            # The text is usually in the main article body. 
-            # We'll look for the content div. TOI structure can be complex, 
-            # but often the text is in a div with specific classes or just paragraphs.
-            # A robust way is to find the 'Health Horoscope' header and get text before it,
-            # or just get all text from the main article container.
-            
-            # Extraction logic
-            full_text = article_soup.get_text(separator='\n')
-            
-            start_marker = "Neeraj Dhankher"
-            end_marker = "Health Horoscope"
-            
-            horoscope_text = ""
-            if start_marker in full_text and end_marker in full_text:
-                start_idx = full_text.find(start_marker) + len(start_marker)
-                end_idx = full_text.find(end_marker)
-                extracted = full_text[start_idx:end_idx].strip()
-                # Clean up lines
-                lines = [line.strip() for line in extracted.split('\n') if line.strip()]
-                # Filter out short lines (likely metadata) and keep substantial text
-                horoscope_text = "\n".join([l for l in lines if len(l) > 20])
-            
-            if not horoscope_text:
-                # Fallback: Meta description
-                meta_desc = article_soup.find('meta', attrs={'name': 'description'})
-                if meta_desc:
-                    horoscope_text = meta_desc['content']
-                else:
-                    horoscope_text = "Horoscope text not found."
+                if "horoscope-today" in a['href'] and "daily-astrological-prediction" in a.text.lower():
+                     article_link = a['href']
+                     if not article_link.startswith('http'):
+                        article_link = f"https://www.hindustantimes.com{article_link}"
+                     break
 
-            print(f"--- {sign.capitalize()} ---")
-            print(horoscope_text)
-            print("\n")
-            
-            # Be nice to the server
-            time.sleep(1)
-            
-        except Exception as e:
-            print(f"Error fetching {sign}: {e}")
+        if not article_link:
+            print("Could not find the daily horoscope article link.")
+            return
+
+        print(f"Found article: {article_link}")
+        
+        # Step 2: Fetch the article content
+        article_response = requests.get(article_link, headers=headers)
+        article_response.raise_for_status()
+        article_soup = BeautifulSoup(article_response.content, 'html.parser')
+        
+        # Step 3: Parse the content
+        # HT puts all signs in one page with headers like "Aries (March 21-April 20)"
+        # The text is usually in <p> tags following the header.
+        
+        signs = [
+            "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", 
+            "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"
+        ]
+        
+        # Get all text to parse manually since structure can be nested
+        full_text = article_soup.get_text(separator='\n')
+        
+        for sign in signs:
+            try:
+                # Regex to find the sign header and the text following it
+                # Pattern: SignName ... \n ... text ... \n Love Focus
+                
+                # We look for the Sign name followed by date range (optional match)
+                # Then capture everything until "Love Focus" or the next sign or "Lucky Number"
+                
+                # Simplified approach: Find the line with Sign Name, then read lines until we hit keywords
+                
+                lines = full_text.split('\n')
+                start_idx = -1
+                
+                for i, line in enumerate(lines):
+                    # Check for "Aries (March..." or just "Aries" header
+                    if sign in line and ("(" in line or len(line.strip()) < 30):
+                        # Double check it's not just a mention in another paragraph
+                        # HT headers are usually short or contain the date range
+                        if len(line.strip()) < 100: 
+                            start_idx = i
+                            break
+                
+                if start_idx != -1:
+                    horoscope_text = ""
+                    lucky_number = "N/A"
+                    lucky_color = "N/A"
+                    compatibility = "N/A" # HT doesn't usually have this, so we'll randomize or leave blank
+                    
+                    # Read subsequent lines
+                    current_chunk = []
+                    for j in range(start_idx + 1, len(lines)):
+                        line = lines[j].strip()
+                        if not line: continue
+                        
+                        # Stop if we hit the next sign or end of article markers
+                        if any(s in line for s in signs if s != sign and len(line) < 50):
+                            break
+                        if "By:" in line:
+                            break
+                            
+                        current_chunk.append(line)
+                    
+                    # Join and process the chunk
+                    raw_text = "\n".join(current_chunk)
+                    
+                    # Extract Lucky Number/Color if present
+                    # Format: "Lucky Number: 3Lucky Colour: Purple" or separate lines
+                    
+                    ln_match = re.search(r"Lucky Number:\s*(\d+)", raw_text, re.IGNORECASE)
+                    if ln_match:
+                        lucky_number = ln_match.group(1)
+                        
+                    lc_match = re.search(r"Lucky Colou?r:\s*([A-Za-z]+)", raw_text, re.IGNORECASE)
+                    if lc_match:
+                        lucky_color = lc_match.group(1)
+                        
+                    # Remove the Lucky stuff from the main text
+                    # Also remove "Love Focus" section if we want just the main horoscope, 
+                    # but user might want it. Let's keep Love Focus but remove Lucky stuff.
+                    
+                    clean_text = raw_text
+                    if "Lucky Number" in clean_text:
+                        clean_text = clean_text.split("Lucky Number")[0].strip()
+                    
+                    # If "Love Focus" is there, ensure it's formatted nicely
+                    clean_text = clean_text.replace("Love Focus:", "\n\nLove Focus:")
+                    
+                    # Remove the Sign name if it repeated at start
+                    if clean_text.startswith(sign):
+                        clean_text = clean_text[len(sign):].strip()
+                        
+                    # Remove brackets/links if they remained (e.g. [Aries])
+                    clean_text = re.sub(r"\[.*?\]", "", clean_text).strip()
+
+                    print(f"--- {sign} ---")
+                    # print(clean_text[:50] + "...")
+                    
+                    # Upsert to Supabase
+                    data = {
+                        "sign": sign,
+                        "horoscope_text": clean_text,
+                        "date": display_date,
+                        "lucky_number": lucky_number,
+                        "lucky_color": lucky_color,
+                        "compatibility": compatibility
+                    }
+                    
+                    supabase.table("daily_horoscopes").upsert(data).execute()
+                    print(f"Saved to DB: {sign}")
+                    
+                else:
+                    print(f"Could not find section for {sign}")
+
+            except Exception as e:
+                print(f"Error processing {sign}: {e}")
+                
+    except Exception as e:
+        print(f"Global error: {e}")
 
 if __name__ == "__main__":
     get_daily_horoscope()
