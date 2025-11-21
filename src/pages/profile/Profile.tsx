@@ -33,7 +33,7 @@ const Profile = () => {
   const [astrologyChats, setAstrologyChats] = useState<any>({});
   const [isUpdating, setIsUpdating] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
-  
+
   // Settings state
   const [textSize, setTextSize] = useState("medium");
   const [notifications, setNotifications] = useState({
@@ -41,28 +41,28 @@ const Profile = () => {
     sessions: true,
     marketing: false
   });
-  
+
   // User profile state
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState('Retired teacher who loves gardening and meeting new people');
   const [interestTags, setInterestTags] = useState(['gardening', 'reading', 'travel']);
   const [newInterest, setNewInterest] = useState('');
-  
+
   // Initialize profile data when user is available
   useEffect(() => {
     if (user) {
       setDisplayName(user.displayName || "");
     }
   }, [user]);
-  
+
   // Load data from localStorage
-  useEffect(() => {    
+  useEffect(() => {
     // Load astrology chats
     const storedChats = localStorage.getItem('astrologyChats');
     if (storedChats) {
       setAstrologyChats(JSON.parse(storedChats));
     }
-    
+
     // Load profile data
     const storedProfile = localStorage.getItem('profileData');
     if (storedProfile) {
@@ -71,7 +71,7 @@ const Profile = () => {
       setInterestTags(profileData.interests || interestTags);
     }
   }, []);
-  
+
   if (!user) {
     return (
       <MobileLayout>
@@ -98,22 +98,22 @@ const Profile = () => {
     setDisplayName(user?.displayName || "");
     setShowEditDialog(true);
   };
-  
+
   const handleSaveProfile = async () => {
     if (isUpdating) return;
-    
+
     setIsUpdating(true);
     try {
       console.log("Saving profile with displayName:", displayName);
-      
+
       await updateProfile({ displayName: displayName.trim() });
-      
+
       const profileData = {
         bio,
         interests: interestTags
       };
       localStorage.setItem('profileData', JSON.stringify(profileData));
-      
+
       toast({
         title: "Profile Updated",
         description: "Your profile has been successfully updated"
@@ -130,14 +130,14 @@ const Profile = () => {
       setIsUpdating(false);
     }
   };
-  
+
   const handleAddInterest = () => {
     if (newInterest.trim() && !interestTags.includes(newInterest.trim().toLowerCase())) {
       setInterestTags([...interestTags, newInterest.trim().toLowerCase()]);
       setNewInterest('');
     }
   };
-  
+
   const handleRemoveInterest = (interest: string) => {
     setInterestTags(interestTags.filter(tag => tag !== interest));
   };
@@ -147,11 +147,11 @@ const Profile = () => {
     const currentIndex = sizes.indexOf(textSize);
     const nextSize = sizes[(currentIndex + 1) % sizes.length];
     setTextSize(nextSize);
-    
-    document.documentElement.style.fontSize = 
-      nextSize === "small" ? "14px" : 
-      nextSize === "large" ? "18px" : "16px";
-    
+
+    document.documentElement.style.fontSize =
+      nextSize === "small" ? "14px" :
+        nextSize === "large" ? "18px" : "16px";
+
     toast({
       title: "Text Size Changed",
       description: `Text size set to ${nextSize}`
@@ -207,7 +207,7 @@ const Profile = () => {
   const cancelLogout = () => {
     setShowLogoutDialog(false);
   };
-  
+
   const handleAstrologyChatView = (astrologerId: string) => {
     const astrologers = [
       { id: "1", name: "Ravi Sharma", specialty: "Vedic Astrology", initials: "RS" },
@@ -216,7 +216,7 @@ const Profile = () => {
       { id: "4", name: "Lakshmi Devi", specialty: "Numerology", initials: "LD" },
       { id: "5", name: "Rajesh Kumar", specialty: "Kundali Matching", initials: "RK" }
     ];
-    
+
     const astrologer = astrologers.find(a => a.id === astrologerId);
     if (astrologer) {
       localStorage.setItem("selectedAstrologer", JSON.stringify(astrologer));
@@ -225,20 +225,20 @@ const Profile = () => {
   };
 
   const accessibilitySettings = [
-    { 
-      icon: Type, 
-      label: `Text Size (${textSize})`, 
+    {
+      icon: Type,
+      label: `Text Size (${textSize})`,
       onClick: handleTextSizeChange,
       hasToggle: false
     },
-    { 
-      icon: Globe, 
-      label: `Language (${language === "en" ? "English" : "हिंदी"})`, 
+    {
+      icon: Globe,
+      label: `Language (${language === "en" ? "English" : "हिंदी"})`,
       onClick: handleLanguageChange,
       hasToggle: false
     },
   ];
-  
+
   const getAstrologerName = (id: string) => {
     const astrologers = [
       { id: "1", name: "Ravi Sharma" },
@@ -247,7 +247,7 @@ const Profile = () => {
       { id: "4", name: "Lakshmi Devi" },
       { id: "5", name: "Rajesh Kumar" }
     ];
-    
+
     const astrologer = astrologers.find(a => a.id === id);
     return astrologer ? astrologer.name : "Unknown Astrologer";
   };
@@ -260,10 +260,10 @@ const Profile = () => {
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="settings">Account Settings</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="profile" className="space-y-6">
             <h1 className="text-2xl font-bold">My Profile</h1>
-            
+
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-start">
@@ -277,16 +277,16 @@ const Profile = () => {
                     <h2 className="text-xl font-semibold">{user.displayName || "User"}</h2>
                     <p className="text-gray-600">{user.email || user.phoneNumber || "No contact info"}</p>
                     <div className="flex items-center gap-2 mt-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
+                      <Button
+                        variant="outline"
+                        size="sm"
                         className="text-xs"
                         onClick={handleEditProfile}
                       >
                         <User className="h-3 w-3 mr-1" />
                         Edit Profile
                       </Button>
-                      <UserButton 
+                      <UserButton
                         appearance={{
                           elements: {
                             avatarBox: "w-8 h-8"
@@ -296,17 +296,17 @@ const Profile = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <p className="mt-4 text-sm text-gray-600">{bio}</p>
-                
+
                 <div className="mt-3">
                   <h3 className="text-sm font-medium text-gray-500 mb-2">
                     Interests
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {interestTags.map((tag, index) => (
-                      <span 
-                        key={index} 
+                      <span
+                        key={index}
                         className="px-2 py-1 bg-blue-50 text-blue-600 rounded-md text-xs"
                       >
                         {tag}
@@ -316,7 +316,7 @@ const Profile = () => {
                 </div>
               </CardContent>
             </Card>
-            
+
             {/* Astrology Consultations Section */}
             {Object.keys(astrologyChats).length > 0 && (
               <div className="space-y-1">
@@ -351,7 +351,7 @@ const Profile = () => {
                                 <div className="text-sm text-gray-500">And {astrologyChats[astrologerId].length - 2} more messages...</div>
                               )}
                             </div>
-                            <Button 
+                            <Button
                               className="w-full bg-green-600 hover:bg-green-700"
                               onClick={() => handleAstrologyChatView(astrologerId)}
                               size="sm"
@@ -367,7 +367,7 @@ const Profile = () => {
                 </Card>
               </div>
             )}
-            
+
             {/* Accessibility Section */}
             <div className="space-y-1">
               <h2 className="text-lg font-semibold px-1 py-2 bg-gray-50">Accessibility</h2>
@@ -377,8 +377,8 @@ const Profile = () => {
                     <ul>
                       {accessibilitySettings.map((item, index) => (
                         <li key={index}>
-                          <Button 
-                            variant="ghost" 
+                          <Button
+                            variant="ghost"
                             className="w-full flex items-center justify-between p-4 rounded-none h-auto"
                             onClick={item.onClick}
                           >
@@ -396,9 +396,9 @@ const Profile = () => {
                 </CardContent>
               </Card>
             </div>
-            
-            <Button 
-              variant="outline" 
+
+            <Button
+              variant="outline"
               className="w-full mt-6 flex items-center justify-between text-red-500 border-red-200 hover:bg-red-50"
               onClick={handleLogout}
             >
@@ -409,10 +409,10 @@ const Profile = () => {
               <ChevronRight className="h-4 w-4" />
             </Button>
           </TabsContent>
-          
+
           <TabsContent value="settings" className="space-y-6">
             <h1 className="text-2xl font-bold">Account Settings</h1>
-            
+
             <Tabs defaultValue="orders" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="orders" className="text-xs">Orders</TabsTrigger>
@@ -424,19 +424,19 @@ const Profile = () => {
                 <TabsTrigger value="privacy" className="text-xs">Privacy</TabsTrigger>
                 <TabsTrigger value="about" className="text-xs">About</TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="orders" className="mt-4">
                 <MyOrders />
               </TabsContent>
-              
+
               <TabsContent value="payment" className="mt-4">
                 <PaymentMethods />
               </TabsContent>
-              
+
               <TabsContent value="shipping" className="mt-4">
                 <ShippingAddresses />
               </TabsContent>
-              
+
               <TabsContent value="notifications" className="mt-4">
                 <Card>
                   <CardContent className="p-4 space-y-4">
@@ -446,7 +446,7 @@ const Profile = () => {
                         <Label>Order Updates</Label>
                         <p className="text-sm text-muted-foreground">Get notified about order status</p>
                       </div>
-                      <Switch 
+                      <Switch
                         checked={notifications.orders}
                         onCheckedChange={(value) => setNotifications(prev => ({ ...prev, orders: value }))}
                       />
@@ -456,7 +456,7 @@ const Profile = () => {
                         <Label>Session Reminders</Label>
                         <p className="text-sm text-muted-foreground">Reminders for upcoming sessions</p>
                       </div>
-                      <Switch 
+                      <Switch
                         checked={notifications.sessions}
                         onCheckedChange={(value) => setNotifications(prev => ({ ...prev, sessions: value }))}
                       />
@@ -466,7 +466,7 @@ const Profile = () => {
                         <Label>Marketing</Label>
                         <p className="text-sm text-muted-foreground">Promotional offers and updates</p>
                       </div>
-                      <Switch 
+                      <Switch
                         checked={notifications.marketing}
                         onCheckedChange={(value) => setNotifications(prev => ({ ...prev, marketing: value }))}
                       />
@@ -474,11 +474,11 @@ const Profile = () => {
                   </CardContent>
                 </Card>
               </TabsContent>
-              
+
               <TabsContent value="privacy" className="mt-4">
                 <PrivacySecurity />
               </TabsContent>
-              
+
               <TabsContent value="about" className="mt-4">
                 <About />
               </TabsContent>
@@ -491,22 +491,22 @@ const Profile = () => {
       <Dialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("confirm_logout")}</DialogTitle>
+            <DialogTitle>{t("Logout")}</DialogTitle>
             <DialogDescription>
-              {t("confirm_logout_desc")}
+              {t("Are you sure you want to logout?")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={cancelLogout}>
-              {t("cancel")}
+              {t("Cancel")}
             </Button>
             <Button variant="destructive" onClick={confirmLogout}>
-              {t("logout")}
+              {t("Logout")}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
+
       {/* Edit Profile Dialog - Enhanced */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent className="max-w-md">
@@ -516,36 +516,36 @@ const Profile = () => {
               Update your profile information below
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4 py-2">
             <div className="space-y-2">
               <label className="text-sm font-medium">Display Name</label>
-              <Input 
-                value={displayName} 
+              <Input
+                value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 placeholder="Enter your name"
                 disabled={isUpdating}
               />
             </div>
-            
+
             <div className="space-y-2">
               <label className="text-sm font-medium">Bio</label>
-              <Textarea 
-                value={bio} 
+              <Textarea
+                value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 placeholder="Tell us about yourself"
                 className="min-h-[100px]"
                 disabled={isUpdating}
               />
             </div>
-            
+
             <div className="space-y-2">
               <label className="text-sm font-medium">Interests</label>
               <div className="flex flex-wrap gap-2 mb-2">
                 {interestTags.map((tag, index) => (
                   <div key={index} className="bg-blue-50 text-blue-600 text-xs rounded-md px-2 py-1 flex items-center">
                     {tag}
-                    <button 
+                    <button
                       className="ml-1 text-blue-400 hover:text-blue-600"
                       onClick={() => handleRemoveInterest(tag)}
                       disabled={isUpdating}
@@ -555,19 +555,19 @@ const Profile = () => {
                   </div>
                 ))}
               </div>
-              
+
               <div className="flex gap-2">
-                <Input 
-                  value={newInterest} 
+                <Input
+                  value={newInterest}
                   onChange={(e) => setNewInterest(e.target.value)}
                   placeholder="Add interest"
                   onKeyDown={(e) => e.key === 'Enter' && handleAddInterest()}
                   disabled={isUpdating}
                 />
-                <Button 
-                  type="button" 
-                  size="sm" 
-                  onClick={handleAddInterest} 
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleAddInterest}
                   disabled={isUpdating}
                 >
                   Add
@@ -575,13 +575,13 @@ const Profile = () => {
               </div>
             </div>
           </div>
-          
+
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="outline" disabled={isUpdating}>Cancel</Button>
             </DialogClose>
-            <Button 
-              onClick={handleSaveProfile} 
+            <Button
+              onClick={handleSaveProfile}
               disabled={isUpdating || !displayName.trim()}
             >
               {isUpdating ? "Saving..." : "Save Changes"}

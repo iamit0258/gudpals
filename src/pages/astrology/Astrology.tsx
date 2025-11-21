@@ -22,11 +22,15 @@ interface Astrologer {
   languages: string[];
 }
 
+import { supabase } from "@/integrations/supabase/client";
+
 const Astrology = () => {
   const { toast } = useToast();
   const { t } = useLanguage();
   const [selectedSign, setSelectedSign] = useState<string | null>(null);
   const navigate = useNavigate();
+  const [horoscope, setHoroscope] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
 
   const astrologers: Astrologer[] = [
     {
@@ -72,22 +76,47 @@ const Astrology = () => {
 
   const handleConsult = (astrologer: Astrologer) => {
     if (astrologer.isPremium) {
-      // Store selected astrologer data for checkout
       localStorage.setItem('selectedAstrologer', JSON.stringify(astrologer));
       navigate("/astrology/payment");
     } else {
-      // Store selected astrologer data for chat
       localStorage.setItem('selectedAstrologer', JSON.stringify(astrologer));
       navigate("/astrology/chat");
     }
   };
 
+  React.useEffect(() => {
+    const fetchHoroscope = async () => {
+      if (!selectedSign) return;
+
+      setLoading(true);
+      try {
+        // @ts-ignore
+        const { data, error } = await supabase
+          .from('daily_horoscopes')
+          .select('*')
+          .eq('sign', selectedSign)
+          .single();
+
+        if (error) throw error;
+        setHoroscope(data);
+      } catch (error) {
+        console.error("Error fetching horoscope:", error);
+        toast({
+          title: "Error",
+          description: "Could not fetch horoscope. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHoroscope();
+  }, [selectedSign]);
+
   const selectZodiacSign = (sign: string) => {
     setSelectedSign(sign);
-    toast({
-      title: `${sign} Selected`,
-      description: `Your personalized horoscope for ${sign} is now available.`,
-    });
+    // Toast is now handled by the fetch success/loading state implicitly or we can keep it
   };
 
   return (
@@ -127,24 +156,39 @@ const Astrology = () => {
 
       {selectedSign && (
         <section className="p-4 bg-gradient-to-r from-green-100/50 to-teal-100/50">
-          <h2 className="text-xl font-semibold mb-3">Today's Horoscope for {selectedSign}</h2>
+          <h2 className="text-xl font-semibold mb-3">
+            Horoscope for {selectedSign} <span className="text-sm font-normal text-gray-600">({horoscope?.date})</span>
+          </h2>
           <Card className="border-green-200 bg-white/80 backdrop-blur-sm">
             <CardContent className="p-4">
-              <p className="italic text-gray-600 mb-3">
-                "Today is a day of opportunities and reflection. The stars align to bring you clarity
-                in matters of the heart. Take time to listen to your inner voice and trust your intuition."
-              </p>
-              <div className="flex flex-wrap gap-2 text-sm">
-                <Badge variant="outline" className="bg-green-50 border-green-200">
-                  Lucky Number: 7
-                </Badge>
-                <Badge variant="outline" className="bg-green-50 border-green-200">
-                  Lucky Color: Green
-                </Badge>
-                <Badge variant="outline" className="bg-green-50 border-green-200">
-                  Compatible: Leo
-                </Badge>
-              </div>
+              {loading ? (
+                <div className="flex justify-center p-4">Loading...</div>
+              ) : horoscope ? (
+                <>
+                  <p className="italic text-gray-600 mb-3 whitespace-pre-wrap leading-relaxed">
+                    "{horoscope.horoscope_text}"
+                  </p>
+                  <div className="flex flex-wrap gap-2 text-sm">
+                    {horoscope.lucky_number && horoscope.lucky_number !== "N/A" && (
+                      <Badge variant="outline" className="bg-green-50 border-green-200">
+                        Lucky Number: {horoscope.lucky_number}
+                      </Badge>
+                    )}
+                    {horoscope.lucky_color && horoscope.lucky_color !== "N/A" && (
+                      <Badge variant="outline" className="bg-green-50 border-green-200">
+                        Lucky Color: {horoscope.lucky_color}
+                      </Badge>
+                    )}
+                    {horoscope.compatibility && horoscope.compatibility !== "N/A" && (
+                      <Badge variant="outline" className="bg-green-50 border-green-200">
+                        Compatible: {horoscope.compatibility}
+                      </Badge>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <p className="text-gray-500">No horoscope available for today.</p>
+              )}
             </CardContent>
           </Card>
         </section>
