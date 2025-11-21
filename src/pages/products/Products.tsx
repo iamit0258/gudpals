@@ -18,7 +18,7 @@ const Products = () => {
   const { t, language } = useLanguage();
   const [cartOpen, setCartOpen] = React.useState(false);
   const [cart, setCart] = React.useState<any[]>([]);
-  
+
   // Load cart from localStorage
   React.useEffect(() => {
     const savedCart = localStorage.getItem('cart');
@@ -30,7 +30,7 @@ const Products = () => {
       }
     }
   }, []);
-  
+
   // Save cart to localStorage whenever it changes (throttled)
   React.useEffect(() => {
     const id = requestAnimationFrame(() => {
@@ -38,18 +38,18 @@ const Products = () => {
     });
     return () => cancelAnimationFrame(id);
   }, [cart]);
-  
+
   React.useEffect(() => {
     if (location.state?.registered && location.state?.activityName) {
       toast({
         title: t("purchase_successful"),
         description: `${t("successfully_ordered")} ${location.state.activityName}`,
       });
-      
+
       navigate(location.pathname, { replace: true });
     }
   }, [location, toast, navigate, t]);
-  
+
   const products = [
     {
       id: 1,
@@ -98,13 +98,13 @@ const Products = () => {
   const handleViewProduct = (productId) => {
     navigate(`/products/${productId}`);
   };
-  
+
   const handleAddToCart = (product) => {
     const existingItem = cart.find(item => item.id === product.id);
-    
+
     if (existingItem) {
       // Update quantity if already in cart
-      const updatedCart = cart.map(item => 
+      const updatedCart = cart.map(item =>
         item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
       );
       setCart(updatedCart);
@@ -118,19 +118,19 @@ const Products = () => {
         quantity: 1
       }]);
     }
-    
+
     toast({
       title: t("added_to_cart"),
       description: `${language === "en" ? product.title_en : product.title_hi} ${t("added_to_cart_success")}`,
     });
   };
-  
+
   const handleBuyNow = (product) => {
     // Compute updated cart and persist immediately
     const existingItem = cart.find(item => item.id === product.id);
     let updatedCart;
     if (existingItem) {
-      updatedCart = cart.map(item => 
+      updatedCart = cart.map(item =>
         item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
       );
     } else {
@@ -147,24 +147,24 @@ const Products = () => {
     // Navigate to checkout
     navigate("/checkout");
   };
-  
+
   const handleRemoveFromCart = (id) => {
     setCart(cart.filter(item => item.id !== id));
-    
+
     toast({
       title: t("item_removed"),
       description: t("item_removed_from_cart"),
     });
   };
-  
+
   const getTotalCartItems = () => {
     return cart.reduce((total, item) => total + item.quantity, 0);
   };
-  
+
   const calculateCartTotal = () => {
     return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   };
-  
+
   const formatPrice = (price) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -179,9 +179,9 @@ const Products = () => {
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold text-dhayan-purple-dark">{t("senior_products")}</h1>
           <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               className="gap-1 relative"
               onClick={() => setCartOpen(true)}
             >
@@ -198,13 +198,17 @@ const Products = () => {
             </Button>
           </div>
         </div>
-        
+
         <div className="space-y-4">
           {products.map((product) => (
-            <Card key={product.id} className="overflow-hidden">
+            <Card
+              key={product.id}
+              className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => handleViewProduct(product.id)}
+            >
               <div className="relative h-32">
-                <img 
-                  src={product.image} 
+                <img
+                  src={product.image}
                   alt={language === "en" ? product.title_en : product.title_hi}
                   className="w-full h-full object-cover"
                 />
@@ -222,7 +226,7 @@ const Products = () => {
                 <p className="text-sm text-dhayan-gray mt-1">
                   {language === "en" ? product.description_en : product.description_hi}
                 </p>
-                
+
                 <div className="flex items-center mt-3 text-xs text-dhayan-gray-dark">
                   <Users className="h-3.5 w-3.5 mr-1" />
                   <span className="mr-3">{product.users} {t("users")}</span>
@@ -233,17 +237,23 @@ const Products = () => {
                 </div>
               </CardContent>
               <CardFooter className="p-4 pt-0 grid grid-cols-2 gap-2">
-                <Button 
+                <Button
                   variant="secondary"
                   className="w-full border-primary text-primary flex items-center justify-center"
-                  onClick={() => handleAddToCart(product)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAddToCart(product);
+                  }}
                 >
                   <ShoppingCart className="h-4 w-4 mr-2" />
                   {t("add_to_cart")}
                 </Button>
-                <Button 
+                <Button
                   className="w-full bg-dhayan-purple hover:bg-dhayan-purple-dark text-white flex items-center justify-center"
-                  onClick={() => handleBuyNow(product)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleBuyNow(product);
+                  }}
                 >
                   <Package className="h-4 w-4 mr-2" />
                   {t("buy_now")}
@@ -253,14 +263,14 @@ const Products = () => {
           ))}
         </div>
       </div>
-      
+
       {/* Cart Dialog */}
       <Dialog open={cartOpen} onOpenChange={setCartOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{t("your_cart")}</DialogTitle>
           </DialogHeader>
-          
+
           <div className="py-4">
             {cart.length === 0 ? (
               <div className="text-center py-8">
@@ -272,9 +282,9 @@ const Products = () => {
                 {cart.map(item => (
                   <div key={item.id} className="flex items-center border-b pb-3">
                     <div className="h-16 w-16 bg-gray-100 rounded overflow-hidden flex-shrink-0">
-                      <img 
-                        src={item.image} 
-                        alt={item.title} 
+                      <img
+                        src={item.image}
+                        alt={item.title}
                         className="h-full w-full object-cover"
                       />
                     </div>
@@ -296,7 +306,7 @@ const Products = () => {
                     </div>
                   </div>
                 ))}
-                
+
                 <div className="flex justify-between items-center py-2">
                   <span className="font-medium">{t("total")}</span>
                   <span className="font-bold text-primary">
@@ -306,16 +316,16 @@ const Products = () => {
               </div>
             )}
           </div>
-          
+
           <DialogFooter className="flex gap-2">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="flex-1"
               onClick={() => setCartOpen(false)}
             >
               {t("continue_shopping")}
             </Button>
-            <Button 
+            <Button
               className="flex-1 bg-primary"
               onClick={() => {
                 setCartOpen(false);

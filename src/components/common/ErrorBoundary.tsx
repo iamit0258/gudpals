@@ -109,9 +109,7 @@ class ErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
-
 export default ErrorBoundary;
-
 // Hook for functional components to handle errors
 export const useErrorHandler = () => {
   return (error: Error, errorInfo?: any) => {

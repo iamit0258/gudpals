@@ -52,7 +52,7 @@ export const useAstrologyService = () => {
   const fetchAstrologers = async () => {
     try {
       setLoading(true);
-      
+
       // Simplified query without complex joins to avoid relation errors
       const { data, error } = await supabase
         .from('astrologers')
@@ -64,7 +64,7 @@ export const useAstrologyService = () => {
         console.error("Error fetching astrologers:", error);
         throw error;
       }
-      
+
       // Fetch profiles separately to avoid foreign key issues
       const astrologersWithProfiles = await Promise.all(
         (data || []).map(async (astrologer) => {
@@ -74,7 +74,7 @@ export const useAstrologyService = () => {
               .select('display_name, photo_url')
               .eq('id', astrologer.user_id)
               .single();
-            
+
             return {
               ...astrologer,
               profiles: profile ? {
@@ -88,7 +88,7 @@ export const useAstrologyService = () => {
           }
         })
       );
-      
+
       setAstrologers(astrologersWithProfiles);
     } catch (error) {
       console.error("Error fetching astrologers:", error);
@@ -118,7 +118,7 @@ export const useAstrologyService = () => {
         console.error("Error fetching consultations:", error);
         throw error;
       }
-      
+
       // Fetch astrologer data and profiles separately
       const consultationsWithDetails = await Promise.all(
         (data || []).map(async (consultation) => {
@@ -157,7 +157,7 @@ export const useAstrologyService = () => {
           }
         })
       );
-      
+
       setConsultations(consultationsWithDetails);
     } catch (error) {
       console.error("Error fetching consultations:", error);
@@ -165,8 +165,8 @@ export const useAstrologyService = () => {
   };
 
   const bookConsultation = async (
-    astrologerId: string, 
-    consultationType: 'chat' | 'call' | 'video', 
+    astrologerId: string,
+    consultationType: 'chat' | 'call' | 'video',
     durationMinutes: number = 30
   ) => {
     try {

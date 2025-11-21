@@ -3,45 +3,25 @@ import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, Plus, Edit, Trash2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import AddAddressDialog from "./AddAddressDialog";
 import EditAddressDialog from "./EditAddressDialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { useAddresses } from "@/hooks/useAddresses";
 
 const ShippingAddresses = () => {
-  const [addresses, setAddresses] = useState([
-    {
-      id: "1",
-      name: "Home",
-      street: "123 Main Street",
-      city: "Mumbai",
-      state: "Maharashtra",
-      pincode: "400001",
-      isDefault: true
-    },
-    {
-      id: "2",
-      name: "Office",
-      street: "456 Business Park",
-      city: "Pune",
-      state: "Maharashtra", 
-      pincode: "411001",
-      isDefault: false
-    }
-  ]);
+  const { addresses, addAddress, updateAddress, removeAddress, setDefaultAddress } = useAddresses();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
-  const { toast } = useToast();
 
   const handleAddAddress = (newAddress: any) => {
-    setAddresses(addresses => [...addresses, newAddress]);
+    // The dialog generates an ID, but our hook handles it. We'll strip it to be safe/clean.
+    const { id, ...addressData } = newAddress;
+    addAddress(addressData);
   };
 
   const handleEditAddress = (id: string, updatedAddress: any) => {
-    setAddresses(addresses => 
-      addresses.map(addr => addr.id === id ? updatedAddress : addr)
-    );
+    updateAddress(id, updatedAddress);
   };
 
   const handleOpenEditDialog = (address: any) => {
@@ -50,34 +30,11 @@ const ShippingAddresses = () => {
   };
 
   const handleRemoveAddress = (id: string) => {
-    const address = addresses.find(addr => addr.id === id);
-    if (address?.isDefault && addresses.length > 1) {
-      toast({
-        title: "Cannot Remove Default",
-        description: "Please set another address as default first",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    setAddresses(addresses => addresses.filter(addr => addr.id !== id));
-    toast({
-      title: "Address Removed",
-      description: "Shipping address has been successfully removed"
-    });
+    removeAddress(id);
   };
 
   const handleSetDefault = (id: string) => {
-    setAddresses(addresses => 
-      addresses.map(addr => ({
-        ...addr,
-        isDefault: addr.id === id
-      }))
-    );
-    toast({
-      title: "Default Address Updated",
-      description: "Default shipping address has been updated"
-    });
+    setDefaultAddress(id);
   };
 
   return (
@@ -112,8 +69,8 @@ const ShippingAddresses = () => {
                 </div>
               </div>
               <div className="flex space-x-1">
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="sm"
                   onClick={() => handleOpenEditDialog(address)}
                 >
@@ -121,8 +78,8 @@ const ShippingAddresses = () => {
                 </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       size="sm"
                       className="text-red-600 hover:text-red-700"
                     >
@@ -147,9 +104,9 @@ const ShippingAddresses = () => {
               </div>
             </div>
             {!address.isDefault && (
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 className="mt-3"
                 onClick={() => handleSetDefault(address.id)}
               >

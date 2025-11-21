@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,7 +8,6 @@ import { useLanguage } from "@/context/language/LanguageContext";
 const WelcomeBanner = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
-
   const handleGetStarted = () => {
     navigate("/profile");
   };

@@ -1,14 +1,20 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ShoppingCart, ArrowLeft, Star, Plus, Minus, Check, MessageSquare, Trash } from "lucide-react";
+import { ShoppingCart, ArrowLeft, Star, Plus, Minus, Check, MessageSquare, Trash, ChevronLeft, ChevronRight, Share2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/context/language/LanguageContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 const mockProducts = {
   "1": {
@@ -35,7 +41,14 @@ const mockProducts = {
       "हियरिंग एड कंपैटिबिलिटी"
     ],
     images: [
-      "https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=300&auto=format&fit=crop"
+      "https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=300&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=300&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1556656793-02715d8dd6f8?q=80&w=300&auto=format&fit=crop"
+    ],
+    colors: [
+      { name: "Black", value: "#000000" },
+      { name: "Silver", value: "#C0C0C0" },
+      { name: "Gold", value: "#FFD700" }
     ],
     category: "Electronics",
     inStock: true
@@ -64,7 +77,13 @@ const mockProducts = {
       "शांत रंगों में उपलब्ध"
     ],
     images: [
-      "https://images.unsplash.com/photo-1545205597-3d9d02c29597?q=80&w=300&auto=format&fit=crop"
+      "https://images.unsplash.com/photo-1545205597-3d9d02c29597?q=80&w=300&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1591228127791-8e2eaef098d3?q=80&w=300&auto=format&fit=crop"
+    ],
+    colors: [
+      { name: "Blue", value: "#4169E1" },
+      { name: "Purple", value: "#800080" },
+      { name: "Green", value: "#1a671aff" }
     ],
     category: "Wellness",
     inStock: true
@@ -94,6 +113,10 @@ const mockProducts = {
     ],
     images: [
       "https://images.unsplash.com/photo-1630324982388-c15f371bf8c2?q=80&w=300&auto=format&fit=crop"
+    ],
+    colors: [
+      { name: "Grey", value: "#808080" },
+      { name: "Red", value: "#FF0000" }
     ],
     category: "Kitchen",
     inStock: true
@@ -129,7 +152,8 @@ const sampleReviews = [
 ];
 
 const ProductDetail = () => {
-  const { productId } = useParams();
+  const { id } = useParams();
+  const productId = id;
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t, language } = useLanguage();
@@ -142,10 +166,17 @@ const ProductDetail = () => {
   const [cart, setCart] = useState<any[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
-  
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+
   // In a real app, you would fetch this data
   const product = mockProducts[productId as keyof typeof mockProducts];
-  
+
+  useEffect(() => {
+    if (product && product.colors && product.colors.length > 0) {
+      setSelectedColor(product.colors[0].name);
+    }
+  }, [product]);
+
   // Load cart from localStorage on mount
   useEffect(() => {
     const savedCart = localStorage.getItem('cart');
@@ -157,7 +188,7 @@ const ProductDetail = () => {
       }
     }
   }, []);
-  
+
   // Save cart to localStorage whenever it changes (throttled by requestAnimationFrame)
   useEffect(() => {
     const id = requestAnimationFrame(() => {
@@ -165,7 +196,7 @@ const ProductDetail = () => {
     });
     return () => cancelAnimationFrame(id);
   }, [cart]);
-  
+
   if (!product) {
     return (
       <MobileLayout>
@@ -181,10 +212,10 @@ const ProductDetail = () => {
       </MobileLayout>
     );
   }
-  
+
   const handleAddToCart = () => {
     setIsAddingToCart(true);
-    
+
     // Simulate network delay
     setTimeout(() => {
       const cartItem = {
@@ -192,12 +223,13 @@ const ProductDetail = () => {
         title: getLocalizedTitle(),
         price: product.price,
         quantity: quantity,
-        image: product.images[0]
+        image: product.images[0],
+        color: selectedColor
       };
-      
+
       // Check if the product is already in the cart
-      const existingItemIndex = cart.findIndex(item => item.id === product.id);
-      
+      const existingItemIndex = cart.findIndex(item => item.id === product.id && item.color === selectedColor);
+
       if (existingItemIndex >= 0) {
         // Update quantity if already in cart
         const updatedCart = [...cart];
@@ -207,36 +239,36 @@ const ProductDetail = () => {
         // Add new item to cart
         setCart([...cart, cartItem]);
       }
-      
+
       setIsAddingToCart(false);
       setCartOpen(true);
-      
+
       toast({
         title: t("added_to_cart"),
         description: `${getLocalizedTitle()} ${t("added_to_cart_success")}`,
       });
     }, 500);
   };
-  
-  const handleRemoveFromCart = (id: number) => {
-    setCart(cart.filter(item => item.id !== id));
-    
+
+  const handleRemoveFromCart = (id: number, color?: string) => {
+    setCart(cart.filter(item => !(item.id === id && item.color === color)));
+
     toast({
       title: t("item_removed"),
       description: t("item_removed_from_cart"),
     });
   };
-  
-  const handleUpdateQuantity = (id: number, newQuantity: number) => {
+
+  const handleUpdateQuantity = (id: number, newQuantity: number, color?: string) => {
     if (newQuantity < 1) return;
-    
-    const updatedCart = cart.map(item => 
-      item.id === id ? { ...item, quantity: newQuantity } : item
+
+    const updatedCart = cart.map(item =>
+      (item.id === id && item.color === color) ? { ...item, quantity: newQuantity } : item
     );
-    
+
     setCart(updatedCart);
   };
-  
+
   const handleBuyNow = () => {
     // Add current product to cart first and persist immediately
     const cartItem = {
@@ -244,12 +276,13 @@ const ProductDetail = () => {
       title: getLocalizedTitle(),
       price: product.price,
       quantity: quantity,
-      image: product.images[0]
+      image: product.images[0],
+      color: selectedColor
     };
-    
-    const existingItemIndex = cart.findIndex(item => item.id === product.id);
+
+    const existingItemIndex = cart.findIndex(item => item.id === product.id && item.color === selectedColor);
     let nextCart = [] as any[];
-    
+
     if (existingItemIndex === -1) {
       nextCart = [...cart, cartItem];
     } else {
@@ -259,32 +292,32 @@ const ProductDetail = () => {
         quantity: nextCart[existingItemIndex].quantity + quantity,
       };
     }
-    
+
     setCart(nextCart);
     // Persist to localStorage before navigation to avoid race conditions
     localStorage.setItem('cart', JSON.stringify(nextCart));
-    
+
     toast({
       title: t("proceeding_to_checkout"),
       description: t("preparing_order"),
     });
-    
+
     // Navigate to checkout
     navigate("/checkout");
   };
-  
+
   const getTotalCartItems = () => {
     return cart.reduce((total, item) => total + item.quantity, 0);
   };
-  
+
   const calculateCartTotal = () => {
     return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   };
-  
+
   const increaseQuantity = () => {
     if (quantity < 10) setQuantity(quantity + 1);
   };
-  
+
   const decreaseQuantity = () => {
     if (quantity > 1) setQuantity(quantity - 1);
   };
@@ -302,18 +335,18 @@ const ProductDetail = () => {
       text: reviewText,
       date: new Date().toISOString().split('T')[0]
     };
-    
+
     setReviews([...reviews, newReview]);
-    
+
     toast({
       title: t("review"),
       description: "Thank you for your review!",
     });
-    
+
     setReviewOpen(false);
     setReviewText("");
   };
-  
+
   // Format price to Indian Rupees
   const formattedPrice = new Intl.NumberFormat('en-IN', {
     style: 'currency',
@@ -333,90 +366,132 @@ const ProductDetail = () => {
   const getLocalizedDescription = () => {
     return language === "en" ? product.description_en : product.description_hi;
   };
-  
+
   // Filter reviews for this product
   const productReviews = reviews.filter(review => review.productId === product.id);
   const displayReviews = showAllReviews ? productReviews : productReviews.slice(0, 2);
+
+  // Get related products (excluding current product)
+  const relatedProducts = Object.values(mockProducts).filter(p => p.id !== product.id);
 
   return (
     <MobileLayout>
       <div className="pb-28">
         <div className="bg-white">
-          <div className="p-4 flex justify-between items-center">
+          <div className="p-4 flex justify-between items-center sticky top-0 z-10 bg-white/80 backdrop-blur-sm">
             <Button variant="ghost" onClick={() => navigate("/products")}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               {t("back_to_products")}
             </Button>
-            
-            <Button 
-              variant="outline" 
-              className="relative" 
-              onClick={() => setCartOpen(true)}
-            >
-              <ShoppingCart className="h-5 w-5" />
-              {cart.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {getTotalCartItems()}
-                </span>
-              )}
-            </Button>
-          </div>
-          
-          {/* Product Image */}
-          <div className="h-60 bg-gray-100 flex items-center justify-center">
-            <img
-              src={product.images[0]}
-              alt={getLocalizedTitle()}
-              className="max-h-60 object-contain"
-            />
-          </div>
-          
-          {/* Product Info */}
-          <div className="p-4">
-            <div className="flex justify-between items-start">
-              <h1 className="text-2xl font-bold">{getLocalizedTitle()}</h1>
-              <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full">
-                {t(product.category.toLowerCase())}
-              </span>
-            </div>
-            
-            <div className="flex items-center mt-2">
-              <div className="flex items-center">
-                <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                <span className="ml-1 text-sm font-medium">{product.rating}</span>
-              </div>
-              <span className="mx-2 text-gray-300">|</span>
-              <span className="text-sm text-muted-foreground">{product.reviews} {t("reviews")}</span>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="ml-2 text-xs text-primary"
-                onClick={handleOpenReview}
+
+            <div className="flex gap-2">
+              <Button variant="ghost" size="icon">
+                <Share2 className="h-5 w-5" />
+              </Button>
+              <Button
+                variant="outline"
+                className="relative"
+                onClick={() => setCartOpen(true)}
               >
-                <MessageSquare className="h-3 w-3 mr-1" />
-                {t("write_review")}
+                <ShoppingCart className="h-5 w-5" />
+                {cart.length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {getTotalCartItems()}
+                  </span>
+                )}
               </Button>
             </div>
-            
-            <div className="mt-4">
-              <h2 className="text-2xl font-bold text-primary">{formattedPrice}</h2>
-              <p className="text-sm text-green-600 mt-1">
-                <Check className="h-4 w-4 inline mr-1" />
-                {product.inStock ? t("in_stock") : t("out_of_stock")}
-              </p>
+          </div>
+
+          {/* Product Image Gallery */}
+          <div className="bg-gray-50 py-4">
+            <Carousel className="w-full max-w-xs mx-auto">
+              <CarouselContent>
+                {product.images.map((image, index) => (
+                  <CarouselItem key={index}>
+                    <div className="p-1">
+                      <div className="flex aspect-square items-center justify-center p-2">
+                        <img
+                          src={image}
+                          alt={`${getLocalizedTitle()} - View ${index + 1}`}
+                          className="max-h-64 w-full object-contain mix-blend-multiply"
+                        />
+                      </div>
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="left-2" />
+              <CarouselNext className="right-2" />
+            </Carousel>
+            <div className="flex justify-center gap-1 mt-2">
+              {product.images.map((_, index) => (
+                <div key={index} className="w-2 h-2 rounded-full bg-gray-300" />
+              ))}
             </div>
-            
-            <div className="mt-4">
-              <h3 className="font-medium">{t("description")}</h3>
-              <p className="text-sm text-muted-foreground mt-1">{getLocalizedDescription()}</p>
+          </div>
+
+          {/* Product Info */}
+          <div className="p-4 space-y-6">
+            <div>
+              <div className="flex justify-between items-start">
+                <h1 className="text-2xl font-bold text-gray-900">{getLocalizedTitle()}</h1>
+                <span className="bg-primary/10 text-primary text-xs px-2.5 py-1 rounded-full font-medium">
+                  {t(product.category.toLowerCase())}
+                </span>
+              </div>
+
+              <div className="flex items-center mt-2 gap-4">
+                <div className="flex items-center bg-yellow-50 px-2 py-1 rounded-md">
+                  <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                  <span className="ml-1 text-sm font-bold text-yellow-700">{product.rating}</span>
+                </div>
+                <span className="text-sm text-muted-foreground underline decoration-dotted">{product.reviews} {t("reviews")}</span>
+              </div>
+
+              <div className="mt-4">
+                <h2 className="text-3xl font-bold text-primary">{formattedPrice}</h2>
+                <p className="text-sm text-green-600 mt-1 font-medium flex items-center">
+                  <Check className="h-4 w-4 mr-1" />
+                  {product.inStock ? t("in_stock") : t("out_of_stock")}
+                </p>
+              </div>
             </div>
-            
-            <div className="mt-4">
-              <h3 className="font-medium">{t("features")}</h3>
-              <ul className="mt-2 space-y-1">
+
+            {/* Color Selection */}
+            {product.colors && product.colors.length > 0 && (
+              <div>
+                <h3 className="font-medium mb-3">Select Color: <span className="text-muted-foreground font-normal">{selectedColor}</span></h3>
+                <div className="flex gap-3">
+                  {product.colors.map((color) => (
+                    <button
+                      key={color.name}
+                      onClick={() => setSelectedColor(color.name)}
+                      className={`w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all ${selectedColor === color.name ? "border-primary ring-2 ring-primary/20 ring-offset-2" : "border-transparent"
+                        }`}
+                      style={{ backgroundColor: color.value }}
+                      aria-label={`Select ${color.name}`}
+                    >
+                      {selectedColor === color.name && (
+                        <Check className={`h-5 w-5 ${['White', 'Silver', 'Yellow'].includes(color.name) ? 'text-black' : 'text-white'}`} />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div>
+              <h3 className="font-medium mb-2">{t("description")}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{getLocalizedDescription()}</p>
+            </div>
+
+            <div>
+              <h3 className="font-medium mb-2">{t("features")}</h3>
+              <ul className="space-y-2">
                 {getLocalizedFeatures().map((feature, index) => (
-                  <li key={index} className="text-sm text-muted-foreground flex items-start">
-                    <span className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center mr-2 flex-shrink-0 mt-0.5">
+                  <li key={index} className="text-sm text-muted-foreground flex items-start bg-gray-50 p-2 rounded-lg">
+                    <span className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center mr-3 flex-shrink-0 mt-0.5">
                       <Check className="h-3 w-3" />
                     </span>
                     {feature}
@@ -424,69 +499,25 @@ const ProductDetail = () => {
                 ))}
               </ul>
             </div>
-            
-            {/* Reviews Section */}
-            <div className="mt-6">
-              <div className="flex justify-between items-center">
-                <h3 className="font-medium">{t("reviews")}</h3>
-                {productReviews.length > 2 && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setShowAllReviews(!showAllReviews)}
-                    className="text-xs"
-                  >
-                    {showAllReviews ? "Show Less" : "Show All"}
-                  </Button>
-                )}
-              </div>
-              
-              {displayReviews.length > 0 ? (
-                <div className="mt-2 space-y-3">
-                  {displayReviews.map((review) => (
-                    <Card key={review.id} className="p-3">
-                      <div className="flex justify-between">
-                        <span className="font-medium">{review.userName}</span>
-                        <div className="flex items-center">
-                          {[...Array(5)].map((_, i) => (
-                            <Star 
-                              key={i} 
-                              className={`h-3 w-3 ${
-                                i < review.rating 
-                                  ? "text-yellow-400 fill-yellow-400" 
-                                  : "text-gray-300"
-                              }`} 
-                            />
-                          ))}
-                        </div>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">{review.date}</p>
-                      <p className="text-sm mt-2">{review.text}</p>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-gray-500 mt-2">No reviews yet. Be the first to review!</p>
-              )}
-            </div>
-            
-            <div className="mt-6 flex items-center">
-              <span className="mr-4 font-medium">{t("quantity")}:</span>
-              <div className="flex items-center border rounded-md">
+
+            {/* Quantity Selector */}
+            <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+              <span className="font-medium">{t("quantity")}:</span>
+              <div className="flex items-center bg-white border rounded-md shadow-sm">
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-9 px-2"
+                  className="h-9 w-9 p-0 hover:bg-gray-100"
                   onClick={decreaseQuantity}
                   disabled={quantity <= 1}
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
-                <span className="w-8 text-center">{quantity}</span>
+                <span className="w-10 text-center font-medium">{quantity}</span>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-9 px-2"
+                  className="h-9 w-9 p-0 hover:bg-gray-100"
                   onClick={increaseQuantity}
                   disabled={quantity >= 10}
                 >
@@ -494,14 +525,122 @@ const ProductDetail = () => {
                 </Button>
               </div>
             </div>
+
+            {/* Reviews Section */}
+            <div className="pt-6 border-t">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-lg">{t("reviews")} ({productReviews.length})</h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleOpenReview}
+                  className="text-xs"
+                >
+                  <MessageSquare className="h-3 w-3 mr-2" />
+                  {t("write_review")}
+                </Button>
+              </div>
+
+              {displayReviews.length > 0 ? (
+                <div className="space-y-4">
+                  {displayReviews.map((review) => (
+                    <Card key={review.id} className="overflow-hidden border-none shadow-sm bg-gray-50">
+                      <CardContent className="p-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs">
+                              {review.userName.charAt(0)}
+                            </div>
+                            <div>
+                              <span className="font-medium text-sm block">{review.userName}</span>
+                              <span className="text-xs text-muted-foreground">{review.date}</span>
+                            </div>
+                          </div>
+                          <div className="flex">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`h-3 w-3 ${i < review.rating
+                                  ? "text-yellow-400 fill-yellow-400"
+                                  : "text-gray-300"
+                                  }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-sm text-gray-700">{review.text}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
+
+                  {productReviews.length > 2 && (
+                    <Button
+                      variant="ghost"
+                      className="w-full text-primary text-sm"
+                      onClick={() => setShowAllReviews(!showAllReviews)}
+                    >
+                      {showAllReviews ? "Show Less Reviews" : `View All ${productReviews.length} Reviews`}
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-8 bg-gray-50 rounded-lg">
+                  <MessageSquare className="h-8 w-8 mx-auto text-gray-300 mb-2" />
+                  <p className="text-sm text-gray-500">No reviews yet. Be the first to review!</p>
+                </div>
+              )}
+            </div>
+
+            {/* Related Products */}
+            <div className="pt-6 border-t">
+              <h3 className="font-bold text-lg mb-4">You Might Also Like</h3>
+              <div className="grid grid-cols-2 gap-4">
+                {relatedProducts.map((relatedProduct) => (
+                  <Card
+                    key={relatedProduct.id}
+                    className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+                    onClick={() => {
+                      navigate(`/products/${relatedProduct.id}`);
+                      window.scrollTo(0, 0);
+                    }}
+                  >
+                    <div className="aspect-square bg-gray-100 p-4 flex items-center justify-center">
+                      <img
+                        src={relatedProduct.images[0]}
+                        alt={language === "en" ? relatedProduct.title_en : relatedProduct.title_hi}
+                        className="w-full h-full object-contain mix-blend-multiply"
+                      />
+                    </div>
+                    <div className="p-3">
+                      <h4 className="font-medium text-sm line-clamp-2 h-10">
+                        {language === "en" ? relatedProduct.title_en : relatedProduct.title_hi}
+                      </h4>
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="font-bold text-primary">
+                          {new Intl.NumberFormat('en-IN', {
+                            style: 'currency',
+                            currency: 'INR',
+                            maximumFractionDigits: 0
+                          }).format(relatedProduct.price)}
+                        </span>
+                        <div className="flex items-center text-xs text-yellow-600">
+                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 mr-1" />
+                          {relatedProduct.rating}
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-        
+
         {/* Fixed bottom actions */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white p-4 border-t flex gap-3 max-w-md mx-auto">
+        <div className="fixed bottom-0 left-0 right-0 bg-white p-4 border-t flex gap-3 max-w-md mx-auto shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-20">
           <Button
             variant="outline"
-            className="flex-1 border-primary text-primary"
+            className="flex-1 border-primary text-primary hover:bg-primary/5"
             onClick={handleAddToCart}
             disabled={isAddingToCart}
           >
@@ -515,7 +654,7 @@ const ProductDetail = () => {
             )}
           </Button>
           <Button
-            className="flex-1 bg-primary hover:bg-dhayan-teal-dark text-white"
+            className="flex-1 bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25"
             onClick={handleBuyNow}
           >
             {t("buy_now")}
@@ -531,30 +670,28 @@ const ProductDetail = () => {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div>
-              <label className="text-sm font-medium mb-1 block">{t("rating")}</label>
-              <div className="flex items-center space-x-1">
+              <label className="text-sm font-medium mb-2 block">{t("rating")}</label>
+              <div className="flex items-center space-x-2">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
                     type="button"
                     onClick={() => setRating(star)}
-                    className="focus:outline-none"
+                    className="focus:outline-none transition-transform hover:scale-110"
                   >
                     <Star
-                      className={`h-6 w-6 ${
-                        star <= rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
-                      }`}
+                      className={`h-8 w-8 ${star <= rating ? "text-yellow-400 fill-yellow-400" : "text-gray-200"
+                        }`}
                     />
                   </button>
                 ))}
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">{t("your_review")}</label>
+              <label className="text-sm font-medium mb-2 block">{t("your_review")}</label>
               <Textarea
                 placeholder={language === "en" ? "Share your experience with this product..." : "इस उत्पाद के साथ अपने अनुभव को साझा करें..."}
-                className="resize-none"
-                rows={4}
+                className="resize-none min-h-[120px]"
                 value={reviewText}
                 onChange={(e) => setReviewText(e.target.value)}
               />
@@ -564,113 +701,135 @@ const ProductDetail = () => {
             <Button variant="outline" onClick={() => setReviewOpen(false)}>
               {t("close")}
             </Button>
-            <Button onClick={handleSubmitReview}>
+            <Button onClick={handleSubmitReview} disabled={!reviewText.trim()}>
               {t("submit_review")}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
+
       {/* Cart Dialog */}
       <Dialog open={cartOpen} onOpenChange={setCartOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{t("your_cart")}</DialogTitle>
           </DialogHeader>
-          
-          <div className="py-4">
+
+          <div className="py-4 max-h-[60vh] overflow-y-auto">
             {cart.length === 0 ? (
-              <div className="text-center py-8">
-                <ShoppingCart className="h-12 w-12 mx-auto text-muted-foreground opacity-50 mb-4" />
-                <p className="text-muted-foreground">{t("cart_empty")}</p>
+              <div className="text-center py-12">
+                <div className="bg-gray-100 h-20 w-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <ShoppingCart className="h-10 w-10 text-gray-400" />
+                </div>
+                <h3 className="font-medium text-lg text-gray-900">Your cart is empty</h3>
+                <p className="text-muted-foreground mt-1 mb-6">{t("cart_empty")}</p>
+                <Button onClick={() => setCartOpen(false)}>{t("continue_shopping")}</Button>
               </div>
             ) : (
               <div className="space-y-4">
                 {cart.map(item => (
-                  <div key={item.id} className="flex items-center border-b pb-3">
-                    <div className="h-16 w-16 bg-gray-100 rounded overflow-hidden flex-shrink-0">
-                      <img 
-                        src={item.image} 
-                        alt={item.title} 
-                        className="h-full w-full object-cover"
+                  <div key={`${item.id}-${item.color || 'default'}`} className="flex items-start border-b pb-4 last:border-0">
+                    <div className="h-20 w-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border">
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="h-full w-full object-cover mix-blend-multiply"
                       />
                     </div>
                     <div className="ml-3 flex-1">
-                      <h4 className="font-medium text-sm">{item.title}</h4>
-                      <div className="flex justify-between items-center mt-1">
-                        <p className="font-bold text-primary text-sm">
+                      <div className="flex justify-between">
+                        <h4 className="font-medium text-sm line-clamp-2">{item.title}</h4>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 text-gray-400 hover:text-red-500 -mr-2"
+                          onClick={() => handleRemoveFromCart(item.id, item.color)}
+                        >
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      {item.color && (
+                        <p className="text-xs text-muted-foreground mt-1">Color: {item.color}</p>
+                      )}
+                      <div className="flex justify-between items-center mt-2">
+                        <p className="font-bold text-primary">
                           {new Intl.NumberFormat('en-IN', {
                             style: 'currency',
                             currency: 'INR',
                             maximumFractionDigits: 0
                           }).format(item.price)}
                         </p>
-                        <div className="flex items-center">
+                        <div className="flex items-center border rounded-md bg-gray-50">
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 w-7 p-0"
-                            onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                            className="h-7 w-7 p-0 hover:bg-white rounded-l-md"
+                            onClick={() => handleUpdateQuantity(item.id, item.quantity - 1, item.color)}
                             disabled={item.quantity <= 1}
                           >
                             <Minus className="h-3 w-3" />
                           </Button>
-                          <span className="w-6 text-center text-sm">{item.quantity}</span>
+                          <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 w-7 p-0"
-                            onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                            className="h-7 w-7 p-0 hover:bg-white rounded-r-md"
+                            onClick={() => handleUpdateQuantity(item.id, item.quantity + 1, item.color)}
                           >
                             <Plus className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0 text-red-500 ml-1"
-                            onClick={() => handleRemoveFromCart(item.id)}
-                          >
-                            <Trash className="h-3 w-3" />
                           </Button>
                         </div>
                       </div>
                     </div>
                   </div>
                 ))}
-                
-                <div className="flex justify-between items-center py-2">
-                  <span className="font-medium">{t("total")}</span>
-                  <span className="font-bold text-primary">
-                    {new Intl.NumberFormat('en-IN', {
-                      style: 'currency',
-                      currency: 'INR',
-                      maximumFractionDigits: 0
-                    }).format(calculateCartTotal())}
-                  </span>
+
+                <div className="bg-gray-50 p-4 rounded-lg mt-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span className="font-medium">
+                      {new Intl.NumberFormat('en-IN', {
+                        style: 'currency',
+                        currency: 'INR',
+                        maximumFractionDigits: 0
+                      }).format(calculateCartTotal())}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-lg font-bold border-t pt-2 mt-2">
+                    <span>{t("total")}</span>
+                    <span className="text-primary">
+                      {new Intl.NumberFormat('en-IN', {
+                        style: 'currency',
+                        currency: 'INR',
+                        maximumFractionDigits: 0
+                      }).format(calculateCartTotal())}
+                    </span>
+                  </div>
                 </div>
               </div>
             )}
           </div>
-          
-          <DialogFooter className="flex gap-2">
-            <Button 
-              variant="outline" 
-              className="flex-1"
-              onClick={() => setCartOpen(false)}
-            >
-              {t("continue_shopping")}
-            </Button>
-            <Button 
-              className="flex-1 bg-primary"
-              onClick={() => {
-                setCartOpen(false);
-                navigate("/checkout");
-              }}
-              disabled={cart.length === 0}
-            >
-              {t("checkout")}
-            </Button>
-          </DialogFooter>
+
+          {cart.length > 0 && (
+            <DialogFooter className="flex gap-2 sm:justify-between">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setCartOpen(false)}
+              >
+                {t("continue_shopping")}
+              </Button>
+              <Button
+                className="flex-1 bg-primary shadow-md"
+                onClick={() => {
+                  setCartOpen(false);
+                  navigate("/checkout");
+                }}
+              >
+                {t("checkout")}
+              </Button>
+            </DialogFooter>
+          )}
         </DialogContent>
       </Dialog>
     </MobileLayout>

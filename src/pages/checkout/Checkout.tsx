@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, CreditCard, Truck, ShieldCheck, CheckCircle, Home, Navigation, Trash } from "lucide-react";
+import { ArrowLeft, CreditCard, Truck, ShieldCheck, CheckCircle, Home, Navigation, Trash, MapPin } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
@@ -13,6 +13,10 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/context/language/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/ClerkAuthBridge";
+import { useAddresses } from "@/hooks/useAddresses";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -22,7 +26,10 @@ const Checkout = () => {
   const [loading, setLoading] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
   const { user } = useAuth();
-  
+  const { addresses, addAddress } = useAddresses();
+  const [saveAddress, setSaveAddress] = useState(true);
+  const [selectedAddressId, setSelectedAddressId] = useState<string>("new");
+
   // Load cart from localStorage
   useEffect(() => {
     const savedCart = localStorage.getItem('cart');
@@ -34,32 +41,74 @@ const Checkout = () => {
       }
     }
   }, []);
-  
+
   const form = useForm({
     defaultValues: {
       paymentMethod: "online",
       addressType: "home",
-      name: "अशोक कुमार",
-      phone: "9876543210",
-      address: "123, पार्क व्यू अपार्टमेंट, सेक्टर 15",
-      city: "नई दिल्ली",
-      pincode: "110001"
+      name: "",
+      phone: "",
+      address: "",
+      city: "",
+      pincode: ""
     }
   });
-  
+
+  // Effect to set default address if available and no address selected yet
+  useEffect(() => {
+    if (addresses.length > 0 && selectedAddressId === "new" && !form.getValues("name")) {
+      const defaultAddress = addresses.find(a => a.isDefault) || addresses[0];
+      if (defaultAddress) {
+        setSelectedAddressId(defaultAddress.id);
+        fillFormWithAddress(defaultAddress);
+      }
+    }
+  }, [addresses]);
+
+  const fillFormWithAddress = (address: any) => {
+    form.setValue("name", address.name || "");
+    form.setValue("phone", address.phone || "");
+    form.setValue("address", address.street || "");
+    form.setValue("city", address.city || "");
+    form.setValue("pincode", address.pincode || "");
+    form.setValue("addressType", address.type || "home");
+  };
+
+  const handleAddressSelect = (value: string) => {
+    setSelectedAddressId(value);
+    if (value === "new") {
+      form.reset({
+        paymentMethod: form.getValues("paymentMethod"),
+        addressType: "home",
+        name: "",
+        phone: "",
+        address: "",
+        city: "",
+        pincode: ""
+      });
+      setSaveAddress(true);
+    } else {
+      const address = addresses.find(a => a.id === value);
+      if (address) {
+        fillFormWithAddress(address);
+        setSaveAddress(false); // Don't save if selecting existing
+      }
+    }
+  };
+
   const calculateSubtotal = () => {
     return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
   };
-  
+
   const calculateDeliveryFee = () => {
     const subtotal = calculateSubtotal();
     return subtotal > 1000 ? 0 : 40;
   };
-  
+
   const calculateTotal = () => {
     return calculateSubtotal() + calculateDeliveryFee();
   };
-  
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -67,25 +116,25 @@ const Checkout = () => {
       maximumFractionDigits: 0
     }).format(price);
   };
-  
+
   const handleRemoveItem = (id: number) => {
     setCartItems(cartItems.filter(item => item.id !== id));
-    
+
     // Update localStorage with updated cart
     localStorage.setItem('cart', JSON.stringify(cartItems.filter(item => item.id !== id)));
-    
+
     toast({
       title: t("item_removed"),
       description: t("item_removed_from_cart"),
     });
-    
+
     if (cartItems.length <= 1) {
       setTimeout(() => {
         navigate("/products");
       }, 1000);
     }
   };
-  
+
   const handleSubmit = async (data: any) => {
     if (cartItems.length === 0) {
       toast({
@@ -95,15 +144,29 @@ const Checkout = () => {
       });
       return;
     }
-    
+
     setLoading(true);
-    
+
+    // Save address if requested and it's a new address (or manually checked)
+    if (saveAddress && selectedAddressId === "new") {
+      addAddress({
+        name: data.name, // Using name as address name for now, or we could ask for a label
+        street: data.address,
+        city: data.city,
+        state: "India", // Defaulting as it's not in the form explicitly
+        pincode: data.pincode,
+        isDefault: addresses.length === 0,
+        phone: data.phone,
+        type: data.addressType as any
+      });
+    }
+
     try {
       // Check payment method and proceed accordingly
       if (data.paymentMethod === "online") {
         // Process Stripe payment for cart items (guest-friendly)
         const response = await supabase.functions.invoke('create-payment', {
-          body: { 
+          body: {
             cartItems: cartItems.map(item => ({
               title: item.title,
               price: item.price,
@@ -124,7 +187,7 @@ const Checkout = () => {
       } else {
         // Cash on delivery - process order directly
         setOrderComplete(true);
-        
+
         // Store the order in localStorage for demo purposes
         const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
         const newOrder = {
@@ -136,13 +199,13 @@ const Checkout = () => {
           date: new Date().toISOString(),
           paymentMethod: 'Cash on Delivery'
         };
-        
+
         orderHistory.push(newOrder);
         localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
-        
+
         // Clear cart after successful order
         localStorage.setItem('cart', JSON.stringify([]));
-        
+
         toast({
           title: t("order_placed"),
           description: t("order_success_message"),
@@ -159,7 +222,7 @@ const Checkout = () => {
       setLoading(false);
     }
   };
-  
+
   if (orderComplete) {
     return (
       <MobileLayout>
@@ -191,7 +254,7 @@ const Checkout = () => {
       </MobileLayout>
     );
   }
-  
+
   return (
     <MobileLayout>
       <div className="pb-24">
@@ -202,11 +265,11 @@ const Checkout = () => {
           </Button>
           <h1 className="text-2xl font-bold mt-2">{t("checkout")}</h1>
         </div>
-        
+
         {/* Cart Items */}
         <div className="p-4">
           <h2 className="font-medium mb-2">{t("items_in_cart")}</h2>
-          
+
           {cartItems.length === 0 ? (
             <div className="text-center p-8">
               <p className="text-muted-foreground">{t("cart_empty")}</p>
@@ -248,7 +311,7 @@ const Checkout = () => {
             </div>
           )}
         </div>
-        
+
         {/* Order Summary */}
         <div className="p-4 border-t border-b">
           <h2 className="font-medium mb-3">{t("order_summary")}</h2>
@@ -267,7 +330,7 @@ const Checkout = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Payment and Delivery */}
         <div className="p-4 pb-6">
           <Form {...form}>
@@ -315,10 +378,32 @@ const Checkout = () => {
                   )}
                 />
               </div>
-              
+
               {/* Delivery Address */}
               <div>
-                <h2 className="font-medium mb-3">{t("delivery_address")}</h2>
+                <div className="flex justify-between items-center mb-3">
+                  <h2 className="font-medium">{t("delivery_address")}</h2>
+                </div>
+
+                {addresses.length > 0 && (
+                  <div className="mb-4">
+                    <Label className="text-sm text-muted-foreground mb-2 block">Select Saved Address</Label>
+                    <Select value={selectedAddressId} onValueChange={handleAddressSelect}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an address" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="new">Add New Address</SelectItem>
+                        {addresses.map((addr) => (
+                          <SelectItem key={addr.id} value={addr.id}>
+                            {addr.name} - {addr.street}, {addr.city}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
                 <FormField
                   control={form.control}
                   name="addressType"
@@ -327,7 +412,7 @@ const Checkout = () => {
                       <FormControl>
                         <RadioGroup
                           onValueChange={field.onChange}
-                          defaultValue={field.value}
+                          value={field.value}
                           className="flex gap-3"
                         >
                           <Card className={`flex-1 cursor-pointer ${field.value === 'home' ? 'border-primary' : ''}`}>
@@ -353,7 +438,7 @@ const Checkout = () => {
                     </FormItem>
                   )}
                 />
-                
+
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
@@ -365,16 +450,16 @@ const Checkout = () => {
                       <Input {...form.register("phone")} />
                     </div>
                   </div>
-                  
+
                   <div className="space-y-1">
                     <label className="text-sm font-medium">{t("address")}</label>
-                    <Textarea 
-                      {...form.register("address")} 
-                      className="resize-none" 
+                    <Textarea
+                      {...form.register("address")}
+                      className="resize-none"
                       rows={2}
                     />
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <label className="text-sm font-medium">{t("city")}</label>
@@ -385,9 +470,22 @@ const Checkout = () => {
                       <Input {...form.register("pincode")} />
                     </div>
                   </div>
+
+                  {selectedAddressId === "new" && (
+                    <div className="flex items-center space-x-2 mt-2">
+                      <Checkbox
+                        id="saveAddress"
+                        checked={saveAddress}
+                        onCheckedChange={(checked) => setSaveAddress(checked as boolean)}
+                      />
+                      <Label htmlFor="saveAddress" className="text-sm cursor-pointer">
+                        Save this address for future use
+                      </Label>
+                    </div>
+                  )}
                 </div>
               </div>
-              
+
               {/* Trust Badges */}
               <div className="pt-2 grid grid-cols-3 gap-2 text-center">
                 <div className="flex flex-col items-center">
@@ -412,10 +510,10 @@ const Checkout = () => {
             </form>
           </Form>
         </div>
-        
+
         {/* Submit Button - Fixed at bottom with proper spacing */}
         <div className="fixed bottom-16 left-0 right-0 bg-white p-4 border-t max-w-md mx-auto">
-          <Button 
+          <Button
             onClick={form.handleSubmit(handleSubmit)}
             className="w-full bg-primary hover:bg-dhayan-teal-dark text-white"
             disabled={loading || cartItems.length === 0}

@@ -1,4 +1,3 @@
-
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
@@ -133,3 +132,20 @@ Deno.serve(async (req) => {
     });
   }
 });
+
+// In your payment/checkout handler
+const handleStripeCheckout = async () => {
+  try {
+    const response = await fetch('/api/create-payment', {
+      method: 'POST',
+      body: JSON.stringify({ /* order details */ })
+    })
+    
+    const { sessionUrl } = await response.json()
+    
+    // Open in new tab
+    window.open(sessionUrl, '_blank')
+  } catch (error) {
+    console.error('Payment error:', error)
+  }
+}

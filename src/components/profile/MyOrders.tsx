@@ -19,22 +19,13 @@ const MyOrders = () => {
       const mockOrders = [
         {
           id: "ORD-001",
-          date: "2024-01-15",
-          total: 299.99,
+          date: "2025-12-15",
+          total: 99.99,
           status: "Delivered",
           items: [
-            { name: "Organic Turmeric Powder", quantity: 2, price: 149.99 }
+            { name: "Pillow", quantity: 2, price: 49.99 }
           ]
         },
-        {
-          id: "ORD-002", 
-          date: "2024-01-10",
-          total: 599.50,
-          status: "Processing",
-          items: [
-            { name: "Ayurvedic Health Kit", quantity: 1, price: 599.50 }
-          ]
-        }
       ];
       setOrderHistory(mockOrders);
       localStorage.setItem('orderHistory', JSON.stringify(mockOrders));
