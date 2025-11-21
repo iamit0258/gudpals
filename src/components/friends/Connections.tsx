@@ -20,42 +20,6 @@ const mockConnections = [
     status: "online",
     lastSeen: "Active now"
   },
-  {
-    id: "2",
-    name: {
-      en: "Anuradha Gupta",
-      hi: "अनुराधा गुप्ता"
-    },
-    status: "online",
-    lastSeen: "Active now"
-  },
-  {
-    id: "3",
-    name: {
-      en: "Vikas Sharma",
-      hi: "विकास शर्मा"
-    },
-    status: "offline",
-    lastSeen: "Last seen 2h ago"
-  },
-  {
-    id: "4",
-    name: {
-      en: "Rekha Singh",
-      hi: "रेखा सिंह"
-    },
-    status: "online",
-    lastSeen: "Active now"
-  },
-  {
-    id: "5",
-    name: {
-      en: "Kamal Joshi",
-      hi: "कमल जोशी"
-    },
-    status: "offline",
-    lastSeen: "Last seen yesterday"
-  }
 ];
 
 const Connections = () => {
@@ -78,7 +42,6 @@ const Connections = () => {
         [id]: []
       }));
     }
-    
     setCurrentChat({id, name: displayName});
     setChatOpen(true);
   };

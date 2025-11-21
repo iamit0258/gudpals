@@ -16,17 +16,8 @@ const PaymentMethods = () => {
       brand: "Visa",
       expiry: "12/25",
       isDefault: true,
-      cardholderName: "John Doe"
+      cardholderName: "Varun"
     },
-    {
-      id: "2",
-      type: "card",
-      last4: "5555",
-      brand: "Mastercard",
-      expiry: "08/26",
-      isDefault: false,
-      cardholderName: "John Doe"
-    }
   ]);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const { toast } = useToast();

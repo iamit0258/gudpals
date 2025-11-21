@@ -242,5 +242,4 @@ const OnboardingStep3 = ({
     </div>
   );
 };
-
 export default OnboardingStep3;

@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,22 +13,10 @@ export const useUserSync = () => {
     try {
       console.log("Syncing user to database:", user.id);
 
-      // Check if user profile already exists
-      const { data: existingProfile, error: selectError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      if (selectError) {
-        console.error("Error checking existing profile:", selectError);
-        throw selectError;
-      }
-
       const profileData = {
         id: user.id, // Now using TEXT format, no conversion needed
-        display_name: user.firstName && user.lastName 
-          ? `${user.firstName} ${user.lastName}` 
+        display_name: user.firstName && user.lastName
+          ? `${user.firstName} ${user.lastName}`
           : user.firstName || user.username || user.emailAddresses?.[0]?.emailAddress || 'User',
         email: user.emailAddresses?.[0]?.emailAddress || null,
         phone_number: user.phoneNumbers?.[0]?.phoneNumber || null,
@@ -37,52 +24,30 @@ export const useUserSync = () => {
         last_login_at: new Date().toISOString(),
       };
 
-      if (existingProfile) {
-        // Update existing profile
-        const { error } = await supabase
-          .from('profiles')
-          .update({
-            display_name: profileData.display_name,
-            email: profileData.email,
-            phone_number: profileData.phone_number,
-            photo_url: profileData.photo_url,
-            last_login_at: profileData.last_login_at,
-          })
-          .eq('id', user.id);
+      // Use upsert to handle both insert and update atomically
+      // This prevents race conditions where two requests might try to insert simultaneously
+      const { error } = await supabase
+        .from('profiles')
+        .upsert(profileData, { onConflict: 'id' });
 
-        if (error) {
-          console.error("Error updating user profile:", error);
-          throw error;
-        }
-
-        console.log("User profile updated successfully");
-      } else {
-        // Create new profile
-        const { error } = await supabase
-          .from('profiles')
-          .insert(profileData);
-
-        if (error) {
-          console.error("Error creating user profile:", error);
-          throw error;
-        }
-
-        console.log("User profile created successfully");
-        
-        toast({
-          title: "Welcome!",
-          description: "Your profile has been set up successfully",
-        });
+      if (error) {
+        console.error("Error syncing user profile:", error);
+        throw error;
       }
+
+      console.log("User profile synced successfully");
     } catch (error: any) {
       console.error("Error syncing user to database:", error);
-      
-      // Show user-friendly error message
-      toast({
-        title: "Sync Error",
-        description: "There was an issue syncing your profile data. Please try refreshing the page.",
-        variant: "destructive",
-      });
+
+      // Only show toast for non-duplicate key errors or if we really want to notify
+      // In most cases, we can silently fail or log to monitoring
+      if (error?.code !== '23505') { // 23505 is unique_violation
+        toast({
+          title: "Sync Error",
+          description: "There was an issue syncing your profile data. Please try refreshing the page.",
+          variant: "destructive",
+        });
+      }
     }
   };
 

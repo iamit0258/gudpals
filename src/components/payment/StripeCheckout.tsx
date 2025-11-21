@@ -125,8 +125,14 @@ const StripeCheckout = ({ amount, productId, consultationId, onSuccess, onCancel
         if (error) throw error;
         
         if (data?.url) {
-          // Redirect to Stripe Checkout
-          window.location.href = data.url;
+          // Open Stripe in new tab instead of redirecting
+          window.open(data.url, '_blank', 'noopener,noreferrer');
+          
+          toast({
+            title: "Payment Page Opened",
+            description: "Stripe checkout opened in a new tab. Complete your payment there.",
+            variant: "default",
+          });
         }
       } catch (error: any) {
         console.error("Payment error:", error);

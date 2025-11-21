@@ -1,4 +1,3 @@
-
 import { NavigateFunction, useNavigate } from "react-router-dom";
 
 export const useActivityMethods = () => {

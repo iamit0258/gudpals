@@ -43,52 +43,16 @@ const Astrology = () => {
     },
     {
       id: "2",
-      name: "Priya Patel",
+      name: "Neha Sharma",
       specialty: "Tarot Reading",
       experience: "15+ years",
       rating: 4.7,
-      initials: "PP",
+      initials: "NS",
       isPremium: true,
       price: 599,
       availability: "Available in 30 mins",
       languages: ["Hindi", "Gujarati", "English"]
     },
-    {
-      id: "3",
-      name: "Anand Joshi",
-      specialty: "Palmistry",
-      experience: "25+ years",
-      rating: 4.9,
-      initials: "AJ",
-      isPremium: true,
-      price: 999,
-      availability: "Available now",
-      languages: ["Hindi", "English", "Sanskrit"]
-    },
-    {
-      id: "4",
-      name: "Lakshmi Devi",
-      specialty: "Numerology",
-      experience: "18+ years",
-      rating: 4.6,
-      initials: "LD",
-      isPremium: false,
-      price: null,
-      availability: "Available now",
-      languages: ["Hindi", "Tamil", "English"]
-    },
-    {
-      id: "5",
-      name: "Rajesh Kumar",
-      specialty: "Kundali Matching",
-      experience: "22+ years",
-      rating: 4.8,
-      initials: "RK",
-      isPremium: true,
-      price: 799,
-      availability: "Available in 1 hour",
-      languages: ["Hindi", "Punjabi", "English"]
-    }
   ];
 
   const zodiacSigns = [
@@ -148,11 +112,10 @@ const Astrology = () => {
             <Button
               key={sign.name}
               variant={selectedSign === sign.name ? "default" : "outline"}
-              className={`h-auto flex flex-col py-3 ${
-                selectedSign === sign.name
-                  ? "bg-gradient-to-br from-green-600 to-teal-600"
-                  : ""
-              }`}
+              className={`h-auto flex flex-col py-3 ${selectedSign === sign.name
+                ? "bg-gradient-to-br from-green-600 to-teal-600"
+                : ""
+                }`}
               onClick={() => selectZodiacSign(sign.name)}
             >
               <span className="font-medium">{sign.name}</span>
@@ -168,7 +131,7 @@ const Astrology = () => {
           <Card className="border-green-200 bg-white/80 backdrop-blur-sm">
             <CardContent className="p-4">
               <p className="italic text-gray-600 mb-3">
-                "Today is a day of opportunities and reflection. The stars align to bring you clarity 
+                "Today is a day of opportunities and reflection. The stars align to bring you clarity
                 in matters of the heart. Take time to listen to your inner voice and trust your intuition."
               </p>
               <div className="flex flex-wrap gap-2 text-sm">
@@ -199,11 +162,10 @@ const Astrology = () => {
                       {astrologer.initials}
                     </div>
                     <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5">
-                      <div className={`h-3 w-3 rounded-full ${
-                        astrologer.availability.includes("now") 
-                          ? "bg-green-500" 
-                          : "bg-amber-500"
-                      }`}></div>
+                      <div className={`h-3 w-3 rounded-full ${astrologer.availability.includes("now")
+                        ? "bg-green-500"
+                        : "bg-amber-500"
+                        }`}></div>
                     </div>
                   </div>
                   <div className="flex-1">

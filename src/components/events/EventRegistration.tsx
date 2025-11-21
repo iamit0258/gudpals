@@ -93,7 +93,6 @@ const EventRegistration: React.FC<EventRegistrationProps> = ({
       }
     }
   };
-
   const getButtonText = () => {
     if (loading) return t("processing");
     if (isRegistered) return t("unregister");
