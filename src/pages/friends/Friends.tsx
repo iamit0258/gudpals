@@ -7,23 +7,18 @@ import { Radio, Users, UserPlus } from "lucide-react";
 import NearbyFriends from "@/components/friends/NearbyFriends";
 import Connections from "@/components/friends/Connections";
 import FriendRequests from "@/components/friends/FriendRequests";
+import AddFriendDialog from "@/components/friends/AddFriendDialog";
 import { useLanguage } from "@/context/language/LanguageContext";
-import { useToast } from "@/hooks/use-toast";
 
 const Friends = () => {
-  const { t, language } = useLanguage();
-  const { toast } = useToast();
+  const { language } = useLanguage();
   const [activeTab, setActiveTab] = useState("connections");
-  
+  const [addFriendOpen, setAddFriendOpen] = useState(false);
+
   const handleAddFriend = () => {
-    toast({
-      title: language === "en" ? "Coming Soon" : "जल्द आ रहा है",
-      description: language === "en" 
-        ? "This feature will be available soon" 
-        : "यह सुविधा जल्द ही उपलब्ध होगी",
-    });
+    setAddFriendOpen(true);
   };
-  
+
   return (
     <MobileLayout>
       <div className="p-4">
@@ -36,7 +31,7 @@ const Friends = () => {
             {language === "en" ? "Add Friend" : "मित्र जोड़ें"}
           </Button>
         </div>
-        
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid grid-cols-3 mb-4">
             <TabsTrigger value="connections">
@@ -52,20 +47,22 @@ const Friends = () => {
               {/* Add a badge here if needed for notification count */}
             </TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="connections">
             <Connections />
           </TabsContent>
-          
+
           <TabsContent value="nearby">
             <NearbyFriends />
           </TabsContent>
-          
+
           <TabsContent value="requests">
             <FriendRequests />
           </TabsContent>
         </Tabs>
       </div>
+
+      <AddFriendDialog open={addFriendOpen} onOpenChange={setAddFriendOpen} />
     </MobileLayout>
   );
 };
