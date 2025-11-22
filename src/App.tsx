@@ -24,6 +24,8 @@ import AstrologyPayment from "./pages/astrology/AstrologyPayment";
 import Activities from "./pages/activities/Activities";
 import Events from "./pages/events/Events";
 import Friends from "./pages/friends/Friends";
+import ChatList from "./pages/chat/ChatList";
+import ChatRoom from "./pages/chat/ChatRoom";
 import Learn from "./pages/learn/Learn";
 import DigitalLiteracy from "./pages/digitalLiteracy/DigitalLiteracy";
 import Games from "./pages/games/Games";
@@ -75,6 +77,8 @@ const App = () => (
                     <Route path="/activities" element={<Activities />} />
                     <Route path="/events" element={<Events />} />
                     <Route path="/friends" element={<Friends />} />
+                    <Route path="/chat" element={<ChatList />} />
+                    <Route path="/chat/:userId" element={<ChatRoom />} />
                     <Route path="/learn" element={<Learn />} />
                     <Route path="/digital-literacy" element={<DigitalLiteracy />} />
                     <Route path="/games" element={<Games />} />

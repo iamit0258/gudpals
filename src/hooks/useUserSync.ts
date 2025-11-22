@@ -24,11 +24,10 @@ export const useUserSync = () => {
         last_login_at: new Date().toISOString(),
       };
 
-      // Use upsert to handle both insert and update atomically
-      // This prevents race conditions where two requests might try to insert simultaneously
-      const { error } = await supabase
-        .from('profiles')
-        .upsert(profileData, { onConflict: 'id' });
+      // Call the edge function to safely sync the profile using service role key
+      const { error } = await supabase.functions.invoke('sync-profile', {
+        body: profileData,
+      });
 
       if (error) {
         console.error("Error syncing user profile:", error);

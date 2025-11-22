@@ -3,25 +3,18 @@ import { useNavigate } from "react-router-dom";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { ArrowLeft, CheckCircle, CreditCard, Calendar, Lock, Smartphone } from "lucide-react";
+import { ArrowLeft, CheckCircle, CreditCard, ShieldCheck, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/context/ClerkAuthBridge";
 
 const AstrologyPayment = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [astrologer, setAstrologer] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState("card");
-  
-  // Payment form state
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardName, setCardName] = useState("");
-  const [expiry, setExpiry] = useState("");
-  const [cvv, setCvv] = useState("");
-  const [upiId, setUpiId] = useState("");
 
   // Load astrologer data from localStorage
   useEffect(() => {
@@ -39,68 +32,96 @@ const AstrologyPayment = () => {
     }
   }, [navigate, toast]);
 
-  // Format card number with spaces
-  const formatCardNumber = (value: string) => {
-    const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
-    const matches = v.match(/\d{4,16}/g);
-    const match = matches && matches[0] || "";
-    const parts = [];
-
-    for (let i = 0, len = match.length; i < len; i += 4) {
-      parts.push(match.substring(i, i + 4));
-    }
-
-    return parts.length > 0 ? parts.join(" ") : value;
-  };
-
-  // Format expiry date as MM/YY
-  const formatExpiry = (value: string) => {
-    const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
-    
-    if (v.length > 2) {
-      return `${v.substring(0, 2)}/${v.substring(2, 4)}`;
-    }
-    
-    return v;
-  };
-
-  // Format UPI ID
-  const formatUpiId = (value: string) => {
-    return value.replace(/\s+/g, "").toLowerCase();
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (paymentMethod === 'card' && (!cardNumber || !cardName || !expiry || !cvv)) {
+  const handlePayment = async () => {
+    if (!user) {
       toast({
-        title: "Missing fields",
-        description: "Please fill in all card payment details",
-        variant: "destructive"
-      });
-      return;
-    } else if (paymentMethod === 'upi' && !upiId) {
-      toast({
-        title: "Missing UPI ID",
-        description: "Please enter your UPI ID",
+        title: "Authentication Required",
+        description: "Please log in to book a consultation",
         variant: "destructive"
       });
       return;
     }
-    
+
     setIsLoading(true);
-    
-    // Simulate payment processing
-    setTimeout(() => {
-      setIsLoading(false);
-      setPaymentSuccess(true);
-      
-      toast({
-        title: "Payment Successful",
-        description: `Your consultation with ${astrologer?.name} has been booked.`
+
+    try {
+      // 1. Create consultation record
+      // Note: We are using a dummy UUID for the astrologer if the ID is not a valid UUID (e.g. "1", "2" from mock data)
+      // In a real app, we would fetch the real astrologer ID from the DB.
+      // For this demo, we'll try to find a real astrologer or use a fallback if the ID is not a UUID.
+
+      let astrologerId = astrologer.id;
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(astrologerId);
+
+      if (!isUuid) {
+        // Fetch a valid astrologer from DB to use as fallback
+        const { data: astrologers, error: astrologerError } = await supabase
+          .from('astrologers')
+          .select('id')
+          .limit(1);
+
+        if (astrologerError) {
+          console.error("Error fetching astrologer:", astrologerError);
+          throw new Error("Failed to fetch astrologer data. Please try again.");
+        }
+
+        if (astrologers && astrologers.length > 0) {
+          astrologerId = astrologers[0].id;
+        } else {
+          throw new Error("No valid astrologer found in system. Please contact support.");
+        }
+      }
+
+      const { data: consultation, error: consultationError } = await supabase
+        .from('astrology_consultations')
+        .insert({
+          user_id: user.uid,
+          astrologer_id: astrologerId,
+          consultation_type: 'chat',
+          total_cost: (astrologer.price || 0) + 49,
+          status: 'pending',
+          payment_status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (consultationError) throw consultationError;
+
+      // 2. Invoke create-payment
+      const { data, error } = await supabase.functions.invoke('create-payment', {
+        body: {
+          consultationId: consultation.id,
+          userEmail: user.email,
+        }
       });
-    }, 2000);
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No payment URL returned");
+      }
+
+    } catch (error: any) {
+      console.error("Payment error:", error);
+      toast({
+        title: "Payment Error",
+        description: error.message || "Failed to initiate payment",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  // Check for success query param
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("session_id")) {
+      setPaymentSuccess(true);
+    }
+  }, []);
 
   if (paymentSuccess) {
     return (
@@ -145,7 +166,7 @@ const AstrologyPayment = () => {
         </Button>
         <h1 className="text-xl font-bold">Book Consultation</h1>
       </div>
-      
+
       {/* Astrologer and Payment Summary */}
       <div className="p-4">
         <Card className="mb-4">
@@ -163,7 +184,7 @@ const AstrologyPayment = () => {
                 </>
               )}
             </div>
-            
+
             <div className="border-t border-b py-3 my-3">
               <div className="flex justify-between mb-1">
                 <span className="text-gray-600">Consultation Fee</span>
@@ -174,127 +195,50 @@ const AstrologyPayment = () => {
                 <span>₹49</span>
               </div>
             </div>
-            
+
             <div className="flex justify-between font-medium">
               <span>Total</span>
               <span className="text-green-700">₹{astrologer?.price ? (astrologer.price + 49) : 0}</span>
             </div>
           </CardContent>
         </Card>
-        
-        {/* Payment Form */}
-        <h2 className="text-lg font-semibold mb-3">Payment Details</h2>
-        <Tabs defaultValue="card" value={paymentMethod} onValueChange={setPaymentMethod} className="w-full">
-          <TabsList className="grid grid-cols-2 mb-4">
-            <TabsTrigger value="card" className="flex items-center gap-2">
-              <CreditCard className="h-4 w-4" /> Card
-            </TabsTrigger>
-            <TabsTrigger value="upi" className="flex items-center gap-2">
-              <Smartphone className="h-4 w-4" /> UPI
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="card">
-            <form onSubmit={handleSubmit}>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium block">Card Number</label>
-                  <div className="relative">
-                    <Input 
-                      value={cardNumber}
-                      onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                      maxLength={19}
-                      placeholder="1234 5678 9012 3456"
-                      className="pl-10"
-                    />
-                    <CreditCard className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium block">Cardholder Name</label>
-                  <Input 
-                    value={cardName}
-                    onChange={(e) => setCardName(e.target.value)}
-                    placeholder="John Doe"
-                  />
-                </div>
-                
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium block">Expiry Date</label>
-                    <div className="relative">
-                      <Input 
-                        value={expiry}
-                        onChange={(e) => setExpiry(formatExpiry(e.target.value))}
-                        maxLength={5}
-                        placeholder="MM/YY"
-                        className="pl-10"
-                      />
-                      <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium block">CVV</label>
-                    <div className="relative">
-                      <Input 
-                        value={cvv}
-                        onChange={(e) => setCvv(e.target.value.replace(/\D/g, ''))}
-                        maxLength={3}
-                        placeholder="123"
-                        className="pl-10"
-                      />
-                      <Lock className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                    </div>
-                  </div>
-                </div>
-                
-                <Button 
-                  type="submit"
-                  className="w-full bg-green-600 hover:bg-green-700 mt-2"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Processing..." : `Pay ₹${astrologer?.price ? (astrologer.price + 49) : 0}`}
-                </Button>
+
+        <div className="mt-6 space-y-4">
+          <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+            <div className="flex items-start">
+              <ShieldCheck className="h-5 w-5 text-blue-600 mr-2 mt-0.5" />
+              <div>
+                <h3 className="font-medium text-blue-800">Secure Payment</h3>
+                <p className="text-sm text-blue-600 mt-1">
+                  Your payment is processed securely by Stripe. We do not store your card details.
+                </p>
               </div>
-            </form>
-          </TabsContent>
-          
-          <TabsContent value="upi">
-            <form onSubmit={handleSubmit}>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium block">UPI ID</label>
-                  <div className="relative">
-                    <Input 
-                      value={upiId}
-                      onChange={(e) => setUpiId(formatUpiId(e.target.value))}
-                      placeholder="yourname@upi"
-                      className="pl-10"
-                    />
-                    <Smartphone className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Enter your UPI ID (e.g., yourname@okhdfcbank, yourname@ybl)
-                  </p>
-                </div>
-                
-                <Button 
-                  type="submit"
-                  className="w-full bg-green-600 hover:bg-green-700 mt-2"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Processing..." : `Pay ₹${astrologer?.price ? (astrologer.price + 49) : 0} via UPI`}
-                </Button>
+            </div>
+          </div>
+
+          <Button
+            className="w-full bg-primary hover:bg-primary/90 h-12 text-lg"
+            onClick={handlePayment}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <div className="flex items-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Processing...
               </div>
-            </form>
-          </TabsContent>
-        </Tabs>
-        
-        <p className="text-center text-xs text-gray-500 mt-4">
-          Your payment information is secure and encrypted
-        </p>
+            ) : (
+              <div className="flex items-center">
+                <CreditCard className="mr-2 h-5 w-5" />
+                Pay with Stripe
+              </div>
+            )}
+          </Button>
+
+          <div className="flex justify-center items-center text-xs text-gray-500 mt-4">
+            <Lock className="h-3 w-3 mr-1" />
+            <span>256-bit SSL Encrypted Payment</span>
+          </div>
+        </div>
       </div>
     </MobileLayout>
   );

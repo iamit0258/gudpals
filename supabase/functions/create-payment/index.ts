@@ -12,23 +12,37 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-    );
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    if (!stripeKey) {
+      console.error("Error: STRIPE_SECRET_KEY is not set");
+      throw new Error("Server configuration error");
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+    if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceRoleKey) {
+      console.error("Error: Missing Supabase configuration");
+      throw new Error("Server configuration error");
+    }
+
+    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
 
     const authHeader = req.headers.get("Authorization");
     let user: any = null;
     if (authHeader) {
       const token = authHeader.replace("Bearer ", "");
-      const { data } = await supabaseClient.auth.getUser(token);
+      const { data, error } = await supabaseClient.auth.getUser(token);
+      if (error) {
+        console.warn("Auth error:", error.message);
+      }
       user = data.user;
     }
 
     const { productId, quantity = 1, consultationId, cartItems, userEmail } = await req.json();
 
-
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+    const stripe = new Stripe(stripeKey, {
       apiVersion: "2023-10-16",
     });
 
@@ -37,13 +51,16 @@ Deno.serve(async (req) => {
 
     if (productId) {
       // Single product purchase
-      const { data: product } = await supabaseClient
+      const { data: product, error: productError } = await supabaseClient
         .from('products')
         .select('*')
         .eq('id', productId)
         .single();
 
-      if (!product) throw new Error("Product not found");
+      if (productError || !product) {
+        console.error("Product fetch error:", productError);
+        throw new Error("Product not found");
+      }
 
       lineItems.push({
         price_data: {
@@ -56,13 +73,16 @@ Deno.serve(async (req) => {
       orderAmount = product.price * quantity;
     } else if (consultationId) {
       // Astrology consultation payment
-      const { data: consultation } = await supabaseClient
+      const { data: consultation, error: consultationError } = await supabaseClient
         .from('astrology_consultations')
         .select('*, astrologers(*)')
         .eq('id', consultationId)
         .single();
 
-      if (!consultation) throw new Error("Consultation not found");
+      if (consultationError || !consultation) {
+        console.error("Consultation fetch error:", consultationError);
+        throw new Error("Consultation not found");
+      }
 
       lineItems.push({
         price_data: {
@@ -108,27 +128,34 @@ Deno.serve(async (req) => {
 
     // Create order record
     const supabaseService = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      supabaseUrl,
+      supabaseServiceRoleKey,
       { auth: { persistSession: false } }
     );
 
     if (user && user.id) {
-      await supabaseService.from("orders").insert({
+      const { error: orderError } = await supabaseService.from("orders").insert({
         user_id: user.id,
         total_amount: orderAmount,
         payment_intent_id: session.id,
         status: "pending",
       });
+
+      if (orderError) {
+        console.error("Error creating order:", orderError);
+        // We don't throw here to allow the payment flow to continue, 
+        // but we log it for debugging.
+      }
     }
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
+    console.error("Function error:", error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
+      status: 400,
     });
   }
 });
@@ -140,9 +167,9 @@ const handleStripeCheckout = async () => {
       method: 'POST',
       body: JSON.stringify({ /* order details */ })
     })
-    
+
     const { sessionUrl } = await response.json()
-    
+
     // Open in new tab
     window.open(sessionUrl, '_blank')
   } catch (error) {
