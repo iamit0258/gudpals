@@ -18,6 +18,7 @@ import PaymentSuccess from "./pages/payment/PaymentSuccess";
 import PaymentCanceled from "./pages/payment/PaymentCanceled";
 import Profile from "./pages/profile/Profile";
 import Sessions from "./pages/sessions/Sessions";
+import SessionLive from "./pages/sessions/SessionLive";
 import Astrology from "./pages/astrology/Astrology";
 import AstrologyChat from "./pages/astrology/AstrologyChat";
 import AstrologyPayment from "./pages/astrology/AstrologyPayment";
@@ -71,6 +72,7 @@ const App = () => (
                     <Route path="/payment-canceled" element={<PaymentCanceled />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/sessions" element={<Sessions />} />
+                    <Route path="/sessions/:id/live" element={<SessionLive />} />
                     <Route path="/astrology" element={<Astrology />} />
                     <Route path="/astrology/chat" element={<AstrologyChat />} />
                     <Route path="/astrology/payment" element={<AstrologyPayment />} />
