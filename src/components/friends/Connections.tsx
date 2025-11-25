@@ -70,7 +70,15 @@ const Connections = () => {
         };
       }).filter(Boolean);
 
-      setConnections(formattedConnections);
+      // Deduplicate connections based on profile ID
+      // This handles cases where multiple accepted friend requests exist for the same pair
+      const uniqueConnections = formattedConnections.filter((item, index, self) =>
+        index === self.findIndex((t) => (
+          t.id === item.id
+        ))
+      );
+
+      setConnections(uniqueConnections);
     } catch (error) {
       console.error("Error fetching connections:", error);
     } finally {

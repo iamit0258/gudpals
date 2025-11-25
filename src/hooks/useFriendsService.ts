@@ -50,7 +50,7 @@ export const useFriendsService = () => {
         console.error("Error fetching friend requests:", error);
         throw error;
       }
-      
+
       // Fetch profiles separately to avoid foreign key issues
       const requestsWithProfiles = await Promise.all(
         (data || []).map(async (request) => {
@@ -60,7 +60,7 @@ export const useFriendsService = () => {
               .select('display_name, photo_url')
               .eq('id', request.sender_id)
               .single();
-            
+
             return {
               ...request,
               profiles: profile ? {
@@ -74,7 +74,7 @@ export const useFriendsService = () => {
           }
         })
       );
-      
+
       setFriendRequests(requestsWithProfiles);
     } catch (error) {
       console.error("Error fetching friend requests:", error);
@@ -99,20 +99,20 @@ export const useFriendsService = () => {
         console.error("Error fetching connections:", error);
         throw error;
       }
-      
+
       // Fetch profiles separately for each connection
       const connectionsWithProfiles = await Promise.all(
         (data || []).map(async (connection) => {
           try {
             // Determine which user is the "other" user (not the current user)
             const otherUserId = connection.user_id_1 === user.id ? connection.user_id_2 : connection.user_id_1;
-            
+
             const { data: profile } = await supabase
               .from('profiles')
               .select('display_name, photo_url')
               .eq('id', otherUserId)
               .single();
-            
+
             return {
               ...connection,
               profiles: profile ? {
@@ -126,8 +126,23 @@ export const useFriendsService = () => {
           }
         })
       );
-      
-      setConnections(connectionsWithProfiles);
+
+      // Deduplicate connections based on the other user's ID
+      const uniqueConnections = connectionsWithProfiles.filter((connection, index, self) =>
+        index === self.findIndex((c) => (
+          // Check if profiles exist and compare display names or IDs if available
+          // Since we don't have the partner ID directly in the top level object easily accessible without parsing,
+          // we rely on the fact that we just fetched profiles.
+          // A better way is to check the connection ID, but if there are duplicate connection rows, that won't help.
+          // We should check the partner's ID.
+
+          // Let's reconstruct the partner ID logic for comparison
+          (c.user_id_1 === user.id ? c.user_id_2 : c.user_id_1) ===
+          (connection.user_id_1 === user.id ? connection.user_id_2 : connection.user_id_1)
+        ))
+      );
+
+      setConnections(uniqueConnections);
     } catch (error) {
       console.error("Error fetching connections:", error);
     } finally {
@@ -139,6 +154,24 @@ export const useFriendsService = () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("User not authenticated");
+      const user = session.user;
+
+      // Check if request already exists
+      const { data: existingRequest } = await supabase
+        .from('friend_requests')
+        .select('id')
+        .or(`and(sender_id.eq.${user.id},receiver_id.eq.${receiverId}),and(sender_id.eq.${receiverId},receiver_id.eq.${user.id})`)
+        .eq('status', 'pending')
+        .maybeSingle();
+
+      if (existingRequest) {
+        toast({
+          title: "Request Already Sent",
+          description: "A friend request is already pending with this user",
+          variant: "destructive",
+        });
+        return;
+      }
 
       const response = await supabase.functions.invoke('manage-friend-request', {
         body: { action: 'send', receiverId, message },
