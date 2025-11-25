@@ -27,19 +27,7 @@ export const useAddresses = () => {
         console.error('Error parsing saved addresses:', error);
       }
     } else {
-      // Initialize with default if empty (optional, matching existing behavior)
-      const defaultAddress: Address = {
-        id: "1",
-        name: "Home",
-        street: "Beta 2",
-        city: "Greater Noida",
-        state: "Uttar Pradesh",
-        pincode: "400001",
-        isDefault: true,
-        type: 'home'
-      };
-      setAddresses([defaultAddress]);
-      localStorage.setItem('savedAddresses', JSON.stringify([defaultAddress]));
+      setAddresses([]);
     }
   }, []);
 
@@ -55,24 +43,24 @@ export const useAddresses = () => {
       id: Date.now().toString(),
       isDefault: addresses.length === 0 || address.isDefault // Make default if it's the first one
     };
-    
+
     let updatedAddresses = [...addresses];
-    
+
     if (newAddress.isDefault) {
       updatedAddresses = updatedAddresses.map(addr => ({
         ...addr,
         isDefault: false
       }));
     }
-    
+
     updatedAddresses.push(newAddress);
     saveAddresses(updatedAddresses);
-    
+
     toast({
       title: "Address Added",
       description: "New shipping address has been saved successfully."
     });
-    
+
     return newAddress;
   };
 
@@ -92,7 +80,7 @@ export const useAddresses = () => {
     }
 
     saveAddresses(newAddresses);
-    
+
     toast({
       title: "Address Updated",
       description: "Shipping address has been updated successfully."
@@ -101,7 +89,7 @@ export const useAddresses = () => {
 
   const removeAddress = (id: string) => {
     const addressToRemove = addresses.find(addr => addr.id === id);
-    
+
     if (addressToRemove?.isDefault && addresses.length > 1) {
       toast({
         title: "Cannot Remove Default",
@@ -113,7 +101,7 @@ export const useAddresses = () => {
 
     const newAddresses = addresses.filter(addr => addr.id !== id);
     saveAddresses(newAddresses);
-    
+
     toast({
       title: "Address Removed",
       description: "Shipping address has been successfully removed"
@@ -126,9 +114,9 @@ export const useAddresses = () => {
       ...addr,
       isDefault: addr.id === id
     }));
-    
+
     saveAddresses(newAddresses);
-    
+
     toast({
       title: "Default Address Updated",
       description: "Default shipping address has been updated"

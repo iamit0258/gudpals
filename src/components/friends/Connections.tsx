@@ -1,31 +1,86 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MessageCircle, Phone, Video, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/context/language/LanguageContext";
 import { useNavigate } from "react-router-dom";
-
-const mockConnections = [
-  {
-    id: "1",
-    name: {
-      en: "Sunil Patil",
-      hi: "सुनील पाटिल"
-    },
-    status: "online",
-    lastSeen: "Active now"
-  },
-];
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/context/ClerkAuthBridge";
 
 const Connections = () => {
-  const [connections] = useState(mockConnections);
+  const [connections, setConnections] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const { t, language } = useLanguage();
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const fetchConnections = async () => {
+    if (!user) return;
+
+    try {
+      // 1. Fetch accepted friend requests where user is sender or receiver
+      const { data: requestsData, error: requestsError } = await supabase
+        .from("friend_requests")
+        .select("id, sender_id, receiver_id")
+        .eq("status", "accepted")
+        .or(`sender_id.eq.${user.uid},receiver_id.eq.${user.uid}`);
+
+      if (requestsError) throw requestsError;
+
+      if (!requestsData || requestsData.length === 0) {
+        setConnections([]);
+        return;
+      }
+
+      // 2. Collect IDs of the "other" users (friends)
+      const friendIds = requestsData.map(req =>
+        req.sender_id === user.uid ? req.receiver_id : req.sender_id
+      );
+
+      // 3. Fetch friend profiles
+      const { data: profilesData, error: profilesError } = await supabase
+        .from("profiles")
+        .select("id, display_name, photo_url, last_login_at")
+        .in("id", friendIds);
+
+      if (profilesError) throw profilesError;
+
+      // 4. Merge data
+      const profilesMap = new Map(profilesData?.map(p => [p.id, p]) || []);
+
+      const formattedConnections = requestsData.map(req => {
+        const friendId = req.sender_id === user.uid ? req.receiver_id : req.sender_id;
+        const friendProfile = profilesMap.get(friendId);
+
+        if (!friendProfile) return null;
+
+        return {
+          id: friendProfile.id,
+          name: friendProfile.display_name || "Unknown User",
+          photo: friendProfile.photo_url,
+          status: "offline", // We can implement real-time status later
+          lastSeen: friendProfile.last_login_at
+            ? new Date(friendProfile.last_login_at).toLocaleDateString()
+            : "Unknown"
+        };
+      }).filter(Boolean);
+
+      setConnections(formattedConnections);
+    } catch (error) {
+      console.error("Error fetching connections:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchConnections();
+  }, [user]);
 
   const handleMessage = (userId: string) => {
     navigate(`/chat/${userId}`);
@@ -67,6 +122,10 @@ const Connections = () => {
     return displayName ? displayName.charAt(0).toUpperCase() : 'U';
   };
 
+  if (loading) {
+    return <div className="p-4 text-center">{t("loading")}...</div>;
+  }
+
   return (
     <div className="p-4 space-y-4">
       <div className="relative">
@@ -90,6 +149,7 @@ const Connections = () => {
               <div className="flex items-center">
                 <div className="relative">
                   <Avatar className="h-12 w-12 mr-4">
+                    <AvatarImage src={connection.photo} />
                     <AvatarFallback className="text-white bg-gradient-to-br from-green-500 to-blue-500">
                       {getInitial(connection.name)}
                     </AvatarFallback>

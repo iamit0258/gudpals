@@ -44,8 +44,8 @@ const Profile = () => {
 
   // User profile state
   const [displayName, setDisplayName] = useState("");
-  const [bio, setBio] = useState('Retired teacher who loves gardening and meeting new people');
-  const [interestTags, setInterestTags] = useState(['gardening', 'reading', 'travel']);
+  const [bio, setBio] = useState('');
+  const [interestTags, setInterestTags] = useState<string[]>([]);
   const [newInterest, setNewInterest] = useState('');
 
   // Initialize profile data when user is available

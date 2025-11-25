@@ -16,24 +16,12 @@ const MyOrders = () => {
     if (storedOrders) {
       setOrderHistory(JSON.parse(storedOrders));
     } else {
-      const mockOrders = [
-        {
-          id: "ORD-001",
-          date: "2025-12-15",
-          total: 99.99,
-          status: "Delivered",
-          items: [
-            { name: "Pillow", quantity: 2, price: 49.99 }
-          ]
-        },
-      ];
-      setOrderHistory(mockOrders);
-      localStorage.setItem('orderHistory', JSON.stringify(mockOrders));
+      setOrderHistory([]);
     }
   }, []);
 
   const handleCancelOrder = (orderId: string) => {
-    const updatedOrders = orderHistory.map(order => 
+    const updatedOrders = orderHistory.map(order =>
       order.id === orderId ? { ...order, status: 'Cancelled' } : order
     );
     setOrderHistory(updatedOrders);
@@ -93,8 +81,8 @@ const MyOrders = () => {
                   <span>₹{order.total}</span>
                 </div>
                 <div className="flex gap-2">
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     variant="outline"
                     onClick={() => handleTrackOrder(order.id)}
                     className="flex-1"
@@ -103,8 +91,8 @@ const MyOrders = () => {
                     Track Order
                   </Button>
                   {order.status === 'Processing' && (
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       variant="outline"
                       onClick={() => handleCancelOrder(order.id)}
                       className="flex-1 text-red-600 border-red-200 hover:bg-red-50"

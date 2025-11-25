@@ -14,21 +14,21 @@ SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXV
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def get_daily_horoscope():
-    base_url = "https://www.hindustantimes.com/astrology/horoscope"
+    base_url = "https://www.hindustantimes.com/astrology"
     
-    # HT Date format in URL usually: november-22-2025
+    # HT Date format in URL usually: november-25-2025
     current_date = datetime.datetime.now()
-    date_str = current_date.strftime('%B-%d-%Y').lower() # e.g., november-22-2025
+    date_str = current_date.strftime('%B-%d-%Y').lower() # e.g., november-25-2025
     display_date = current_date.strftime('%Y-%m-%d')
     
-    print(f"Fetching daily horoscopes for {display_date} from Hindustan Times...\n")
+    print(f"Fetching daily horoscopes for {display_date} from Hindustan Times ({base_url})...\n")
     
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
     
     try:
-        # Step 1: Get the main horoscope page to find the daily article
+        # Step 1: Get the main astrology page to find the daily article
         response = requests.get(base_url, headers=headers)
         response.raise_for_status()
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -36,27 +36,53 @@ def get_daily_horoscope():
         article_link = None
         
         # Look for a link that contains "horoscope-today" and the date string
-        # Example: horoscope-today-for-november-22-2025...
+        # Example: .../horoscope-today-november-25-2025-...
+        # We'll look for "horoscope-today" and the date parts to be safer
+        
+        target_month = current_date.strftime('%B').lower()
+        target_day = current_date.strftime('%d')
+        target_year = current_date.strftime('%Y')
+        
+        candidates = []
+        
         for a in soup.find_all('a', href=True):
             href = a['href']
-            if "horoscope-today" in href and date_str in href:
-                article_link = href
-                if not article_link.startswith('http'):
-                    article_link = f"https://www.hindustantimes.com{article_link}"
-                break
+            # Check if it's a horoscope-today link
+            if "horoscope-today" in href:
+                # Exclude specific types of horoscopes
+                if any(x in href for x in ["numerology", "tarot", "love-horoscope", "career-and-money"]):
+                    continue
+                
+                # Strict check: The slug must start with "horoscope-today-"
+                # This avoids "pisces-daily-horoscope-today..." etc.
+                slug = href.split('/')[-1]
+                if not slug.startswith("horoscope-today-"):
+                    continue
+
+                # Check if it matches today's date
+                # strict check: full date string
+                if date_str in href:
+                    article_link = href
+                    break
+                
+                # relaxed check: month and day (in case year is missing or format differs)
+                if target_month in href and target_day in href:
+                    candidates.append(href)
         
-        # Fallback: Try finding just "horoscope-today" if exact date match fails (sometimes URL format differs)
-        if not article_link:
-            print("Exact date match not found, looking for generic 'horoscope-today' link...")
-            for a in soup.find_all('a', href=True):
-                if "horoscope-today" in a['href'] and "daily-astrological-prediction" in a.text.lower():
-                     article_link = a['href']
-                     if not article_link.startswith('http'):
-                        article_link = f"https://www.hindustantimes.com{article_link}"
-                     break
+        if not article_link and candidates:
+            # Pick the first candidate if exact match failed
+            print(f"Exact date match not found, using best candidate: {candidates[0]}")
+            article_link = candidates[0]
+            
+        if article_link and not article_link.startswith('http'):
+            article_link = f"https://www.hindustantimes.com{article_link}"
 
         if not article_link:
-            print("Could not find the daily horoscope article link.")
+            print(f"Could not find the daily horoscope article link for {date_str}.")
+            print("Available 'horoscope-today' links found:")
+            for a in soup.find_all('a', href=True):
+                if "horoscope-today" in a['href']:
+                    print(f" - {a['href']}")
             return
 
         print(f"Found article: {article_link}")
