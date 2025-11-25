@@ -8,19 +8,20 @@ const ClerkLogin = () => {
       <div className="w-full max-w-md">
         {/* Header section with logo and welcome text */}
         <div className="text-center mb-8">
-          <img 
-            src="/lovable-uploads/f39713ff-dd36-4a15-af77-677c3b4a8e67.png" 
-            alt="GUDPALS Logo" 
+          <img
+            src="/lovable-uploads/f39713ff-dd36-4a15-af77-677c3b4a8e67.png"
+            alt="GUDPALS Logo"
             className="h-16 mx-auto mb-4"
           />
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome to GUDPALS</h1>
           <p className="text-gray-600 text-base">Sign in to access your account</p>
         </div>
-        
+
         {/* Clerk SignIn component */}
         <div className="flex justify-center">
-          <SignIn 
+          <SignIn
             fallbackRedirectUrl="/"
+            forceRedirectUrl="/"
             signUpUrl="/sign-up"
             appearance={{
               elements: {

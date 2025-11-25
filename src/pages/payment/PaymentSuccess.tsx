@@ -7,6 +7,43 @@ import { CheckCircle } from "lucide-react";
 const PaymentSuccess = () => {
   const navigate = useNavigate();
 
+  React.useEffect(() => {
+    const processOrder = () => {
+      const pendingOrderStr = localStorage.getItem('pendingOrder');
+      if (pendingOrderStr) {
+        try {
+          const pendingOrder = JSON.parse(pendingOrderStr);
+
+          // Update status to Paid
+          const completedOrder = {
+            ...pendingOrder,
+            status: 'Paid',
+            paymentId: `PAY-${Date.now()}` // Mock payment ID
+          };
+
+          // Get existing history
+          const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
+
+          // Add new order
+          orderHistory.push(completedOrder);
+
+          // Save updated history
+          localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
+
+          // Clear pending order and cart
+          localStorage.removeItem('pendingOrder');
+          localStorage.setItem('cart', JSON.stringify([]));
+
+          console.log("Order processed successfully:", completedOrder);
+        } catch (error) {
+          console.error("Error processing pending order:", error);
+        }
+      }
+    };
+
+    processOrder();
+  }, []);
+
   return (
     <MobileLayout>
       <div className="p-4 flex flex-col items-center justify-center min-h-[60vh] text-center">

@@ -8,17 +8,7 @@ import AddPaymentMethodDialog from "./AddPaymentMethodDialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 const PaymentMethods = () => {
-  const [paymentMethods, setPaymentMethods] = useState([
-    {
-      id: "1",
-      type: "card",
-      last4: "4242",
-      brand: "Visa",
-      expiry: "12/25",
-      isDefault: true,
-      cardholderName: "Varun"
-    },
-  ]);
+  const [paymentMethods, setPaymentMethods] = useState<any[]>([]);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const { toast } = useToast();
 
@@ -36,7 +26,7 @@ const PaymentMethods = () => {
       });
       return;
     }
-    
+
     setPaymentMethods(methods => methods.filter(method => method.id !== id));
     toast({
       title: "Payment Method Removed",
@@ -45,7 +35,7 @@ const PaymentMethods = () => {
   };
 
   const handleSetDefault = (id: string) => {
-    setPaymentMethods(methods => 
+    setPaymentMethods(methods =>
       methods.map(method => ({
         ...method,
         isDefault: method.id === id
@@ -89,8 +79,8 @@ const PaymentMethods = () => {
               </div>
               <div className="flex space-x-2">
                 {!method.isDefault && (
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => handleSetDefault(method.id)}
                   >
@@ -99,8 +89,8 @@ const PaymentMethods = () => {
                 )}
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       size="sm"
                       className="text-red-600 hover:text-red-700"
                     >

@@ -7,31 +7,9 @@ import { Radio, MapPin, MessageCircle, Phone } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/context/language/LanguageContext";
 
-// Mock data for nearby friends
-const mockNearbyFriends = [
-  {
-    id: "1",
-    name: "राम कुमार",
-    distance: "0.5 km",
-    lastSeen: "2 mins ago"
-  },
-  {
-    id: "2",
-    name: "सुनीता शर्मा",
-    distance: "1.2 km",
-    lastSeen: "5 mins ago"
-  },
-  {
-    id: "3",
-    name: "अनिल पटेल",
-    distance: "2.4 km",
-    lastSeen: "15 mins ago"
-  }
-];
-
 const NearbyFriends = () => {
   const [isBeaconActive, setIsBeaconActive] = useState(false);
-  const [friends, setFriends] = useState(mockNearbyFriends);
+  const [friends, setFriends] = useState([]);
   const { toast } = useToast();
   const { t, language } = useLanguage();
 
@@ -68,46 +46,45 @@ const NearbyFriends = () => {
     <div className="flex flex-col h-full">
       <div className="p-6 flex-1 flex flex-col items-center bg-gradient-to-b from-green-900 to-green-600">
         <h2 className="text-2xl font-bold text-white mb-4">{t("beacon")}</h2>
-        
-        <Button 
+
+        <Button
           onClick={toggleBeacon}
-          className={`rounded-full mb-4 px-8 py-2 ${
-            isBeaconActive ? "bg-green-500 hover:bg-green-600" : "bg-gray-500/60 hover:bg-gray-500/80"
-          } transition-all`}
+          className={`rounded-full mb-4 px-8 py-2 ${isBeaconActive ? "bg-green-500 hover:bg-green-600" : "bg-gray-500/60 hover:bg-gray-500/80"
+            } transition-all`}
         >
           <Radio className="h-5 w-5 mr-2" />
           {isBeaconActive ? t("beacon_on") : t("beacon_off")}
         </Button>
-        
+
         <p className="text-center text-white/80 mb-8">
-          {isBeaconActive 
+          {isBeaconActive
             ? t("beacon_active_desc")
             : t("beacon_inactive_desc")}
         </p>
-        
+
         {/* Concentric circles visualization */}
         <div className="relative w-64 h-64 mb-6">
           {/* Outer circle (dashed) */}
           <div className="absolute top-0 left-0 w-full h-full rounded-full border-2 border-dashed border-green-300/50 animate-pulse"></div>
-          
+
           {/* Animated pulse rings */}
           <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-5/6 h-5/6 rounded-full bg-green-400/20 ${isBeaconActive ? 'animate-ping opacity-70' : 'opacity-30'}`} style={{ animationDuration: '3s' }}></div>
-          
+
           <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2/3 h-2/3 rounded-full bg-green-400/30 ${isBeaconActive ? 'animate-ping opacity-80' : 'opacity-40'}`} style={{ animationDuration: '2.5s' }}></div>
-          
+
           <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/2 h-1/2 rounded-full bg-green-400/40 ${isBeaconActive ? 'animate-ping opacity-90' : 'opacity-50'}`} style={{ animationDuration: '2s' }}></div>
-          
+
           {/* Center dot */}
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-green-50 shadow-lg flex items-center justify-center z-10">
             <div className={`w-6 h-6 rounded-full ${isBeaconActive ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
           </div>
         </div>
       </div>
-      
+
       {/* Nearby friends section */}
       <div className="p-4 bg-white">
-        <h3 className="text-lg font-semibold mb-2">{t("nearby_friends")}</h3>
-        
+        <h3 className="text-lg font-semibold mb-2">{t("Nearby Friends")}</h3>
+
         {friends.length > 0 ? (
           <div className="space-y-3">
             {friends.map((friend) => (
@@ -129,17 +106,17 @@ const NearbyFriends = () => {
                       </div>
                     </div>
                     <div className="flex space-x-1">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="text-primary hover:bg-primary/10"
                         onClick={() => handleMessage(friend.name)}
                       >
                         <MessageCircle className="h-5 w-5" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="text-primary hover:bg-primary/10"
                         onClick={() => handleCall(friend.name)}
                       >
@@ -153,7 +130,7 @@ const NearbyFriends = () => {
           </div>
         ) : (
           <div className="text-center p-8 text-muted-foreground">
-            <p>{t("no_nearby_friends")}</p>
+            <p>{t("No Nearby Friends")}</p>
           </div>
         )}
       </div>

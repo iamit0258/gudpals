@@ -24,29 +24,57 @@ const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ open, onOpenChange })
     const [searchResults, setSearchResults] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const { toast } = useToast();
-    const { t, language } = useLanguage();
+    const { language } = useLanguage();
     const { user } = useAuth();
 
     const handleSearch = async () => {
-        if (!searchQuery.trim() || !user) return;
+        if (!user) {
+            console.log("No user logged in");
+            return;
+        }
 
         setLoading(true);
         try {
-            const { data, error } = await supabase
+            console.log("=== SEARCH DEBUG ===");
+            console.log("Current user ID:", user.uid);
+            console.log("Search query:", searchQuery);
+
+            let query = supabase
                 .from("profiles")
-                .select("id, display_name, photo_url")
-                .ilike("display_name", `%${searchQuery}%`)
+                .select("id, display_name, photo_url, email")
                 .neq("id", user.uid)
                 .limit(10);
 
-            if (error) throw error;
+            // If there's a search query, filter by name
+            if (searchQuery.trim()) {
+                query = query.ilike("display_name", `%${searchQuery}%`);
+            }
+
+            const { data, error } = await query;
+
+            if (error) {
+                console.error("Search error:", error);
+                throw error;
+            }
+
+            console.log("Search results:", data);
+            console.log("Number of results:", data?.length);
 
             setSearchResults(data || []);
+
+            if (!data || data.length === 0) {
+                toast({
+                    title: language === "en" ? "No Results" : "कोई परिणाम नहीं",
+                    description: language === "en"
+                        ? `No users found. Query: "${searchQuery}", Your ID: ${user.uid}`
+                        : "कोई उपयोगकर्ता नहीं मिला।",
+                });
+            }
         } catch (error: any) {
             console.error("Search error:", error);
             toast({
                 title: language === "en" ? "Error" : "त्रुटि",
-                description: language === "en" ? "Failed to search users" : "उपयोगकर्ताओं को खोजने में विफल",
+                description: language === "en" ? `Failed to search: ${error.message}` : "उपयोगकर्ताओं को खोजने में विफल",
                 variant: "destructive",
             });
         } finally {
@@ -76,7 +104,7 @@ const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ open, onOpenChange })
             });
 
             // Remove from search results
-            setSearchResults(prev => prev.filter(u => u.id !== receiverId));
+            setSearchResults((prev) => prev.filter((u) => u.id !== receiverId));
         } catch (error: any) {
             console.error("Friend request error:", error);
             toast({
@@ -93,13 +121,9 @@ const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ open, onOpenChange })
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle>
-                        {language === "en" ? "Add Friend" : "मित्र जोड़ें"}
-                    </DialogTitle>
+                    <DialogTitle>{language === "en" ? "Add Friend" : "मित्र जोड़ें"}</DialogTitle>
                     <DialogDescription>
-                        {language === "en"
-                            ? "Search for friends by name"
-                            : "नाम से मित्रों को खोजें"}
+                        {language === "en" ? "Search for friends by name" : "नाम से मित्रों को खोजें"}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -116,7 +140,7 @@ const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ open, onOpenChange })
                                 onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                             />
                         </div>
-                        <Button onClick={handleSearch} disabled={loading || !searchQuery.trim()}>
+                        <Button onClick={handleSearch} disabled={loading}>
                             {language === "en" ? "Search" : "खोजें"}
                         </Button>
                     </div>
@@ -131,8 +155,12 @@ const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ open, onOpenChange })
                             <div className="text-center py-8 text-muted-foreground">
                                 <p>
                                     {searchQuery
-                                        ? (language === "en" ? "No users found" : "कोई उपयोगकर्ता नहीं मिला")
-                                        : (language === "en" ? "Search for friends" : "मित्रों को खोजें")}
+                                        ? language === "en"
+                                            ? "No users found"
+                                            : "कोई उपयोगकर्ता नहीं मिला"
+                                        : language === "en"
+                                            ? "Click 'Search' to see all users"
+                                            : "सभी उपयोगकर्ताओं को देखने के लिए 'खोजें' पर क्लिक करें"}
                                 </p>
                             </div>
                         ) : (
@@ -155,10 +183,7 @@ const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ open, onOpenChange })
                                         )}
                                         <span className="font-medium">{result.display_name || "Unknown User"}</span>
                                     </div>
-                                    <Button
-                                        size="sm"
-                                        onClick={() => handleSendRequest(result.id, result.display_name)}
-                                    >
+                                    <Button size="sm" onClick={() => handleSendRequest(result.id, result.display_name)}>
                                         <UserPlus className="h-4 w-4 mr-1" />
                                         {language === "en" ? "Add" : "जोड़ें"}
                                     </Button>

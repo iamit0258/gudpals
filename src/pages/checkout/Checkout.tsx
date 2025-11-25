@@ -164,6 +164,18 @@ const Checkout = () => {
     try {
       // Check payment method and proceed accordingly
       if (data.paymentMethod === "online") {
+        // Create a pending order to be finalized on success page
+        const pendingOrder = {
+          id: Date.now(),
+          items: cartItems,
+          address: data,
+          total: calculateTotal(),
+          status: 'Processing', // Will be confirmed on success page
+          date: new Date().toISOString(),
+          paymentMethod: 'Online Payment'
+        };
+        localStorage.setItem('pendingOrder', JSON.stringify(pendingOrder));
+
         // Process Stripe payment for cart items (guest-friendly)
         const response = await supabase.functions.invoke('create-payment', {
           body: {
