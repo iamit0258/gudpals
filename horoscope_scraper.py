@@ -14,7 +14,7 @@ SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXV
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def get_daily_horoscope():
-    base_url = "https://www.hindustantimes.com/astrology"
+    base_url = "https://www.hindustantimes.com/astrology/horoscope"
     
     # HT Date format in URL usually: november-25-2025
     current_date = datetime.datetime.now()
