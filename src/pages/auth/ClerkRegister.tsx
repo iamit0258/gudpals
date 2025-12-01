@@ -8,7 +8,7 @@ const ClerkRegister = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-6">
           <img
-            src="/lovable-uploads/f39713ff-dd36-4a15-af77-677c3b4a8e67.png"
+            src="/logo.png"
             alt="GUDPALS Logo"
             className="h-24 mx-auto mb-2"
           />

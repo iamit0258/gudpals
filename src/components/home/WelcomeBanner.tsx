@@ -14,8 +14,8 @@ const WelcomeBanner = () => {
 
   return (
     <div className="relative">
-      <div 
-        className="h-64 bg-gradient-to-br from-teal-400 to-primary flex items-center justify-center relative overflow-hidden" 
+      <div
+        className="h-64 bg-gradient-to-br from-teal-400 to-primary flex items-center justify-center relative overflow-hidden"
         style={{
           borderBottomLeftRadius: "30px",
           borderBottomRightRadius: "30px"
@@ -30,10 +30,10 @@ const WelcomeBanner = () => {
 
         <div className="text-center text-white p-4 z-10">
           <div className="flex justify-center mb-4">
-            <img 
-              alt="GUDPALS Logo" 
-              className="h-28 drop-shadow-lg" 
-              src="/lovable-uploads/e225dd9d-c4f8-499f-b935-63c2242bbf2d.png" 
+            <img
+              alt="GUDPALS Logo"
+              className="h-28 drop-shadow-lg"
+              src="/home-logo.png"
             />
           </div>
           <h1 className="text-3xl font-bold mb-2">{t("namaste")}</h1>
@@ -50,7 +50,7 @@ const WelcomeBanner = () => {
                 {t("help_personalize")}
               </p>
             </div>
-            <Button 
+            <Button
               onClick={handleGetStarted}
               className="bg-primary hover:bg-dhayan-teal-dark text-white rounded-full"
             >

@@ -9,7 +9,7 @@ const ClerkLogin = () => {
         {/* Header section with logo and welcome text */}
         <div className="text-center mb-8">
           <img
-            src="/lovable-uploads/f39713ff-dd36-4a15-af77-677c3b4a8e67.png"
+            src="/logo.png"
             alt="GUDPALS Logo"
             className="h-16 mx-auto mb-4"
           />
