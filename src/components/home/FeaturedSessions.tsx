@@ -23,25 +23,29 @@ const FeaturedSessions = () => {
     const fetchSessions = async () => {
       try {
         setLoading(true);
+        // Force using mock data for dynamic dates
+        setSessions([]); // This will trigger the fallback logic below which uses mock data
+
+        /* 
         const { data, error } = await supabase
           .from('activities')
           .select('*')
           .eq('activity_type', 'session')
           .order('created_at', { ascending: false })
           .limit(5);
-        
+
         if (error) throw error;
-        
         setSessions(data || []);
+        */
       } catch (error) {
         console.error("Error fetching sessions:", error);
       } finally {
         setLoading(false);
       }
     };
-    
+
     fetchSessions();
-  }, []);
+  }, [t, language]); // Added dependencies for dynamic dates
 
   const getCategoryColor = (category) => {
     switch (category) {
@@ -93,58 +97,22 @@ const FeaturedSessions = () => {
   // Fallback sessions if no data from database
   const featuredSessions = sessions.length > 0 ? sessions : [
     {
-      id: 1,
+      id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
       title: language === "en" ? "Morning Yoga" : "प्रातःकालीन योग",
       instructor: language === "en" ? "Anjali Sharma" : "अंजलि शर्मा",
-      start_time: new Date().setHours(8, 0),
+      start_time: new Date().setHours(8, 0, 0, 0),
       category: language === "en" ? "Yoga" : "योग",
       participants: 24,
-      image_url: "https://images.unsplash.com/photo-1616699002805-0741e1e4a9c5?q=80&w=300&auto=format&fit=crop"
+      image_url: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=300&auto=format&fit=crop"
     },
     {
-      id: 2,
-      title: language === "en" ? "Smartphone Basics" : "स्मार्टफोन मूल बातें",
-      instructor: language === "en" ? "Raj Kumar" : "राज कुमार",
-      start_time: new Date().setHours(11, 0),
-      category: language === "en" ? "Digital Literacy" : "डिजिटल साक्षरता",
-      participants: 15,
-      image_url: "https://images.unsplash.com/photo-1601784551062-20c13f969c4c?q=80&w=300&auto=format&fit=crop"
-    },
-    {
-      id: 3,
-      title: language === "en" ? "Tambola Evening" : "तम्बोला शाम",
-      instructor: language === "en" ? "Meera Patel" : "मीरा पटेल",
-      start_time: new Date().setHours(16, 0),
-      category: language === "en" ? "Entertainment" : "मनोरंजन",
-      participants: 42,
-      image_url: "https://images.unsplash.com/photo-1606167668584-78701c57f13d?q=80&w=300&auto=format&fit=crop"
-    },
-    {
-      id: 4,
+      id: "d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14",
       title: language === "en" ? "Online Safety Workshop" : "ऑनलाइन सुरक्षा कार्यशाला",
       instructor: language === "en" ? "Sanjay Gupta" : "संजय गुप्ता",
-      start_time: new Date().setHours(14, 0),
+      start_time: new Date().setHours(14, 0, 0, 0),
       category: language === "en" ? "Safety" : "सुरक्षा",
       participants: 18,
-      image_url: "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?q=80&w=300&auto=format&fit=crop"
-    },
-    {
-      id: 5,
-      title: language === "en" ? "Cooking Class: Healthy Recipes" : "पाक कला: स्वस्थ व्यंजन",
-      instructor: language === "en" ? "Priya Malhotra" : "प्रिया मल्होत्रा",
-      start_time: new Date(Date.now() + 86400000).setHours(10, 0),
-      category: language === "en" ? "Cooking" : "पाकशाला",
-      participants: 12,
-      image_url: "https://images.unsplash.com/photo-1556911220-bda9f7b8e9cb?q=80&w=300&auto=format&fit=crop"
-    },
-    {
-      id: 6,
-      title: language === "en" ? "Music Appreciation" : "संगीत रसास्वादन",
-      instructor: language === "en" ? "Hari Menon" : "हरि मेनन",
-      start_time: new Date(Date.now() + 86400000).setHours(15, 0),
-      category: language === "en" ? "Arts" : "कला",
-      participants: 20,
-      image_url: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?q=80&w=300&auto=format&fit=crop"
+      image_url: "https://images.unsplash.com/photo-1563986768609-322da13575f3?q=80&w=300&auto=format&fit=crop"
     }
   ];
 
@@ -154,10 +122,10 @@ const FeaturedSessions = () => {
         {featuredSessions.map((session) => {
           // Format the time
           const time = session.start_time ? new Date(session.start_time).toLocaleTimeString([], {
-            hour: '2-digit', 
+            hour: '2-digit',
             minute: '2-digit'
           }) : "8:00 AM";
-          
+
           // Determine if date is today or tomorrow
           let dateText = "Today";
           if (session.start_time) {
@@ -165,7 +133,7 @@ const FeaturedSessions = () => {
             const today = new Date();
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
-            
+
             if (sessionDate.toDateString() === today.toDateString()) {
               dateText = t("today");
             } else if (sessionDate.toDateString() === tomorrow.toDateString()) {
@@ -174,19 +142,19 @@ const FeaturedSessions = () => {
               dateText = sessionDate.toLocaleDateString();
             }
           }
-          
+
           return (
-            <Card 
-              key={session.id} 
+            <Card
+              key={session.id}
               className="w-64 flex-shrink-0 overflow-hidden cursor-pointer transition-transform hover:scale-105"
             >
               <div className="relative h-32">
                 <img
-                  src={session.image_url || "https://images.unsplash.com/photo-1616699002805-0741e1e4a9c5?q=80&w=300&auto=format&fit=crop"} 
+                  src={session.image_url || "https://images.unsplash.com/photo-1616699002805-0741e1e4a9c5?q=80&w=300&auto=format&fit=crop"}
                   alt={session.title}
                   className="object-cover w-full h-full"
                 />
-                <Badge 
+                <Badge
                   className={`absolute top-2 left-2 ${getCategoryColor(session.category)}`}
                   variant="outline"
                 >
@@ -208,8 +176,8 @@ const FeaturedSessions = () => {
                   <Users className="h-3 w-3 mr-1" />
                   <span>{session.participants || 15} {t("participants")}</span>
                 </div>
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   className="w-full bg-primary hover:bg-dhayan-teal-dark text-white"
                   onClick={() => handleRegister(session)}
                 >

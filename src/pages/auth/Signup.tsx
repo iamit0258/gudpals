@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,27 +27,28 @@ const Signup = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!canSubmit) return;
-    
+
     setIsLoading(true);
-    
+
     try {
       // Store form data for post-verification
       sessionStorage.setItem("dhayan_signup_data", JSON.stringify({
         name: name.trim(),
         email: email.trim() || null,
       }));
-      
+
       await sendOTP("+91" + phoneNumber);
-      
-      navigate("/verify", { 
-        state: { 
+
+      navigate("/verify", {
+        state: {
           phoneNumber: "+91" + phoneNumber,
-          isSignup: true 
-        } 
+          isSignup: true,
+          from: (location.state as any)?.from
+        }
       });
-      
+
       toast({
         title: "OTP Sent",
         description: "A verification code has been sent to your phone",
@@ -74,7 +75,7 @@ const Signup = () => {
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Login
         </Button>
-        
+
         <Card className="shadow-md">
           <CardHeader>
             <CardTitle className="text-center">Create an Account</CardTitle>
@@ -99,7 +100,7 @@ const Signup = () => {
                   </p>
                 )}
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone Number <span className="text-destructive">*</span></Label>
                 <div className="flex">
@@ -124,7 +125,7 @@ const Signup = () => {
                   </p>
                 )}
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="email">Email (Optional)</Label>
                 <Input
@@ -142,11 +143,11 @@ const Signup = () => {
                   </p>
                 )}
               </div>
-              
+
               <div className="flex items-start space-x-2">
-                <Checkbox 
-                  id="terms" 
-                  checked={agree} 
+                <Checkbox
+                  id="terms"
+                  checked={agree}
                   onCheckedChange={(checked) => setAgree(checked === true)}
                   className="mt-1"
                 />
@@ -154,9 +155,9 @@ const Signup = () => {
                   I agree to the Terms of Service and Privacy Policy
                 </Label>
               </div>
-              
-              <Button 
-                type="submit" 
+
+              <Button
+                type="submit"
                 className="w-full bg-dhayan-purple hover:bg-dhayan-purple-dark text-white transition-all"
                 disabled={isLoading || !canSubmit}
               >

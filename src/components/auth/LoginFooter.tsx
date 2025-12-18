@@ -1,6 +1,6 @@
 
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
@@ -10,13 +10,14 @@ interface LoginFooterProps {
   linkUrl?: string;
 }
 
-const LoginFooter: React.FC<LoginFooterProps> = ({ 
-  text = "New to GUDPALS?", 
-  linkText = "Create an account", 
-  linkUrl = "/signup" 
+const LoginFooter: React.FC<LoginFooterProps> = ({
+  text = "New to GUDPALS?",
+  linkText = "Create an account",
+  linkUrl = "/register"
 }) => {
   const navigate = useNavigate();
-  
+  const location = useLocation();
+
   return (
     <>
       <div className="flex justify-center p-4 pt-0">
@@ -28,10 +29,10 @@ const LoginFooter: React.FC<LoginFooterProps> = ({
       <div className="mt-4 text-center">
         <p className="text-sm text-dhayan-gray">
           {text}{" "}
-          <Button 
-            variant="link" 
+          <Button
+            variant="link"
             className="p-0 h-auto text-dhayan-purple"
-            onClick={() => navigate(linkUrl)}
+            onClick={() => navigate(linkUrl, { state: location.state })}
           >
             {linkText} <ArrowRight className="ml-1 h-3 w-3 inline" />
           </Button>

@@ -65,10 +65,17 @@ const SessionCard: React.FC<SessionCardProps> = ({ session, onRegister }) => {
           ) : (
             <>
               <Button
-                className="w-full mt-3 bg-dhayan-green-DEFAULT text-white hover:bg-opacity-90"
-                onClick={() => onRegister(session)}
+                className="w-full mt-3 !bg-[#16A38D] !text-white !opacity-100 !visible flex items-center justify-center font-bold"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!user) {
+                    navigate('/login', { state: { from: '/sessions' } });
+                  } else {
+                    onRegister(session);
+                  }
+                }}
               >
-                {t("register")}
+                {t("register").toUpperCase()}
               </Button>
               {/* Only allow specific admin to host */}
               {user?.email === "mevarun.arcade@gmail.com" && (

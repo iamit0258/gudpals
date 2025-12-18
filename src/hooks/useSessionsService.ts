@@ -27,25 +27,7 @@ export const useSessionsService = () => {
       time: "8:00 AM - 9:00 AM",
       date: t("today"),
       category: language === "en" ? "Wellness" : "स्वास्थ्य",
-      image: "https://images.unsplash.com/photo-1616699002805-0741e1e4a9c5?q=80&w=300&auto=format&fit=crop"
-    },
-    {
-      id: "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12",
-      title: language === "en" ? "Smartphone Basics" : "स्मार्टफोन मूल बातें",
-      instructor: language === "en" ? "Raj Kumar" : "राज कुमार",
-      time: "11:00 AM - 12:30 PM",
-      date: t("today"),
-      category: language === "en" ? "Digital Literacy" : "डिजिटल साक्षरता",
-      image: "https://images.unsplash.com/photo-1601784551062-20c13f969c4c?q=80&w=300&auto=format&fit=crop"
-    },
-    {
-      id: "c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13",
-      title: language === "en" ? "Tambola Evening" : "तम्बोला शाम",
-      instructor: language === "en" ? "Meera Patel" : "मीरा पटेल",
-      time: "4:00 PM - 6:00 PM",
-      date: t("today"),
-      category: language === "en" ? "Entertainment" : "मनोरंजन",
-      image: "https://images.unsplash.com/photo-1606167668584-78701c57f13d?q=80&w=300&auto=format&fit=crop"
+      image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=300&auto=format&fit=crop"
     },
     {
       id: "d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14",
@@ -54,7 +36,7 @@ export const useSessionsService = () => {
       time: "2:00 PM - 3:30 PM",
       date: t("tomorrow"),
       category: language === "en" ? "Safety" : "सुरक्षा",
-      image: "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?q=80&w=300&auto=format&fit=crop"
+      image: "https://images.unsplash.com/photo-1563986768609-322da13575f3?q=80&w=300&auto=format&fit=crop"
     },
     {
       id: "e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15",
@@ -63,7 +45,7 @@ export const useSessionsService = () => {
       time: "10:00 AM - 11:30 AM",
       date: t("tomorrow"),
       category: language === "en" ? "Cooking" : "पाकशाला",
-      image: "https://images.unsplash.com/photo-1556911220-bda9f7b8e9cb?q=80&w=300&auto=format&fit=crop"
+      image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=300&auto=format&fit=crop"
     },
     {
       id: "f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a16",
@@ -80,23 +62,27 @@ export const useSessionsService = () => {
     const fetchSessions = async () => {
       try {
         setLoading(true);
+        // Force using mock sessions for dynamic "Today/Tomorrow" dates
+        setSessions(mockSessions);
 
+        /* 
+        // Commenting out database fetch to ensure dynamic dates from mockSessions
         const { data, error } = await supabase
           .from('activities')
           .select('*')
           .eq('activity_type', 'session');
-
+  
         if (error || !data || data.length === 0) {
           setSessions(mockSessions);
         } else {
           const formattedSessions = data.map(session => {
             const startTime = session.start_time ? new Date(session.start_time) : null;
             const endTime = session.end_time ? new Date(session.end_time) : null;
-
+  
             const timeStr = startTime && endTime
               ? `${startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
               : "Flexible timing";
-
+  
             const dateStr = startTime
               ? startTime.toDateString() === new Date().toDateString()
                 ? t("today")
@@ -104,7 +90,7 @@ export const useSessionsService = () => {
                   ? t("tomorrow")
                   : startTime.toLocaleDateString()
               : "Anytime";
-
+  
             return {
               id: session.id,
               title: session.title,
@@ -116,9 +102,10 @@ export const useSessionsService = () => {
               is_live: (session as any).is_live // Cast to any until types are updated
             };
           });
-
+  
           setSessions(formattedSessions);
         }
+        */
       } catch (error) {
         console.error("Error fetching sessions:", error);
         setSessions(mockSessions);

@@ -11,7 +11,7 @@ export const useSessionRegistration = () => {
   const navigate = useNavigate();
   const { user, registerForActivity } = useAuth();
   const { t } = useLanguage();
-  
+
   const handleSessionRegister = async (session: any) => {
     if (!user) {
       navigate("/register", {
@@ -24,16 +24,16 @@ export const useSessionRegistration = () => {
       });
       return;
     }
-    
+
     try {
       const { data: existingReg, error: checkError } = await supabase
         .from('registrations')
         .select('*')
         .eq('user_id', user.uid)
         .eq('activity_id', session.id);
-      
+
       if (checkError) throw checkError;
-      
+
       if (existingReg && existingReg.length > 0) {
         toast({
           title: t("already_registered"),
@@ -41,13 +41,13 @@ export const useSessionRegistration = () => {
         });
         return;
       }
-      
+
       await registerForActivity(
         "session",
         session.title,
         "/sessions"
       );
-      
+
       toast({
         title: t("registration_successful"),
         description: `${t("registered_for")} ${session.title}`,
@@ -61,6 +61,6 @@ export const useSessionRegistration = () => {
       });
     }
   };
-  
+
   return { handleSessionRegister };
 };
