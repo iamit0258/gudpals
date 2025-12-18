@@ -16,9 +16,12 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 def get_daily_horoscope():
     base_url = "https://www.hindustantimes.com/astrology/horoscope"
     
-    # HT Date format in URL usually: november-25-2025
+    # HT Date format in URL usually: november-25-2025 or november-6-2025
     current_date = datetime.datetime.now()
-    date_str = current_date.strftime('%B-%d-%Y').lower() # e.g., november-25-2025
+    
+    # Generate both formats to be safe
+    date_str_padded = current_date.strftime('%B-%d-%Y').lower() # e.g., december-06-2025
+    date_str_simple = f"{current_date.strftime('%B').lower()}-{current_date.day}-{current_date.year}" # e.g., december-6-2025
     display_date = current_date.strftime('%Y-%m-%d')
     
     print(f"Fetching daily horoscopes for {display_date} from Hindustan Times ({base_url})...\n")
@@ -61,7 +64,7 @@ def get_daily_horoscope():
 
                 # Check if it matches today's date
                 # strict check: full date string
-                if date_str in href:
+                if date_str_padded in href or date_str_simple in href:
                     article_link = href
                     break
                 
@@ -78,7 +81,7 @@ def get_daily_horoscope():
             article_link = f"https://www.hindustantimes.com{article_link}"
 
         if not article_link:
-            print(f"Could not find the daily horoscope article link for {date_str}.")
+            print(f"Could not find the daily horoscope article link for {date_str_simple} or {date_str_padded}.")
             print("Available 'horoscope-today' links found:")
             for a in soup.find_all('a', href=True):
                 if "horoscope-today" in a['href']:
