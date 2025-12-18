@@ -1,32 +1,29 @@
 
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import LoginLayout from "@/components/layout/LoginLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import LoginAlternatives from "@/components/auth/LoginAlternatives";
 import LoginHeader from "@/components/auth/LoginHeader";
-import LoginFooter from "@/components/auth/LoginFooter";
 import { useLanguage } from "@/context/language/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/auth";
 
 const Register = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useLanguage();
   const { toast } = useToast();
-  const { register } = useAuth();
-  
+  const { sendOTP } = useAuth();
+
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     phone: "",
-    password: "",
-    confirmPassword: "",
   });
-  
+
   const [loading, setLoading] = useState(false);
-  
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({
@@ -34,12 +31,12 @@ const Register = () => {
       [name]: value,
     });
   };
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate form
-    if (!formData.fullName || !formData.email || !formData.phone || !formData.password) {
+    if (!formData.fullName || !formData.email || !formData.phone) {
       toast({
         title: t("error"),
         description: t("please_fill_all_fields"),
@@ -47,49 +44,59 @@ const Register = () => {
       });
       return;
     }
-    
-    if (formData.password !== formData.confirmPassword) {
+
+    if (formData.fullName.length < 3) {
       toast({
         title: t("error"),
-        description: t("passwords_do_not_match"),
+        description: "Name must be at least 3 characters",
         variant: "destructive",
       });
       return;
     }
-    
-    setLoading(true);
-    
-    try {
-      const { error, status } = await register({
-        email: formData.email,
-        password: formData.password,
-        phone: formData.phone,
-        options: {
-          data: {
-            display_name: formData.fullName,
-          },
-        },
+
+    if (formData.phone.length !== 10) {
+      toast({
+        title: t("error"),
+        description: "Please enter a valid 10-digit phone number",
+        variant: "destructive",
       });
-      
-      if (error) {
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Store form data for post-verification logic (similar to Signup.tsx)
+      sessionStorage.setItem("dhayan_signup_data", JSON.stringify({
+        name: formData.fullName,
+        email: formData.email,
+        phone: formData.phone // Ensure phone is stored if needed by Verify
+      }));
+
+      // Check if registering for Activities or Digital Literacy (skip OTP)
+      if ((location.state as any)?.from === '/activities' || (location.state as any)?.from === '/digital-literacy') {
         toast({
-          title: t("registration_failed"),
-          description: error.message,
-          variant: "destructive",
+          title: "Registration Successful",
+          description: "You have successfully registered for the activity.",
         });
+        navigate((location.state as any)?.from || "/");
         return;
       }
-      
-      // Fix the type comparison issue - use loose comparison
-      if (status == "needs_email_verification") {
-        navigate("/verify");
-      } else {
-        navigate("/");
-      }
-      
+
+      await sendOTP("+91" + formData.phone);
+
+      // Pass state to Verify page
+      navigate("/verify", {
+        state: {
+          phoneNumber: "+91" + formData.phone,
+          isSignup: true,
+          from: (location.state as any)?.from
+        }
+      });
+
       toast({
-        title: t("registration_successful"),
-        description: t("account_created"),
+        title: "OTP Sent",
+        description: "A verification code has been sent to your phone",
       });
     } catch (error) {
       toast({
@@ -105,10 +112,10 @@ const Register = () => {
   return (
     <LoginLayout>
       <LoginHeader
-        title={t("create_account")}
-        subtitle={t("register_subtitle")}
+        title="New Registration"
+        subtitle="Enter your details to join"
       />
-      
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <Input
@@ -122,7 +129,7 @@ const Register = () => {
           <Input
             type="email"
             name="email"
-            placeholder={t("email")}
+            placeholder={t("Email")}
             value={formData.email}
             onChange={handleChange}
             required
@@ -132,27 +139,12 @@ const Register = () => {
             name="phone"
             placeholder={t("phone_number")}
             value={formData.phone}
-            onChange={handleChange}
-            required
-          />
-          <Input
-            type="password"
-            name="password"
-            placeholder={t("password")}
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-          <Input
-            type="password"
-            name="confirmPassword"
-            placeholder={t("confirm_password")}
-            value={formData.confirmPassword}
-            onChange={handleChange}
+            onChange={(e) => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '') })}
+            maxLength={10}
             required
           />
         </div>
-        
+
         <Button
           type="submit"
           className="w-full bg-dhayan-teal hover:bg-dhayan-teal-dark"
@@ -161,16 +153,6 @@ const Register = () => {
           {loading ? t("registering") : t("register")}
         </Button>
       </form>
-      
-      <div className="my-6">
-        <LoginAlternatives />
-      </div>
-      
-      <LoginFooter
-        text={t("already_have_account")}
-        linkText={t("login_here")}
-        linkUrl="/login"
-      />
     </LoginLayout>
   );
 };

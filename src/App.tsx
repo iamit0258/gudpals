@@ -7,6 +7,7 @@ import { AuthProvider } from "@/context/ClerkAuthBridge";
 import { LanguageProvider } from "@/context/language/LanguageContext";
 import VoiceAssistantLayout from "@/components/layout/VoiceAssistantLayout";
 import ErrorBoundary from "@/components/common/ErrorBoundary";
+import ScrollToTop from "@/components/common/ScrollToTop";
 import { Suspense } from "react";
 import { PageLoadingSkeleton } from "@/components/ui/loading-states";
 import Index from "./pages/Index";
@@ -23,13 +24,10 @@ import Astrology from "./pages/astrology/Astrology";
 import AstrologyChat from "./pages/astrology/AstrologyChat";
 import AstrologyPayment from "./pages/astrology/AstrologyPayment";
 import Activities from "./pages/activities/Activities";
-import Events from "./pages/events/Events";
 import Friends from "./pages/friends/Friends";
 import ChatList from "./pages/chat/ChatList";
 import ChatRoom from "./pages/chat/ChatRoom";
-import Learn from "./pages/learn/Learn";
 import DigitalLiteracy from "./pages/digitalLiteracy/DigitalLiteracy";
-import Games from "./pages/games/Games";
 import Travel from "./pages/travel/Travel";
 import Employment from "./pages/employment/Employment";
 import Settings from "./pages/settings/Settings";
@@ -56,6 +54,7 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
         <BrowserRouter>
+          <ScrollToTop />
           <AuthProvider>
             <TooltipProvider>
               <Toaster />
@@ -77,13 +76,10 @@ const App = () => (
                     <Route path="/astrology/chat" element={<AstrologyChat />} />
                     <Route path="/astrology/payment" element={<AstrologyPayment />} />
                     <Route path="/activities" element={<Activities />} />
-                    <Route path="/events" element={<Events />} />
                     <Route path="/friends" element={<Friends />} />
                     <Route path="/chat" element={<ChatList />} />
                     <Route path="/chat/:userId" element={<ChatRoom />} />
-                    <Route path="/learn" element={<Learn />} />
                     <Route path="/digital-literacy" element={<DigitalLiteracy />} />
-                    <Route path="/games" element={<Games />} />
                     <Route path="/travel" element={<Travel />} />
                     <Route path="/employment" element={<Employment />} />
                     <Route path="/settings" element={<Settings />} />

@@ -107,15 +107,44 @@ const ChatRoom = () => {
                     </div>
                 ) : (
                     <>
-                        {messages.map((msg) => (
-                            <MessageBubble
-                                key={msg.id}
-                                message={msg.message}
-                                isSent={msg.sender_id === user?.uid}
-                                timestamp={msg.created_at}
-                                isRead={msg.is_read}
-                            />
-                        ))}
+                        {messages.map((msg, index) => {
+                            const isNewDay = index === 0 ||
+                                new Date(msg.created_at).toDateString() !== new Date(messages[index - 1].created_at).toDateString();
+
+                            let dateLabel = "";
+                            if (isNewDay) {
+                                const msgDate = new Date(msg.created_at);
+                                const today = new Date();
+                                const yesterday = new Date();
+                                yesterday.setDate(today.getDate() - 1);
+
+                                if (msgDate.toDateString() === today.toDateString()) {
+                                    dateLabel = "Today";
+                                } else if (msgDate.toDateString() === yesterday.toDateString()) {
+                                    dateLabel = "Yesterday";
+                                } else {
+                                    dateLabel = msgDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+                                }
+                            }
+
+                            return (
+                                <React.Fragment key={msg.id}>
+                                    {isNewDay && (
+                                        <div className="flex justify-center my-4">
+                                            <span className="bg-gray-100 text-gray-500 text-xs py-1 px-3 rounded-full">
+                                                {dateLabel}
+                                            </span>
+                                        </div>
+                                    )}
+                                    <MessageBubble
+                                        message={msg.message}
+                                        isSent={msg.sender_id === user?.uid}
+                                        timestamp={msg.created_at}
+                                        isRead={msg.is_read}
+                                    />
+                                </React.Fragment>
+                            );
+                        })}
                         <div ref={messagesEndRef} />
                     </>
                 )}

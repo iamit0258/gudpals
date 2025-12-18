@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,7 @@ const LoginForm = () => {
   const [isValidPhone, setIsValidPhone] = useState(false);
   const { sendOTP } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -32,7 +33,7 @@ const LoginForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!isValidPhone) {
       toast({
         title: "Invalid phone number",
@@ -41,19 +42,24 @@ const LoginForm = () => {
       });
       return;
     }
-    
+
     setIsLoading(true);
-    
+
     try {
       await sendOTP("+91" + phoneNumber);
-      
+
       if (rememberMe) {
         localStorage.setItem("gudpals_remember_phone", phoneNumber);
       } else {
         localStorage.removeItem("gudpals_remember_phone");
       }
-      
-      navigate("/verify", { state: { phoneNumber: "+91" + phoneNumber } });
+
+      navigate("/verify", {
+        state: {
+          phoneNumber: "+91" + phoneNumber,
+          from: (location.state as any)?.from
+        }
+      });
       toast({
         title: "OTP Sent",
         description: "A verification code has been sent to your phone",
@@ -97,23 +103,23 @@ const LoginForm = () => {
           </p>
         )}
       </div>
-      
+
       <div className="flex items-center space-x-2">
-        <Checkbox 
-          id="remember" 
-          checked={rememberMe} 
+        <Checkbox
+          id="remember"
+          checked={rememberMe}
           onCheckedChange={(checked) => setRememberMe(checked === true)}
         />
-        <Label 
-          htmlFor="remember" 
+        <Label
+          htmlFor="remember"
           className="text-sm cursor-pointer"
         >
           Remember me for 30 days
         </Label>
       </div>
-      
-      <Button 
-        type="submit" 
+
+      <Button
+        type="submit"
         className="w-full bg-primary hover:bg-primary/90 text-primary-foreground transition-all"
         disabled={isLoading || !isValidPhone}
       >

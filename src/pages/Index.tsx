@@ -18,28 +18,28 @@ const Index = () => {
       description: t("join_interactive"),
       path: "/sessions",
       color: "bg-gradient-to-br from-teal-400 to-primary"
-    }, 
+    },
     {
       icon: Brain,
       name: t("digital_literacy"),
       description: t("learn_smartphone"),
-      path: "/digitalLiteracy",
+      path: "/digital-literacy",
       color: "bg-gradient-to-br from-green-200 to-teal-300"
-    }, 
+    },
     {
       icon: Coffee,
       name: t("activities"),
       description: t("arts_crafts"),
       path: "/activities",
       color: "bg-gradient-to-br from-amber-200 to-yellow-300"
-    }, 
+    },
     {
       icon: Briefcase,
       name: t("employment"),
       description: t("part_time"),
       path: "/employment",
       color: "bg-gradient-to-br from-orange-200 to-amber-300"
-    }, 
+    },
     {
       icon: Map,
       name: t("travel_plans"),
@@ -55,11 +55,11 @@ const Index = () => {
       color: "bg-gradient-to-br from-purple-300 to-indigo-400"
     }
   ];
-  
+
   return (
     <MobileLayout>
       <WelcomeBanner />
-      
+
       <section className="px-4 py-8">
         <h2 className="text-2xl font-bold mb-4">{t("upcoming_sessions")}</h2>
         <FeaturedSessions />
@@ -69,9 +69,9 @@ const Index = () => {
         <h2 className="text-2xl font-bold mb-6">{t("our_services")}</h2>
         <div className="grid grid-cols-2 gap-4">
           {services.map(service => (
-            <Link 
-              to={service.path} 
-              key={service.name} 
+            <Link
+              to={service.path}
+              key={service.name}
               className="focus-visible-ring transform transition-transform duration-300 hover:scale-105"
             >
               <Card className="h-full overflow-hidden border-none shadow-md">
