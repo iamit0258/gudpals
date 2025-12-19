@@ -1,102 +1,79 @@
 import { supabase } from '@/integrations/supabase/client';
 
-export interface VoiceRecording {
-  audioBlob: Blob;
-  base64Audio: string;
-}
-
 export class HybridVoiceService {
-  private mediaRecorder: MediaRecorder | null = null;
-  private audioChunks: Blob[] = [];
+  private recognition: SpeechRecognition | null = null;
   private audioContext: AudioContext | null = null;
   private audioElement: HTMLAudioElement | null = null;
+  private isListening: boolean = false;
 
-  async startRecording(): Promise<void> {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: {
-          sampleRate: 24000,
-          channelCount: 1,
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true
-        }
-      });
-
-      this.audioChunks = [];
-      this.mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus'
-      });
-
-      this.mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          this.audioChunks.push(event.data);
-        }
-      };
-
-      this.mediaRecorder.start();
-      console.log('Recording started');
-    } catch (error) {
-      console.error('Error starting recording:', error);
-      throw error;
+  constructor() {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      this.recognition = new SpeechRecognition();
+      this.recognition.continuous = false; // Stop after one sentence/command
+      this.recognition.interimResults = false;
+      this.recognition.lang = 'en-US'; // Default to English, can be changed
     }
   }
 
-  async stopRecording(): Promise<VoiceRecording> {
-    return new Promise((resolve, reject) => {
-      if (!this.mediaRecorder) {
-        reject(new Error('No active recording'));
-        return;
-      }
-
-      this.mediaRecorder.onstop = async () => {
-        try {
-          const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
-          const base64Audio = await this.blobToBase64(audioBlob);
-          
-          // Stop all tracks
-          if (this.mediaRecorder?.stream) {
-            this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
-          }
-
-          resolve({ audioBlob, base64Audio });
-        } catch (error) {
-          reject(error);
-        }
-      };
-
-      this.mediaRecorder.stop();
-      console.log('Recording stopped');
-    });
+  isSupported(): boolean {
+    return !!this.recognition;
   }
 
-  async transcribeAudio(base64Audio: string): Promise<{ text: string; language: string }> {
-    try {
-      const { data, error } = await supabase.functions.invoke('voice-to-text', {
-        body: { audio: base64Audio }
-      });
+  startListening(
+    onResult: (text: string) => void,
+    onError: (error: any) => void,
+    onEnd: () => void
+  ): void {
+    if (!this.recognition) {
+      onError('Web Speech API not supported');
+      return;
+    }
 
-      if (error) throw error;
-      
-      console.log('Transcription result:', data);
-      return {
-        text: data.text,
-        language: data.language || 'en'
-      };
-    } catch (error) {
-      console.error('Error transcribing audio:', error);
-      throw error;
+    if (this.isListening) return;
+
+    this.recognition.onresult = (event: SpeechRecognitionEvent) => {
+      const text = event.results[0][0].transcript;
+      console.log('Voice recognized:', text);
+      onResult(text);
+    };
+
+    this.recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+      console.error('Speech recognition error:', event.error);
+      onError(event.error);
+    };
+
+    this.recognition.onend = () => {
+      this.isListening = false;
+      onEnd();
+    };
+
+    try {
+      this.recognition.start();
+      this.isListening = true;
+      console.log('Started listening via Web Speech API');
+    } catch (err) {
+      console.error('Failed to start recognition:', err);
+      onError(err);
+    }
+  }
+
+  stopListening(): void {
+    if (this.recognition && this.isListening) {
+      this.recognition.stop();
+      this.isListening = false;
     }
   }
 
   async getAIResponse(message: string, language: string): Promise<string> {
     try {
-      const { data, error } = await supabase.functions.invoke('chat-ai', {
-        body: { message, language }
+      const { data, error } = await supabase.functions.invoke('voice-assistant', {
+        body: { action: 'chat', message, language }
       });
 
       if (error) throw error;
-      
+      if (data?.error) throw new Error(data.error);
+
       console.log('AI response:', data.reply);
       return data.reply;
     } catch (error) {
@@ -105,14 +82,23 @@ export class HybridVoiceService {
     }
   }
 
+  private applyPronunciationFix(text: string): string {
+    return text
+      .replace(/niva/gi, "Nee-vah")
+      .replace(/gudpals/gi, "Goodpals")
+      .replace(/b\. tech/gi, "B Tech");
+  }
+
   async textToSpeech(text: string, language: string): Promise<string> {
     try {
-      const { data, error } = await supabase.functions.invoke('elevenlabs-tts', {
-        body: { text, language }
+      const phoneticText = this.applyPronunciationFix(text);
+      const { data, error } = await supabase.functions.invoke('voice-assistant', {
+        body: { action: 'tts', text: phoneticText, language }
       });
 
       if (error) throw error;
-      
+      if (data?.error || !data?.audioContent) throw new Error(data?.error || "No audio content received");
+
       console.log('TTS audio generated');
       return data.audioContent;
     } catch (error) {
@@ -124,7 +110,12 @@ export class HybridVoiceService {
   async playAudio(base64Audio: string): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        // Convert base64 to blob
+        if (!base64Audio) {
+          console.error("No audio content received");
+          resolve();
+          return;
+        }
+
         const binaryString = atob(base64Audio);
         const bytes = new Uint8Array(binaryString.length);
         for (let i = 0; i < binaryString.length; i++) {
@@ -133,7 +124,6 @@ export class HybridVoiceService {
         const blob = new Blob([bytes], { type: 'audio/mpeg' });
         const url = URL.createObjectURL(blob);
 
-        // Create or reuse audio element
         if (!this.audioElement) {
           this.audioElement = new Audio();
         }
@@ -149,11 +139,68 @@ export class HybridVoiceService {
         };
 
         this.audioElement.play();
-        console.log('Playing audio');
+        console.log('Playing ElevenLabs audio');
       } catch (error) {
         reject(error);
       }
     });
+  }
+
+  async speakWithBrowser(text: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const phoneticText = this.applyPronunciationFix(text);
+      const utterance = new SpeechSynthesisUtterance(phoneticText);
+
+      // Get voices
+      let voices = window.speechSynthesis.getVoices();
+
+      // If voices aren't loaded yet, wait for them
+      if (voices.length === 0) {
+        window.speechSynthesis.onvoiceschanged = () => {
+          voices = window.speechSynthesis.getVoices();
+          this.setFemaleVoice(utterance, voices);
+          window.speechSynthesis.speak(utterance);
+        };
+      } else {
+        this.setFemaleVoice(utterance, voices);
+        window.speechSynthesis.speak(utterance);
+      }
+
+      utterance.onend = () => {
+        resolve();
+      };
+
+      utterance.onerror = (error) => {
+        console.error('Speech synthesis error:', error);
+        resolve(); // Resolve anyway to not block
+      };
+    });
+  }
+
+  private setFemaleVoice(utterance: SpeechSynthesisUtterance, voices: SpeechSynthesisVoice[]) {
+    // Priority list for female voices
+    const preferredVoices = [
+      "Microsoft Zira", // Windows
+      "Google US English", // Chrome
+      "Samantha", // MacOS
+      "Female", // Generic
+    ];
+
+    const selectedVoice = voices.find(voice =>
+      preferredVoices.some(preferred => voice.name.includes(preferred)) ||
+      voice.name.toLowerCase().includes('female')
+    );
+
+    if (selectedVoice) {
+      console.log('Selected voice:', selectedVoice.name);
+      utterance.voice = selectedVoice;
+    } else {
+      console.log('No female voice found, using default');
+    }
+
+    // Adjust rate/pitch for Niva persona
+    utterance.rate = 0.9; // Slightly slower
+    utterance.pitch = 1.1; // Slightly higher
   }
 
   stopAudio(): void {
@@ -161,25 +208,13 @@ export class HybridVoiceService {
       this.audioElement.pause();
       this.audioElement.currentTime = 0;
     }
-  }
-
-  private async blobToBase64(blob: Blob): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = (reader.result as string).split(',')[1];
-        resolve(base64);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
+    // Also cancel browser TTS just in case
+    window.speechSynthesis.cancel();
   }
 
   cleanup(): void {
     this.stopAudio();
-    if (this.mediaRecorder?.stream) {
-      this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
-    }
+    this.stopListening();
     if (this.audioContext) {
       this.audioContext.close();
     }

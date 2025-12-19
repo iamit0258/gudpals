@@ -36,42 +36,42 @@ const Astrology = () => {
     {
       id: "1",
       name: "Ravi Sharma",
-      specialty: "Vedic Astrology",
-      experience: "20+ years",
+      specialty: t("vedic_astrology"),
+      experience: `20+ ${t("years_exp")}`,
       rating: 4.8,
       initials: "RS",
       isPremium: false,
       price: null,
-      availability: "Available now",
-      languages: ["Hindi", "English"]
+      availability: t("available_now"),
+      languages: [t("hindi"), t("english")]
     },
     {
       id: "2",
       name: "Neha Sharma",
-      specialty: "Tarot Reading",
-      experience: "15+ years",
+      specialty: t("tarot_reading"),
+      experience: `15+ ${t("years_exp")}`,
       rating: 4.7,
       initials: "NS",
       isPremium: true,
       price: 599,
-      availability: "Available in 30 mins",
-      languages: ["Hindi", "Gujarati", "English"]
+      availability: t("available_in") + " 30 mins",
+      languages: [t("hindi"), t("gujarati"), t("english")]
     },
   ];
 
   const zodiacSigns = [
-    { name: "Aries", dates: "Mar 21 - Apr 19" },
-    { name: "Taurus", dates: "Apr 20 - May 20" },
-    { name: "Gemini", dates: "May 21 - Jun 20" },
-    { name: "Cancer", dates: "Jun 21 - Jul 22" },
-    { name: "Leo", dates: "Jul 23 - Aug 22" },
-    { name: "Virgo", dates: "Aug 23 - Sep 22" },
-    { name: "Libra", dates: "Sep 23 - Oct 22" },
-    { name: "Scorpio", dates: "Oct 23 - Nov 21" },
-    { name: "Sagittarius", dates: "Nov 22 - Dec 21" },
-    { name: "Capricorn", dates: "Dec 22 - Jan 19" },
-    { name: "Aquarius", dates: "Jan 20 - Feb 18" },
-    { name: "Pisces", dates: "Feb 19 - Mar 20" }
+    { key: "aries", name: t("aries"), dates: "Mar 21 - Apr 19" },
+    { key: "taurus", name: t("taurus"), dates: "Apr 20 - May 20" },
+    { key: "gemini", name: t("gemini"), dates: "May 21 - Jun 20" },
+    { key: "cancer", name: t("cancer"), dates: "Jun 21 - Jul 22" },
+    { key: "leo", name: t("leo"), dates: "Jul 23 - Aug 22" },
+    { key: "virgo", name: t("virgo"), dates: "Aug 23 - Sep 22" },
+    { key: "libra", name: t("libra"), dates: "Sep 23 - Oct 22" },
+    { key: "scorpio", name: t("scorpio"), dates: "Oct 23 - Nov 21" },
+    { key: "sagittarius", name: t("sagittarius"), dates: "Nov 22 - Dec 21" },
+    { key: "capricorn", name: t("capricorn"), dates: "Dec 22 - Jan 19" },
+    { key: "aquarius", name: t("aquarius"), dates: "Jan 20 - Feb 18" },
+    { key: "pisces", name: t("pisces"), dates: "Feb 19 - Mar 20" }
   ];
 
   const handleConsult = (astrologer: Astrologer) => {
@@ -128,14 +128,14 @@ const Astrology = () => {
         <div className="relative z-10">
           <h1 className="text-3xl font-bold mb-2 flex items-center">
             <Star className="w-8 h-8 mr-2 text-yellow-300" />
-            Astrology Services
+            {t("astrology_title")}
           </h1>
-          <p className="text-white/80 mb-6">Discover your cosmic path with our expert astrologers</p>
+          <p className="text-white/80 mb-6">{t("astrology_desc")}</p>
         </div>
       </div>
 
       <section className="p-4">
-        <h2 className="text-xl font-semibold mb-4">Select Your Zodiac Sign</h2>
+        <h2 className="text-xl font-semibold mb-4">{t("select_sign")}</h2>
         <div className="grid grid-cols-3 gap-3">
           {zodiacSigns.map((sign) => (
             <Button
@@ -157,12 +157,12 @@ const Astrology = () => {
       {selectedSign && (
         <section className="p-4 bg-gradient-to-r from-green-100/50 to-teal-100/50">
           <h2 className="text-xl font-semibold mb-3">
-            Horoscope for {selectedSign} <span className="text-sm font-normal text-gray-600">({horoscope?.date})</span>
+            {t("horoscope_for")} {selectedSign} <span className="text-sm font-normal text-gray-600">({horoscope?.date})</span>
           </h2>
           <Card className="border-green-200 bg-white/80 backdrop-blur-sm">
             <CardContent className="p-4">
               {loading ? (
-                <div className="flex justify-center p-4">Loading...</div>
+                <div className="flex justify-center p-4">{t("loading")}...</div>
               ) : horoscope ? (
                 <>
                   <p className="italic text-gray-600 mb-3 whitespace-pre-wrap leading-relaxed">
@@ -171,17 +171,17 @@ const Astrology = () => {
                   <div className="flex flex-wrap gap-2 text-sm">
                     {horoscope.lucky_number && horoscope.lucky_number !== "N/A" && (
                       <Badge variant="outline" className="bg-green-50 border-green-200">
-                        Lucky Number: {horoscope.lucky_number}
+                        {t("lucky_number")}: {horoscope.lucky_number}
                       </Badge>
                     )}
                     {horoscope.lucky_color && horoscope.lucky_color !== "N/A" && (
                       <Badge variant="outline" className="bg-green-50 border-green-200">
-                        Lucky Color: {horoscope.lucky_color}
+                        {t("lucky_color")}: {horoscope.lucky_color}
                       </Badge>
                     )}
                     {horoscope.compatibility && horoscope.compatibility !== "N/A" && (
                       <Badge variant="outline" className="bg-green-50 border-green-200">
-                        Compatible: {horoscope.compatibility}
+                        {t("compatible")}: {horoscope.compatibility}
                       </Badge>
                     )}
                   </div>
@@ -195,7 +195,7 @@ const Astrology = () => {
       )}
 
       <section className="p-4">
-        <h2 className="text-xl font-semibold mb-4">Our Astrologers</h2>
+        <h2 className="text-xl font-semibold mb-4">{t("our_astrologers")}</h2>
         <div className="space-y-4">
           {astrologers.map((astrologer) => (
             <Card key={astrologer.id} className="overflow-hidden border-none shadow-md">
@@ -217,11 +217,11 @@ const Astrology = () => {
                       {astrologer.name}
                       {astrologer.isPremium ? (
                         <Badge className="ml-2 bg-gradient-to-r from-amber-500 to-amber-600">
-                          Premium
+                          {t("premium")}
                         </Badge>
                       ) : (
                         <Badge className="ml-2 bg-gradient-to-r from-green-500 to-green-600">
-                          Free
+                          {t("free_label")}
                         </Badge>
                       )}
                     </h3>
@@ -245,13 +245,13 @@ const Astrology = () => {
                   <div className="flex items-center justify-between text-sm mb-3">
                     <div className="flex items-center text-gray-600">
                       <Clock className="h-4 w-4 mr-1" />
-                      <span>{astrologer.availability}</span>
+                      <span>{astrologer.availability.includes("now") ? t("available_now") : t("available_in") + " 30 mins"}</span>
                     </div>
                     <div>
                       {astrologer.isPremium ? (
                         <div className="font-semibold text-gray-800">₹{astrologer.price}</div>
                       ) : (
-                        <div className="text-green-600 font-semibold">Free</div>
+                        <div className="text-green-600 font-semibold">{t("free_label")}</div>
                       )}
                     </div>
                   </div>
@@ -262,12 +262,12 @@ const Astrology = () => {
                     {astrologer.isPremium ? (
                       <>
                         <DollarSign className="h-4 w-4 mr-1" />
-                        Book Consultation
+                        {t("book_consultation")}
                       </>
                     ) : (
                       <>
                         <MessageSquare className="h-4 w-4 mr-1" />
-                        Chat Now (Free)
+                        {t("chat_now")}
                       </>
                     )}
                   </Button>

@@ -1,5 +1,6 @@
 
 import React, { useState } from "react";
+import { ArrowLeft } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import LoginLayout from "@/components/layout/LoginLayout";
 import { Button } from "@/components/ui/button";
@@ -111,6 +112,17 @@ const Register = () => {
 
   return (
     <LoginLayout>
+      <div className="absolute top-4 left-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate(-1)}
+          className="hover:bg-transparent"
+        >
+          <ArrowLeft className="h-6 w-6 text-dhayan-teal" />
+        </Button>
+      </div>
+
       <LoginHeader
         title="New Registration"
         subtitle="Enter your details to join"
