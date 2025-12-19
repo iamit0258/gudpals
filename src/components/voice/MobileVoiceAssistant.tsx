@@ -3,11 +3,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { 
-  Mic, 
-  MicOff, 
-  Volume2, 
-  VolumeX, 
+import {
+  Mic,
+  MicOff,
+  Volume2,
+  VolumeX,
   HelpCircle,
   Settings,
   Activity,
@@ -43,7 +43,8 @@ const MobileVoiceAssistant: React.FC<MobileVoiceAssistantProps> = ({
   onToggleEnabled,
   onShowHelp,
 }) => {
-  const [isMinimized, setIsMinimized] = useState(false);
+
+  const [isMinimized, setIsMinimized] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const isMobile = useIsMobile();
   const { toast } = useToast();
@@ -91,11 +92,11 @@ const MobileVoiceAssistant: React.FC<MobileVoiceAssistantProps> = ({
   return (
     <div className={cn("fixed bottom-20 left-4 right-4 z-50", className)}>
       <Card className="backdrop-blur-md bg-white/95 border shadow-2xl">
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-2">
           <CardTitle className="flex items-center justify-between text-base">
             <span className="flex items-center gap-2">
-              <Smartphone className="h-4 w-4" />
-              Voice Assistant
+              <Smartphone className="h-4 w-4 text-dhayan-purple" />
+              Niva (Voice Assistant)
             </span>
             <div className="flex items-center gap-1">
               <Button
@@ -120,7 +121,7 @@ const MobileVoiceAssistant: React.FC<MobileVoiceAssistantProps> = ({
           </CardTitle>
         </CardHeader>
 
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-2">
           {/* Status Display */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -147,7 +148,7 @@ const MobileVoiceAssistant: React.FC<MobileVoiceAssistantProps> = ({
                 </Badge>
               )}
             </div>
-            
+
             {micPermission === 'denied' && (
               <Badge variant="destructive" className="text-xs">
                 Mic Blocked
@@ -192,12 +193,12 @@ const MobileVoiceAssistant: React.FC<MobileVoiceAssistantProps> = ({
 
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Microphone</span>
-                  <Badge 
+                  <Badge
                     variant={micPermission === 'granted' ? 'default' : 'destructive'}
                     className="text-xs"
                   >
-                    {micPermission === 'granted' ? 'Allowed' : 
-                     micPermission === 'denied' ? 'Blocked' : 'Pending'}
+                    {micPermission === 'granted' ? 'Allowed' :
+                      micPermission === 'denied' ? 'Blocked' : 'Pending'}
                   </Badge>
                 </div>
               </div>
@@ -216,15 +217,15 @@ const MobileVoiceAssistant: React.FC<MobileVoiceAssistantProps> = ({
               <HelpCircle className="h-4 w-4 mr-2" />
               Help
             </Button>
-            
+
             <Button
               onClick={handleMainAction}
               disabled={!isEnabled || micPermission === 'denied'}
               size="sm"
               className={cn(
                 "flex-2 transition-all duration-200",
-                isListening 
-                  ? "bg-red-500 hover:bg-red-600 animate-pulse" 
+                isListening
+                  ? "bg-red-500 hover:bg-red-600 animate-pulse"
                   : "bg-primary hover:bg-primary/90"
               )}
             >
@@ -255,7 +256,7 @@ const MobileVoiceAssistant: React.FC<MobileVoiceAssistantProps> = ({
           {!showSettings && isEnabled && (
             <div className="text-center">
               <p className="text-xs text-muted-foreground">
-                Tap the microphone and say "help" to see available commands
+                Tap the microphone and ask Niva for help
               </p>
             </div>
           )}

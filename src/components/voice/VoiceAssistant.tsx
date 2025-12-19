@@ -1,19 +1,21 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Mic, MicOff, Volume2, VolumeX, HelpCircle } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { hybridVoiceService } from '@/services/hybridVoiceService';
 import MobileVoiceAssistant from './MobileVoiceAssistant';
+import { findIntent } from './nivaIntents';
+import { useLanguage } from '@/context/language/LanguageContext';
 
 interface VoiceAssistantProps {
   className?: string;
 }
 
 const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
+  const { t, language } = useLanguage();
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isEnabled, setIsEnabled] = useState(true);
@@ -21,9 +23,10 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
   const [micPermission, setMicPermission] = useState<'granted' | 'denied' | 'prompt'>('prompt');
   const [detectedLanguage, setDetectedLanguage] = useState<string>('en');
   const location = useLocation();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const isMobile = useIsMobile();
-  
+
   const isInitializedRef = useRef(false);
   const isProcessingRef = useRef(false);
 
@@ -34,19 +37,19 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
 
   const initializeVoiceAssistant = async () => {
     if (isInitializedRef.current) return;
-    
+
     try {
       // Check microphone permission
       const permissionResult = await navigator.permissions.query({ name: 'microphone' as PermissionName });
       setMicPermission(permissionResult.state);
-      
+
       isInitializedRef.current = true;
       console.log('Hybrid voice assistant initialized successfully');
 
     } catch (error) {
       console.error('Error initializing voice assistant:', error);
       toast({
-        title: "Voice Assistant Error",
+        title: t("voice_error"),
         description: "Failed to initialize voice assistant.",
         variant: "destructive"
       });
@@ -67,10 +70,10 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
     try {
       setIsSpeaking(true);
       setCurrentMessage(text);
-      
+
       const audioBase64 = await hybridVoiceService.textToSpeech(text, detectedLanguage);
       await hybridVoiceService.playAudio(audioBase64);
-      
+
       setIsSpeaking(false);
       console.log('Speech completed');
     } catch (error) {
@@ -94,8 +97,8 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
       console.error('Microphone permission denied:', error);
       setMicPermission('denied');
       toast({
-        title: "Microphone Access Required",
-        description: "Please allow microphone access to use voice commands.",
+        title: t("microphone_required"),
+        description: t("enable_mic"),
         variant: "destructive"
       });
       return false;
@@ -116,14 +119,48 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
 
     try {
       setIsListening(true);
-      console.log('Starting recording...');
-      
-      await hybridVoiceService.startRecording();
+      console.log('Starting listening via Web Speech API...');
+
+      hybridVoiceService.startListening(
+        // onResult
+        (text) => {
+          console.log('Voice result:', text);
+          setCurrentMessage(text);
+          // Process immediately
+          processVoiceCommand(text);
+        },
+        // onError
+        (error) => {
+          console.error('Voice Error:', error);
+          setIsListening(false);
+
+          let errorMessage = "Could not understand audio.";
+
+          if (typeof error === 'string') {
+            if (error === 'no-speech') errorMessage = "No speech detected. Try speaking closer to the mic.";
+            else if (error === 'network') errorMessage = "Network error. Please check your connection.";
+            else if (error === 'not-allowed') errorMessage = "Microphone access denied. Please allow permissions.";
+            else errorMessage = `Voice Error: ${error}`;
+          }
+
+          toast({
+            title: t("voice_error"),
+            description: errorMessage,
+            variant: "destructive"
+          });
+        },
+        // onEnd
+        () => {
+          setIsListening(false);
+          console.log('Listening stopped');
+        }
+      );
+
       toast({
-        title: "Listening",
-        description: "Speak now... (Hindi or English)",
+        title: t("listening"),
+        description: t("speak_now"),
       });
-      
+
     } catch (error) {
       console.error('Error starting recording:', error);
       setIsListening(false);
@@ -135,72 +172,124 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
     }
   };
 
-  const stopListening = async () => {
-    if (!isListening || isProcessingRef.current) return;
+  const processVoiceCommand = async (text: string) => {
+    // 0. Check for Zodiac Signs (prioritize specific horoscope queries over generic navigation)
+    const zodiacSigns = [
+      'aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo',
+      'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces',
+      'मेष', 'वृषभ', 'मिथुन', 'कर्क', 'सिंह', 'कन्या',
+      'तुला', 'वृश्चिक', 'धनु', 'मकर', 'कुंभ', 'मीन'
+    ];
+    const hasZodiac = zodiacSigns.some(sign => text.toLowerCase().includes(sign));
 
-    try {
-      isProcessingRef.current = true;
-      setIsListening(false);
-      
-      console.log('Stopping recording...');
-      const recording = await hybridVoiceService.stopRecording();
-      
-      toast({
-        title: "Processing",
-        description: "Transcribing your speech...",
-      });
+    if (!hasZodiac) {
+      // 1. Check for local navigation intents (ONLY if no zodiac sign mentioned)
+      const intent = findIntent(text);
 
-      // Transcribe audio
-      const { text, language } = await hybridVoiceService.transcribeAudio(recording.base64Audio);
-      console.log('Transcription:', text, 'Language:', language);
-      setDetectedLanguage(language);
-      
-      if (!text.trim()) {
-        toast({
-          title: "No Speech Detected",
-          description: "Please try again and speak clearly.",
-          variant: "destructive"
-        });
-        isProcessingRef.current = false;
+      if (intent) {
+        console.log('Intent matched:', intent);
+        setCurrentMessage(intent.response);
+
+        // Speak confirmation instantly using Browser TTS (faster for navigation)
+        setIsSpeaking(true);
+        await hybridVoiceService.speakWithBrowser(intent.response);
+        setIsSpeaking(false);
+
+        // Then navigate
+        if (intent.route) {
+          navigate(intent.route);
+        }
         return;
       }
+    }
 
-      setCurrentMessage(text);
-      
-      // Get AI response
-      toast({
-        title: "Thinking",
-        description: "Getting AI response...",
-      });
-      
-      const reply = await hybridVoiceService.getAIResponse(text, language);
+    // 2. If no intent or if it's a zodiac query, fallback to AI (Gemini)
+    try {
+      if (hasZodiac) {
+        // Immediate feedback for horoscope
+        const matchedSign = zodiacSigns.find(sign => text.toLowerCase().includes(sign));
+        // Use translation for both static text and the sign name
+        const displayName = matchedSign ? t(matchedSign) : matchedSign;
+
+        let feedback = "";
+        if (language === 'hi') {
+          // Hindi: "Mesh ka rashifal..." (Sign + Key)
+          feedback = `${displayName} ${t("checking_stars")}...`;
+        } else {
+          // English: "Horoscope for Aries is..." (Key + Sign + is)
+          feedback = `${t("checking_stars")} ${displayName} is...`;
+        }
+
+        toast({ title: t("astrology_title"), description: feedback });
+
+        // Speak feedback instantly
+        setIsSpeaking(true);
+        await hybridVoiceService.speakWithBrowser(feedback);
+        setIsSpeaking(false);
+      } else {
+        toast({
+          title: t("thinking"),
+          description: t("asking_niva")
+        });
+      }
+
+      // We pass 'en' as default or detected language
+      // Add a 15s timeout to the AI request
+      const aiPromise = hybridVoiceService.getAIResponse(text, detectedLanguage);
+      const timeoutPromise = new Promise<string>((_, reject) =>
+        setTimeout(() => reject(new Error("Request timed out")), 15000)
+      );
+
+      const reply = await Promise.race([aiPromise, timeoutPromise]);
+
       console.log('AI Reply:', reply);
-      
-      // Speak the response
-      await speak(reply);
-      
-      isProcessingRef.current = false;
-      
-    } catch (error) {
-      console.error('Error processing voice:', error);
-      isProcessingRef.current = false;
+      setCurrentMessage(reply);
+
+      // Try ElevenLabs first
+      try {
+        setIsSpeaking(true);
+        toast({ title: t("speaking"), description: t("generating_voice") });
+        const audioBase64 = await hybridVoiceService.textToSpeech(reply, detectedLanguage);
+        await hybridVoiceService.playAudio(audioBase64);
+      } catch (ttsError) {
+        console.warn("ElevenLabs TTS failed, falling back to browser:", ttsError);
+        // Fallback to browser TTS
+        await hybridVoiceService.speakWithBrowser(reply);
+      } finally {
+        setIsSpeaking(false);
+      }
+
+    } catch (error: any) {
+      console.error('Error getting AI response:', error);
+      const errMessage = error.message === "Request timed out"
+        ? t("connection_timeout")
+        : t("connection_error_generic");
+
       toast({
-        title: "Processing Error",
-        description: "Failed to process your speech. Please try again.",
+        title: t("connection_error"),
+        description: `${errMessage} ${error.message ? `(${error.message.split('.')[0]})` : ""}`,
         variant: "destructive"
       });
+
+      // Speak error
+      await hybridVoiceService.speakWithBrowser(errMessage);
     }
+  };
+
+  const stopListening = async () => {
+    hybridVoiceService.stopListening();
+    setIsListening(false);
   };
 
 
   const toggleVoiceAssistant = () => {
     const newState = !isEnabled;
     setIsEnabled(newState);
-    
+
     if (newState) {
       toast({
-        title: "Voice Assistant Enabled",
-        description: "Hybrid AI voice assistant with Hindi/English support",
+        title: t("voice_enabled"),
+        description: t("voice_enabled_description"),
       });
     } else {
       hybridVoiceService.stopAudio();
@@ -209,14 +298,14 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
         stopListening();
       }
       toast({
-        title: "Voice Assistant Disabled",
-        description: "Voice commands are now turned off.",
+        title: t("voice_disabled"),
+        description: t("voice_disabled_description"),
       });
     }
   };
 
   const showHelp = () => {
-    const helpMessage = "I am your AI assistant. I can speak and understand both Hindi and English. Just press the microphone button and speak naturally.";
+    const helpMessage = t("voice_help");
     speak(helpMessage);
   };
 
@@ -250,7 +339,7 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
             </div>
           </div>
         )}
-        
+
         {/* Control buttons */}
         <div className="flex gap-2">
           <Button
@@ -263,7 +352,7 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
           >
             <HelpCircle className="h-4 w-4" />
           </Button>
-          
+
           <Button
             onClick={toggleVoiceAssistant}
             size="sm"
@@ -277,15 +366,15 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
           >
             {isEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
           </Button>
-          
+
           <Button
             onClick={isListening ? stopListening : startListening}
             disabled={!isEnabled}
             size="lg"
             className={cn(
               "shadow-lg transition-all duration-200 focus-ring",
-              isListening 
-                ? "bg-red-500 hover:bg-red-600 animate-pulse" 
+              isListening
+                ? "bg-red-500 hover:bg-red-600 animate-pulse"
                 : "bg-primary hover:bg-primary/90",
               !isEnabled && "opacity-50 cursor-not-allowed"
             )}

@@ -19,7 +19,7 @@ const translations = {
     help_personalize: "Help us personalize your experience",
     get_started: "Get Started",
     loading: "Loading",
-    
+
     // Home & Navigation
     friends: "Friends",
     profile: "Profile",
@@ -41,7 +41,7 @@ const translations = {
     part_time: "Part-time opportunities for seniors",
     travel_plans: "Travel Plans",
     senior_friendly: "Senior-friendly tours & trips",
-    
+
     // Sessions
     upcoming_sessions: "Upcoming Sessions",
     today: "Today",
@@ -59,7 +59,7 @@ const translations = {
     registration_failed: "Registration Failed",
     registration_error: "Something went wrong. Please try again.",
     no_upcoming_sessions: "No upcoming sessions found.",
-    
+
     // Friends related
     nearby: "Nearby",
     connections: "Connections",
@@ -120,7 +120,7 @@ const translations = {
     kitchen: "Kitchen",
     purchase_successful: "Purchase Successful",
     successfully_ordered: "You've successfully ordered",
-    
+
     // Checkout
     checkout: "Checkout",
     items_in_cart: "Items in Cart",
@@ -155,7 +155,7 @@ const translations = {
     order_confirmation_email: "We have sent a confirmation to your registered email.",
     continue_shopping: "Continue Shopping",
     go_to_home: "Go to Home",
-    
+
     // Events
     upcoming_events: "Upcoming Events",
     your_events: "Your Events",
@@ -166,6 +166,62 @@ const translations = {
     health: "Health",
     technology: "Technology",
     creativity: "Creativity",
+
+    // Astrology
+    astrology_title: "Astrology Services",
+    astrology_desc: "Discover your cosmic path with our expert astrologers",
+    select_sign: "Select Your Zodiac Sign",
+    horoscope_for: "Horoscope for",
+    lucky_number: "Lucky Number",
+    lucky_color: "Lucky Color",
+    compatible: "Compatible",
+    our_astrologers: "Our Astrologers",
+    book_consultation: "Book Consultation",
+    chat_now: "Chat Now (Free)",
+    available_now: "Available now",
+    available_in: "Available in",
+    experience: "Experience",
+    premium: "Premium",
+    free_label: "Free",
+
+    // Voice Assistant
+    listening: "Listening",
+    speak_now: "Speak now... (English)",
+    thinking: "Thinking",
+    asking_niva: "Asking Niva...",
+    checking_stars: "Horoscope for",
+    speaking: "Speaking",
+    generating_voice: "Generating voice...",
+    voice_error: "Voice Assistant Error",
+    microphone_required: "Microphone Access Required",
+    enable_mic: "Please allow microphone access to use voice commands.",
+    voice_enabled: "Voice Assistant Enabled",
+    voice_disabled: "Voice Assistant Disabled",
+    voice_help: "Hello, I am Niva, your voice assistant. I can help you move around the app or answer your questions.",
+    connection_error: "Connection Error",
+    connection_timeout: "Request timed out. Please try again.",
+    connection_error_generic: "Unable to connect. Please check your internet.",
+    // Zodiac
+    aries: "Aries",
+    taurus: "Taurus",
+    gemini: "Gemini",
+    cancer: "Cancer",
+    leo: "Leo",
+    virgo: "Virgo",
+    libra: "Libra",
+    scorpio: "Scorpio",
+    sagittarius: "Sagittarius",
+    capricorn: "Capricorn",
+    aquarius: "Aquarius",
+    pisces: "Pisces",
+
+    // Astrologer Details
+    vedic_astrology: "Vedic Astrology",
+    tarot_reading: "Tarot Reading",
+    hindi: "Hindi",
+    english: "English",
+    gujarati: "Gujarati",
+    years_exp: "years",
   },
   hi: {
     // General
@@ -176,7 +232,7 @@ const translations = {
     help_personalize: "अपने अनुभव को व्यक्तिगत बनाने में हमारी मदद करें",
     get_started: "शुरू करें",
     loading: "लोड हो रहा है",
-    
+
     // Home & Navigation
     friends: "मित्र",
     profile: "प्रोफाइल",
@@ -185,7 +241,7 @@ const translations = {
     sessions: "सत्र",
     close: "बंद करें",
     events: "कार्यक्रम",
-    
+
     // Services
     our_services: "हमारी सेवाएं",
     live_sessions: "लाइव सत्र",
@@ -198,7 +254,7 @@ const translations = {
     part_time: "वरिष्ठ नागरिकों के लिए अंशकालिक अवसर",
     travel_plans: "यात्रा योजनाएं",
     senior_friendly: "वरिष्ठ अनुकूल टूर और यात्राएं",
-    
+
     // Sessions
     upcoming_sessions: "आने वाले सत्र",
     today: "आज",
@@ -216,7 +272,7 @@ const translations = {
     registration_failed: "पंजीकरण विफल",
     registration_error: "कुछ गलत हो गया। कृपया पुनः प्रयास करें।",
     no_upcoming_sessions: "कोई आगामी सत्र नहीं मिला।",
-    
+
     // Friends related
     nearby: "आस-पास",
     connections: "कनेक्शन",
@@ -246,7 +302,7 @@ const translations = {
     no_friend_requests: "फिलहाल कोई मित्र अनुरोध नहीं है",
     accept: "स्वीकार करें",
     decline: "अस्वीकार करें",
-    
+
     // Products and Shopping
     senior_products: "वरिष्ठ नागरिकों के लिए उत्पाद",
     filter: "फ़िल्टर",
@@ -277,7 +333,7 @@ const translations = {
     kitchen: "रसोई",
     purchase_successful: "खरीदारी सफल",
     successfully_ordered: "आपने सफलतापूर्वक ऑर्डर किया है",
-    
+
     // Checkout
     checkout: "चेकआउट",
     items_in_cart: "कार्ट में आइटम",
@@ -312,7 +368,7 @@ const translations = {
     order_confirmation_email: "हमने आपके पंजीकृत ईमेल पर एक पुष्टिकरण भेजा है।",
     continue_shopping: "शॉपिंग जारी रखें",
     go_to_home: "होम पेज पर जाएं",
-    
+
     // Events
     upcoming_events: "आगामी कार्यक्रम",
     your_events: "आपके कार्यक्रम",
@@ -323,6 +379,63 @@ const translations = {
     health: "स्वास्थ्य",
     technology: "तकनीकी",
     creativity: "रचनात्मकता",
+
+    // Astrology
+    astrology_title: "ज्योतिष सेवाएं",
+    astrology_desc: "हमारे विशेषज्ञ ज्योतिषियों के साथ अपना ब्रह्मांडीय पथ खोजें",
+    select_sign: "अपनी राशि चुनें",
+    horoscope_for: "का राशिफल",
+    lucky_number: "शुभ अंक",
+    lucky_color: "शुभ रंग",
+    compatible: "अनुकूल",
+    our_astrologers: "हमारे ज्योतिषी",
+    book_consultation: "परामर्श बुक करें",
+    chat_now: "अभी चैट करें (मुफ़्त)",
+    available_now: "अभी उपलब्ध",
+    available_in: "में उपलब्ध",
+    experience: "अनुभव",
+    premium: "प्रीमियम",
+    free_label: "मुफ़्त",
+
+    // Voice Assistant
+    listening: "सुन रहा है",
+    speak_now: "अब बोलें... (अंग्रेजी)",
+    thinking: "सोच रहा है",
+    asking_niva: "निवा से पूछ रहा है...",
+    checking_stars: "का राशिफल",
+    speaking: "बोल रहा है",
+    generating_voice: "आवाज तैयार की जा रही है...",
+    voice_error: "वॉयस असिस्टेंट त्रुटि",
+    microphone_required: "माइक्रोफोन एक्सेस आवश्यक",
+    enable_mic: "वॉयस कमांड का उपयोग करने के लिए कृपया माइक्रोफोन एक्सेस दें।",
+    voice_enabled: "वॉयस असिस्टेंट सक्रिय",
+    voice_disabled: "वॉयस असिस्टेंट निष्क्रिय",
+    voice_help: "नमस्ते, मैं निवा, आपकी वॉयस असिस्टेंट हूं। मैं ऐप में नेविगेट करने या आपके सवालों के जवाब देने में मदद कर सकती हूं।",
+    connection_error: "संपर्क त्रुटि",
+    connection_timeout: "अनुरोध का समय समाप्त हो गया। कृपया पुन: प्रयास करें।",
+    connection_error_generic: "कनेक्ट करने में असमर्थ। कृपया अपना इंटरनेट जांचें।",
+
+    // Zodiac
+    aries: "मेष",
+    taurus: "वृषभ",
+    gemini: "मिथुन",
+    cancer: "कर्क",
+    leo: "सिंह",
+    virgo: "कन्या",
+    libra: "तुला",
+    scorpio: "वृश्चिक",
+    sagittarius: "धनु",
+    capricorn: "मकर",
+    aquarius: "कुंभ",
+    pisces: "मीन",
+
+    // Astrologer Details
+    vedic_astrology: "वैदिक ज्योतिष",
+    tarot_reading: "टैरो रीडिंग",
+    hindi: "हिंदी",
+    english: "अंग्रेजी",
+    gujarati: "गुजराती",
+    years_exp: "वर्ष",
   }
 };
 

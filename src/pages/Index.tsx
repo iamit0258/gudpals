@@ -49,8 +49,8 @@ const Index = () => {
     },
     {
       icon: Star,
-      name: "Astrology",
-      description: "Daily horoscope and predictions",
+      name: t("astrology_title"),
+      description: t("astrology_desc"),
       path: "/astrology",
       color: "bg-gradient-to-br from-purple-300 to-indigo-400"
     }
