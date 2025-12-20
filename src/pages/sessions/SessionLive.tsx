@@ -7,7 +7,8 @@ import AdminStartLive from "@/components/sessions/AdminStartLive";
 import WatchLiveSession from "@/components/sessions/WatchLiveSession";
 import LiveChat from "@/components/sessions/LiveChat";
 import { Card } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { MOCK_SESSIONS } from "@/data/mockSessions";
 
 const SessionLive = () => {
@@ -119,11 +120,21 @@ const SessionLive = () => {
     return (
         <MobileLayout hideNavigation>
             <div className="flex flex-col h-[calc(100vh-64px)] p-4 gap-4">
-                <div className="flex-none">
-                    <h1 className="text-xl font-bold mb-1">{session.title}</h1>
-                    <p className="text-sm text-gray-500">
-                        {isAdmin ? "You are the Host" : "Live Session"}
-                    </p>
+                <div className="flex-none flex items-center gap-3">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => navigate("/sessions")}
+                        className="rounded-full"
+                    >
+                        <ArrowLeft className="h-6 w-6" />
+                    </Button>
+                    <div>
+                        <h1 className="text-xl font-bold">{session.title}</h1>
+                        <p className="text-sm text-gray-500">
+                            {isAdmin ? "You are the Host" : "Live Session"}
+                        </p>
+                    </div>
                 </div>
 
                 <div className="flex-1 flex flex-col gap-4 min-h-0">
