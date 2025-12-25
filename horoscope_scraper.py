@@ -6,10 +6,10 @@ from supabase import create_client, Client
 import re
 import datetime
 
-# Supabase Credentials (should be in env vars for production/GitHub Actions)
-# Using the ones found in the project for now to ensure it works locally
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://yzjzcvcyneufijjpzbdc.supabase.co")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6anpjdmN5bmV1ZmlqanB6YmRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM3MjA5NDQsImV4cCI6MjA3OTI5Njk0NH0.878YVMQMOjttMoKeIwaubU8ory0eUeaelEtmZdehX-4")
+# Supabase Credentials
+# Using 'or' to ensure defaults are used if environment variables are set to empty strings in CI
+SUPABASE_URL = os.environ.get("SUPABASE_URL") or "https://yzjzcvcyneufijjpzbdc.supabase.co"
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY") or "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6anpjdmN5bmV1ZmlqanB6YmRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM3MjA5NDQsImV4cCI6MjA3OTI5Njk0NH0.878YVMQMOjttMoKeIwaubU8ory0eUeaelEtmZdehX-4"
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
@@ -56,14 +56,8 @@ def get_daily_horoscope():
                 if any(x in href for x in ["numerology", "tarot", "love-horoscope", "career-and-money"]):
                     continue
                 
-                # Strict check: The slug must start with "horoscope-today-"
-                # This avoids "pisces-daily-horoscope-today..." etc.
-                slug = href.split('/')[-1]
-                if not slug.startswith("horoscope-today-"):
-                    continue
-
                 # Check if it matches today's date
-                # strict check: full date string
+                # exact check: date string in slug
                 if date_str_padded in href or date_str_simple in href:
                     article_link = href
                     break
@@ -71,6 +65,14 @@ def get_daily_horoscope():
                 # relaxed check: month and day (in case year is missing or format differs)
                 if target_month in href and target_day in href:
                     candidates.append(href)
+        
+        # If no exact match with "horoscope-today" prefix, check any link with date
+        if not article_link and not candidates:
+            for a in soup.find_all('a', href=True):
+                href = a['href']
+                if (date_str_padded in href or date_str_simple in href) and "horoscope" in href:
+                     if not any(x in href for x in ["numerology", "tarot", "love-horoscope", "career-and-money"]):
+                        candidates.append(href)
         
         if not article_link and candidates:
             # Pick the first candidate if exact match failed
