@@ -1,4 +1,6 @@
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 from bs4 import BeautifulSoup
 import time
 import os
@@ -26,13 +28,30 @@ def get_daily_horoscope():
     
     print(f"Fetching daily horoscopes for {display_date} from Hindustan Times ({base_url})...\n")
     
+    # Configure retry strategy
+    retry_strategy = Retry(
+        total=3,
+        backoff_factor=1,
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=["HEAD", "GET", "OPTIONS"]
+    )
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    session = requests.Session()
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
+
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Referer": "https://www.google.com/",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1"
     }
     
     try:
         # Step 1: Get the main astrology page to find the daily article
-        response = requests.get(base_url, headers=headers)
+        response = session.get(base_url, headers=headers, timeout=30)
         response.raise_for_status()
         soup = BeautifulSoup(response.content, 'html.parser')
         
@@ -53,7 +72,7 @@ def get_daily_horoscope():
             # Check if it's a horoscope-today link
             if "horoscope-today" in href:
                 # Exclude specific types of horoscopes
-                if any(x in href for x in ["numerology", "tarot", "love-horoscope", "career-and-money"]):
+                if any(x in href for x in ["numerology", "tarot", "love-horoscope", "career-and-money", "daily-horoscope"]):
                     continue
                 
                 # Check if it matches today's date
@@ -93,7 +112,8 @@ def get_daily_horoscope():
         print(f"Found article: {article_link}")
         
         # Step 2: Fetch the article content
-        article_response = requests.get(article_link, headers=headers)
+        time.sleep(2) # Be polite
+        article_response = session.get(article_link, headers=headers, timeout=30)
         article_response.raise_for_status()
         article_soup = BeautifulSoup(article_response.content, 'html.parser')
         
@@ -120,87 +140,95 @@ def get_daily_horoscope():
                 # Simplified approach: Find the line with Sign Name, then read lines until we hit keywords
                 
                 lines = full_text.split('\n')
-                start_idx = -1
                 
+                # Find all potential start indices
+                potential_starts = []
                 for i, line in enumerate(lines):
                     # Check for "Aries (March..." or just "Aries" header
                     if sign in line and ("(" in line or len(line.strip()) < 30):
                         # Double check it's not just a mention in another paragraph
-                        # HT headers are usually short or contain the date range
                         if len(line.strip()) < 100: 
-                            start_idx = i
-                            break
+                            potential_starts.append(i)
                 
-                if start_idx != -1:
+                valid_chunk_found = False
+                
+                for start_idx in potential_starts:
                     horoscope_text = ""
                     lucky_number = "N/A"
                     lucky_color = "N/A"
-                    compatibility = "N/A" # HT doesn't usually have this, so we'll randomize or leave blank
+                    compatibility = "N/A" 
                     
-                    # Read subsequent lines
+                    # Read subsequent lines to verify this is the real section
                     current_chunk = []
+                    found_next_sign = False
+                    
                     for j in range(start_idx + 1, len(lines)):
                         line = lines[j].strip()
                         if not line: continue
                         
                         # Stop if we hit the next sign or end of article markers
+                        # Be careful not to stop on mentions of other signs within the text
+                        # But typically headers are short.
                         if any(s in line for s in signs if s != sign and len(line) < 50):
+                            found_next_sign = True
                             break
                         if "By:" in line:
                             break
                             
                         current_chunk.append(line)
                     
-                    # Join and process the chunk
+                    # Heuristic: Real horoscope sections have some content (e.g. > 50 chars)
+                    # TOC sections usually break immediately (empty chunk) or have very little text
                     raw_text = "\n".join(current_chunk)
                     
-                    # Extract Lucky Number/Color if present
-                    # Format: "Lucky Number: 3Lucky Colour: Purple" or separate lines
-                    
-                    ln_match = re.search(r"Lucky Number:\s*(\d+)", raw_text, re.IGNORECASE)
-                    if ln_match:
-                        lucky_number = ln_match.group(1)
+                    match_info = f"Line {start_idx}: {line.strip()[:30]}"
+                    if len(raw_text) > 50:
+                        # Success! We found the real section
+                        valid_chunk_found = True
                         
-                    lc_match = re.search(r"Lucky Colou?r:\s*([A-Za-z]+)", raw_text, re.IGNORECASE)
-                    if lc_match:
-                        lucky_color = lc_match.group(1)
+                        # Extract Lucky Number/Color if present
+                        ln_match = re.search(r"Lucky Number:\s*(\d+)", raw_text, re.IGNORECASE)
+                        if ln_match:
+                            lucky_number = ln_match.group(1)
+                            
+                        lc_match = re.search(r"Lucky Colou?r:\s*([A-Za-z]+)", raw_text, re.IGNORECASE)
+                        if lc_match:
+                            lucky_color = lc_match.group(1)
+                            
+                        clean_text = raw_text
+                        if "Lucky Number" in clean_text:
+                            clean_text = clean_text.split("Lucky Number")[0].strip()
                         
-                    # Remove the Lucky stuff from the main text
-                    # Also remove "Love Focus" section if we want just the main horoscope, 
-                    # but user might want it. Let's keep Love Focus but remove Lucky stuff.
-                    
-                    clean_text = raw_text
-                    if "Lucky Number" in clean_text:
-                        clean_text = clean_text.split("Lucky Number")[0].strip()
-                    
-                    # If "Love Focus" is there, ensure it's formatted nicely
-                    clean_text = clean_text.replace("Love Focus:", "\n\nLove Focus:")
-                    
-                    # Remove the Sign name if it repeated at start
-                    if clean_text.startswith(sign):
-                        clean_text = clean_text[len(sign):].strip()
+                        clean_text = clean_text.replace("Love Focus:", "\n\nLove Focus:")
                         
-                    # Remove brackets/links if they remained (e.g. [Aries])
-                    clean_text = re.sub(r"\[.*?\]", "", clean_text).strip()
+                        if clean_text.startswith(sign):
+                            clean_text = clean_text[len(sign):].strip()
+                            
+                        clean_text = re.sub(r"\[.*?\]", "", clean_text).strip()
 
-                    print(f"--- {sign} ---")
-                    # print(clean_text[:50] + "...")
-                    
-                    # Upsert to Supabase
-                    data = {
-                        "sign": sign,
-                        "horoscope_text": clean_text,
-                        "date": display_date,
-                        "lucky_number": lucky_number,
-                        "lucky_color": lucky_color,
-                        "compatibility": compatibility
-                    }
-                    
-                    supabase.table("daily_horoscopes").upsert(data).execute()
-                    print(f"Saved to DB: {sign}")
-                    
-                else:
-                    print(f"Could not find section for {sign}")
+                        print(f"--- {sign} ---")
+                        # print(clean_text[:50] + "...")
+                        
+                        # Upsert to Supabase
+                        data = {
+                            "sign": sign,
+                            "horoscope_text": clean_text,
+                            "date": display_date,
+                            "lucky_number": lucky_number,
+                            "lucky_color": lucky_color,
+                            "compatibility": compatibility
+                        }
+                        
+                        supabase.table("daily_horoscopes").upsert(data).execute()
+                        print(f"Saved to DB: {sign}")
+                        break # Stop searching potential starts for this sign
+                    else:
+                        print(f"DEBUG: Rejected {match_info} -> Len {len(raw_text)}. Next sign found? {found_next_sign}")
+                        if len(current_chunk) > 0:
+                             print(f"   Sample: {current_chunk[0][:20]}...")
+                
+                if not valid_chunk_found:
+                    print(f"Could not find valid section for {sign}")
 
             except Exception as e:
                 print(f"Error processing {sign}: {e}")
