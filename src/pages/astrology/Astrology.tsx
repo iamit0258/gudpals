@@ -60,18 +60,18 @@ const Astrology = () => {
   ];
 
   const zodiacSigns = [
-    { key: "aries", name: t("aries"), dates: "Mar 21 - Apr 19" },
-    { key: "taurus", name: t("taurus"), dates: "Apr 20 - May 20" },
-    { key: "gemini", name: t("gemini"), dates: "May 21 - Jun 20" },
-    { key: "cancer", name: t("cancer"), dates: "Jun 21 - Jul 22" },
-    { key: "leo", name: t("leo"), dates: "Jul 23 - Aug 22" },
-    { key: "virgo", name: t("virgo"), dates: "Aug 23 - Sep 22" },
-    { key: "libra", name: t("libra"), dates: "Sep 23 - Oct 22" },
-    { key: "scorpio", name: t("scorpio"), dates: "Oct 23 - Nov 21" },
-    { key: "sagittarius", name: t("sagittarius"), dates: "Nov 22 - Dec 21" },
-    { key: "capricorn", name: t("capricorn"), dates: "Dec 22 - Jan 19" },
-    { key: "aquarius", name: t("aquarius"), dates: "Jan 20 - Feb 18" },
-    { key: "pisces", name: t("pisces"), dates: "Feb 19 - Mar 20" }
+    { key: "Aries", name: t("aries"), dates: "Mar 21 - Apr 19" },
+    { key: "Taurus", name: t("taurus"), dates: "Apr 20 - May 20" },
+    { key: "Gemini", name: t("gemini"), dates: "May 21 - Jun 20" },
+    { key: "Cancer", name: t("cancer"), dates: "Jun 21 - Jul 22" },
+    { key: "Leo", name: t("leo"), dates: "Jul 23 - Aug 22" },
+    { key: "Virgo", name: t("virgo"), dates: "Aug 23 - Sep 22" },
+    { key: "Libra", name: t("libra"), dates: "Sep 23 - Oct 22" },
+    { key: "Scorpio", name: t("scorpio"), dates: "Oct 23 - Nov 21" },
+    { key: "Sagittarius", name: t("sagittarius"), dates: "Nov 22 - Dec 21" },
+    { key: "Capricorn", name: t("capricorn"), dates: "Dec 22 - Jan 19" },
+    { key: "Aquarius", name: t("aquarius"), dates: "Jan 20 - Feb 18" },
+    { key: "Pisces", name: t("pisces"), dates: "Feb 19 - Mar 20" }
   ];
 
   const handleConsult = (astrologer: Astrologer) => {
@@ -139,13 +139,13 @@ const Astrology = () => {
         <div className="grid grid-cols-3 gap-3">
           {zodiacSigns.map((sign) => (
             <Button
-              key={sign.name}
-              variant={selectedSign === sign.name ? "default" : "outline"}
-              className={`h-auto flex flex-col py-3 ${selectedSign === sign.name
+              key={sign.key}
+              variant={selectedSign === sign.key ? "default" : "outline"}
+              className={`h-auto flex flex-col py-3 ${selectedSign === sign.key
                 ? "bg-gradient-to-br from-green-600 to-teal-600"
                 : ""
                 }`}
-              onClick={() => selectZodiacSign(sign.name)}
+              onClick={() => selectZodiacSign(sign.key)}
             >
               <span className="font-medium">{sign.name}</span>
               <span className="text-xs mt-1 opacity-80">{sign.dates}</span>
@@ -157,7 +157,7 @@ const Astrology = () => {
       {selectedSign && (
         <section className="p-4 bg-gradient-to-r from-green-100/50 to-teal-100/50">
           <h2 className="text-xl font-semibold mb-3">
-            {t("horoscope_for")} {selectedSign} <span className="text-sm font-normal text-gray-600">({horoscope?.date})</span>
+            {t("horoscope_for")} {zodiacSigns.find(s => s.key === selectedSign)?.name} <span className="text-sm font-normal text-gray-600">({horoscope?.date})</span>
           </h2>
           <Card className="border-green-200 bg-white/80 backdrop-blur-sm">
             <CardContent className="p-4">
