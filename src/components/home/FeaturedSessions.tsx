@@ -117,8 +117,8 @@ const FeaturedSessions = () => {
   ];
 
   return (
-    <ScrollArea className="-mx-4 px-4">
-      <div className="flex space-x-4 pb-4">
+    <ScrollArea className="-mx-4 px-4 md:mx-0 md:px-0">
+      <div className="flex md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-4">
         {featuredSessions.map((session) => {
           // Format the time
           const time = session.start_time ? new Date(session.start_time).toLocaleTimeString([], {
@@ -146,7 +146,7 @@ const FeaturedSessions = () => {
           return (
             <Card
               key={session.id}
-              className="w-64 flex-shrink-0 overflow-hidden cursor-pointer transition-transform hover:scale-105"
+              className="w-64 md:w-full flex-shrink-0 md:flex-shrink overflow-hidden cursor-pointer transition-transform hover:scale-105"
             >
               <div className="relative h-32">
                 <img
