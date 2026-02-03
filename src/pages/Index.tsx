@@ -67,7 +67,7 @@ const Index = () => {
 
       <section className="px-4 py-8 bg-gradient-to-b from-secondary/50 to-transparent">
         <h2 className="text-2xl font-bold mb-6">{t("our_services")}</h2>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
           {services.map(service => (
             <Link
               to={service.path}

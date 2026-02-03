@@ -16,8 +16,8 @@ const SessionLive = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [session, setSession] = useState<any>(null);
+    const isAdmin = user?.email === "mevarun.arcade@gmail.com";
     const [loading, setLoading] = useState(true);
-    const [isAdmin, setIsAdmin] = useState(false);
 
     useEffect(() => {
         const fetchSession = async () => {
@@ -74,11 +74,6 @@ const SessionLive = () => {
                 if (sessionData) {
                     setSession(sessionData);
                     console.log("SessionLive: Session set successfully:", sessionData);
-
-                    // Check if user is the specific admin
-                    if (user && user.email === "mevarun.arcade@gmail.com") {
-                        setIsAdmin(true);
-                    }
                 } else {
                     console.warn("SessionLive: Session still null after checks.");
                 }
@@ -91,7 +86,7 @@ const SessionLive = () => {
         };
 
         fetchSession();
-    }, [id, user]);
+    }, [id]);
 
     if (loading) {
         return (
@@ -113,9 +108,10 @@ const SessionLive = () => {
 
     // Use the token provided by user for demo purposes if not in DB
     // In production, this should come from your backend generation logic
-    const DEMO_TOKEN = "007eJxTYFCSXGXqxfeH+dA105borg2/Vgn+P9g39ctrn3YbRVPT2JsKDIaWhkmJKUnmRmlmpiZGKcYWlhbJqUapJiamFmZJFuaJR2TVMhsCGRmYz+gwMjJAIIjPzuBemhKQmFPMwAAAfdAfSg==";
-    const channelName = session.agora_channel || "GudPals";
+    const DEMO_TOKEN = "007eJxTYGh6fL/vWl3uKbYv7O/K54pKrTYzmbimyv/BLsH00sZN2xoUGAwtDZMSU5LMjdLMTE2MUowtLC2SU41STUxMLcySLMwTGW0bMxsCGRkqzm5mZGSAQBCfnaE4tbg4Mz+PgQEA+34hTw==";
+    const channelName = session.agora_channel || "session";
     const token = session.agora_token || DEMO_TOKEN;
+    console.log("SessionLive: Agora config:", { channelName, token, isUsingDemoToken: !session.agora_token });
 
     return (
         <MobileLayout hideNavigation>

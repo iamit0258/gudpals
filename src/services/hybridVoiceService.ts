@@ -200,7 +200,7 @@ export class HybridVoiceService {
 
     // Adjust rate/pitch for Niva persona
     utterance.rate = 0.9; // Slightly slower
-    utterance.pitch = 1.1; // Slightly higher
+    utterance.pitch = 0.9; // Slightly lower (calmer)
   }
 
   stopAudio(): void {
