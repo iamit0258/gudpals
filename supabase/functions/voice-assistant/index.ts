@@ -92,15 +92,16 @@ serve(async (req) => {
         const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY');
         const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : null;
 
-        // --- ACTION: CHAT (Gemini) ---
+        // --- ACTION: CHAT (Groq) ---
         if (action === 'chat') {
-            const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY') || 'AIzaSyBt7caAV0CZ4UqdHxkZvXWDvG7EQR8ZjY4';
+            const GROQ_API_KEY = Deno.env.get('GROQ_API_KEY');
 
-            if (!GEMINI_API_KEY) {
-                throw new Error("Missing GEMINI_API_KEY");
+            if (!GROQ_API_KEY) {
+                console.warn("GROQ_API_KEY not found in environment secrets");
+                throw new Error("Missing GROQ_API_KEY in Supabase Secrets");
             }
 
-            console.log("Calling Gemini API...");
+            console.log("Calling Groq API...");
 
             // 0. Manual "Fast Path" for common questions (Bypasses AI for speed/reliability)
             const lowerMsg = message.toLowerCase();
@@ -173,8 +174,8 @@ ${travel}
                 }
             }
 
-            // 2. Build System Prompt
-            const prompt = `
+            // 2. Build System Prompt & Messages
+            const systemPrompt = `
             You are **Niva**, the kind and intelligent voice assistant for **GUDPALS**.
             
             **YOUR PERSONA:**
@@ -189,35 +190,38 @@ ${travel}
             ${dynamicContext}
             ${horoscopeContext}
 
-            **USER INFO:**
-            - Language: ${language || 'English'}
-            - Query: "${message}"
-
             **INSTRUCTIONS:**
             - If the user asks about sessions/jobs/travel, use the "REAL-TIME CONTEXT" to answer specifically.
             - If the user asks about the app or founder, use "STATIC KNOWLEDGE".
             - IMPORTANT: If a [Horoscope] is provided, read the entire horoscope text provided in the quotes. 
             - If [SYSTEM NOTE] says horoscope is missing, politely explain that the stars haven't spoken yet for that sign today.
-            - If you don't know, suggest checking the relevant page (e.g., "I'm not sure, please check the Sessions page.").
             `;
 
-            // Using 'v1' endpoint and 'gemini-1.5-flash' for maximum compatibility
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            const groqResponse = await fetch(`https://api.groq.com/openai/v1/chat/completions`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${GROQ_API_KEY}`
+                },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }]
+                    model: "llama-3.3-70b-versatile",
+                    messages: [
+                        { role: "system", content: systemPrompt },
+                        { role: "user", content: `(Language: ${language || 'English'}) ${message}` }
+                    ],
+                    temperature: 0.7,
+                    max_tokens: 500
                 })
             });
 
-            const data = await response.json();
+            const data = await groqResponse.json();
 
             if (data.error) {
-                console.error("Gemini API Error:", data.error);
-                throw new Error("Gemini Error: " + (data.error.message || 'Unknown'));
+                console.error("Groq API Error:", data.error);
+                throw new Error("Groq Error: " + (data.error.message || 'Unknown error'));
             }
 
-            const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I'm having trouble connecting right now.";
+            const reply = data.choices?.[0]?.message?.content || "I'm sorry, I'm having trouble connecting right now.";
 
             return new Response(JSON.stringify({ reply }), {
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -233,7 +237,7 @@ ${travel}
                 throw new Error("Missing ELEVEN_LABS_API_KEY in Secrets");
             }
 
-            const VOICE_ID = '21m00Tcm4TlvDq8ikWAM'; // Rachel
+            const VOICE_ID = 'piTKgcSrgjWgOfmsilth'; // Nicole (Calm & Soft)
 
             const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`, {
                 method: 'POST',
@@ -244,7 +248,7 @@ ${travel}
                 body: JSON.stringify({
                     text: text,
                     model_id: "eleven_monolingual_v1",
-                    voice_settings: { stability: 0.5, similarity_boost: 0.5 }
+                    voice_settings: { stability: 0.8, similarity_boost: 0.4 }
                 })
             });
 
