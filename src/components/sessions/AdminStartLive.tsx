@@ -40,6 +40,7 @@ const AdminStartLive: React.FC<AdminStartLiveProps> = ({
 
     const startBroadcast = async () => {
         try {
+            console.log("AdminStartLive: Starting broadcast with:", { channelName, token, APP_ID: import.meta.env.VITE_AGORA_APP_ID });
             // 1. Join Agora Channel
             await agoraService.joinChannel(channelName, token, null, "host");
 
@@ -60,9 +61,13 @@ const AdminStartLive: React.FC<AdminStartLiveProps> = ({
             toast({ title: "Live", description: "You are now live!" });
         } catch (error: any) {
             console.error("Error starting broadcast:", error);
+            let errorMessage = error.message;
+            if (errorMessage.includes("dynamic key or token timeout")) {
+                errorMessage = "Your Agora token has expired. Please generate a new one from the Agora Console.";
+            }
             toast({
-                title: "Error",
-                description: "Failed to start broadcast: " + error.message,
+                title: "Broadcast Error",
+                description: errorMessage,
                 variant: "destructive"
             });
         }

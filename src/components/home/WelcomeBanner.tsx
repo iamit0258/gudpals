@@ -15,11 +15,7 @@ const WelcomeBanner = () => {
   return (
     <div className="relative">
       <div
-        className="h-64 bg-gradient-to-br from-teal-400 to-primary flex items-center justify-center relative overflow-hidden"
-        style={{
-          borderBottomLeftRadius: "30px",
-          borderBottomRightRadius: "30px"
-        }}
+        className="h-64 md:h-80 lg:h-96 bg-gradient-to-br from-teal-400 to-primary flex items-center justify-center relative overflow-hidden transition-all duration-500 rounded-b-[30px] md:rounded-b-none"
       >
         {/* Abstract background shapes */}
         <div className="absolute inset-0 overflow-hidden">
