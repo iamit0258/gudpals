@@ -106,6 +106,11 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
     };
 
     const startListening = async () => {
+        if (isListening || isSpeaking || isProcessingRef.current) {
+            console.log('Voice assistant already active, ignoring start request');
+            return;
+        }
+
         // Check microphone permission
         if (micPermission !== 'granted') {
             const granted = await requestMicrophonePermission();
@@ -138,7 +143,7 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
 
                     if (typeof error === 'string') {
                         if (error === 'no-speech') errorMessage = "No speech detected. Try speaking closer to the mic.";
-                        else if (error === 'network') errorMessage = "Network error. Please check your connection.";
+                        else if (error === 'network') errorMessage = "Chrome's speech service is unreachable. Please check your internet or disable your VPN/Proxy.";
                         else if (error === 'not-allowed') errorMessage = "Microphone access denied. Please allow permissions.";
                         else errorMessage = `Voice Error: ${error}`;
                     }
