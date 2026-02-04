@@ -62,27 +62,23 @@ export const useSessionsService = () => {
     const fetchSessions = async () => {
       try {
         setLoading(true);
-        // Force using mock sessions for dynamic "Today/Tomorrow" dates
-        setSessions(mockSessions);
 
-        /* 
-        // Commenting out database fetch to ensure dynamic dates from mockSessions
         const { data, error } = await supabase
           .from('activities')
           .select('*')
           .eq('activity_type', 'session');
-  
+
         if (error || !data || data.length === 0) {
           setSessions(mockSessions);
         } else {
           const formattedSessions = data.map(session => {
             const startTime = session.start_time ? new Date(session.start_time) : null;
             const endTime = session.end_time ? new Date(session.end_time) : null;
-  
+
             const timeStr = startTime && endTime
               ? `${startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
               : "Flexible timing";
-  
+
             const dateStr = startTime
               ? startTime.toDateString() === new Date().toDateString()
                 ? t("today")
@@ -90,7 +86,7 @@ export const useSessionsService = () => {
                   ? t("tomorrow")
                   : startTime.toLocaleDateString()
               : "Anytime";
-  
+
             return {
               id: session.id,
               title: session.title,
@@ -99,13 +95,12 @@ export const useSessionsService = () => {
               date: dateStr,
               category: session.category,
               image: session.image_url,
-              is_live: (session as any).is_live // Cast to any until types are updated
+              is_live: (session as any).is_live === true
             };
           });
-  
+
           setSessions(formattedSessions);
         }
-        */
       } catch (error) {
         console.error("Error fetching sessions:", error);
         setSessions(mockSessions);
