@@ -109,7 +109,7 @@ const SessionLive = () => {
     // Use the token provided by user for demo purposes if not in DB
     // In production, this should come from your backend generation logic
     const DEMO_TOKEN = "007eJxTYDhUbxjGzFDtf2lNk+m+NQ1VfwS6vurOP3142vN6aeY0I2UFBkNLw6TElCRzozQzUxOjFGMLS4vkVKNUExNTC7MkC/NEu7zmzIZARgbzbTmsjAwQCOJzM+RklqUWpxYXZ+bnMTAAAOVpISY=";
-    const channelName = session.agora_channel || "session";
+    const channelName = session.agora_channel || "livesession";
     const token = session.agora_token || DEMO_TOKEN;
     console.log("SessionLive: Agora config:", { channelName, token, isUsingDemoToken: !session.agora_token });
 
