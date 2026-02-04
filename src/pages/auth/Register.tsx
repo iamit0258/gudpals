@@ -74,13 +74,21 @@ const Register = () => {
         phone: formData.phone // Ensure phone is stored if needed by Verify
       }));
 
-      // Check if registering for Activities or Digital Literacy (skip OTP)
-      if ((location.state as any)?.from === '/activities' || (location.state as any)?.from === '/digital-literacy') {
+      // Check if registering for Activities, Sessions or Digital Literacy (skip OTP)
+      const fromPath = (location.state as any)?.from;
+      const activityType = (location.state as any)?.activityType;
+
+      if (fromPath === '/activities' || fromPath === '/digital-literacy' || fromPath === '/sessions' || activityType === 'session') {
         toast({
           title: "Registration Successful",
           description: "You have successfully registered for the activity.",
         });
-        navigate((location.state as any)?.from || "/");
+        navigate(fromPath || "/", {
+          state: {
+            registered: true,
+            activityName: (location.state as any)?.activityName
+          }
+        });
         return;
       }
 
