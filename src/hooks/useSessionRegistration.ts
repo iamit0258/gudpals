@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/context/auth";
+import { useAuth } from "@/context/ClerkAuthBridge";
 import { useLanguage } from "@/context/language/LanguageContext";
 
 export const useSessionRegistration = () => {

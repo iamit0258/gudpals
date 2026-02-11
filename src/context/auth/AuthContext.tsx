@@ -6,12 +6,13 @@ import { AuthContextType } from "./types";
 export const AuthContext = createContext<AuthContextType>({
   user: null,
   isLoading: true,
-  sendOTP: async () => {},
-  verifyOTP: async () => {},
-  signOut: async () => {}, // Make this an async function that returns a Promise
-  updateProfile: async () => {},
+  sendOTP: async () => { },
+  verifyOTP: async () => { },
+  loginWithPhone: async () => { },
+  signOut: async () => { }, // Make this an async function that returns a Promise
+  updateProfile: async () => { },
   isAuthenticated: false,
-  registerForActivity: () => {},
+  registerForActivity: () => { },
   register: async () => ({ error: null, status: null }),
 });
 

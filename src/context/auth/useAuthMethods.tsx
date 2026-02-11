@@ -8,29 +8,30 @@ import { useActivityMethods } from "./auth-methods/activityMethods";
 
 export const useAuthMethods = () => {
   // Phone authentication methods
-  const { loading: phoneAuthLoading, loginWithPhoneOTP, verifyOTP } = usePhoneAuth();
-  
+  const { loading: phoneAuthLoading, loginWithPhoneOTP, verifyOTP, loginWithPhone } = usePhoneAuth();
+
   // Profile methods
   const { loading: profileLoading, updateProfile } = useProfileMethods();
-  
+
   // Session methods
   const { loading: sessionLoading, logout, signOut } = useSessionMethods();
-  
+
   // Activity methods
   const { registerForActivity } = useActivityMethods();
-  
+
   // Determine overall loading state
   const loading = phoneAuthLoading || profileLoading || sessionLoading;
-  
+
   // Define sendOTP as alias for loginWithPhoneOTP
   const sendOTP = loginWithPhoneOTP;
-  
+
   return {
     loading,
     loginWithPhoneOTP,
     verifyOTP,
     logout,
     sendOTP,
+    loginWithPhone,
     registerForActivity,
     updateProfile,
     signOut, // Alias for logout to match expected interface

@@ -3,24 +3,12 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Info, ExternalLink, Heart, Users, Shield } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/ClerkAuthBridge";
 
 const About = () => {
-  const { toast } = useToast();
-
-  const handleContactSupport = () => {
-    toast({
-      title: "Contact Support",
-      description: "Support contact form would open here (Demo)"
-    });
-  };
-
-  const handleOpenLink = (url: string, title: string) => {
-    toast({
-      title: `Opening ${title}`,
-      description: `Would open ${url} in browser (Demo)`
-    });
-  };
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   return (
     <div className="space-y-6">
@@ -37,10 +25,10 @@ const About = () => {
             <p className="text-sm text-muted-foreground">Version 1.0.0</p>
             <p className="text-sm">Built with ❤️ for seniors</p>
           </div>
-          
+
           <p className="text-sm text-muted-foreground leading-relaxed">
-            GUDPAL'S is a comprehensive platform designed specifically for senior citizens, 
-            offering health products, social connections, learning opportunities, and 
+            GUDPAL'S is a comprehensive platform designed specifically for senior citizens,
+            offering health products, social connections, learning opportunities, and
             personalized experiences to enhance quality of life.
           </p>
         </CardContent>
@@ -55,7 +43,7 @@ const About = () => {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            To empower senior citizens with technology that connects, educates, and enriches 
+            To empower senior citizens with technology that connects, educates, and enriches
             their lives while maintaining simplicity and accessibility.
           </p>
         </CardContent>
@@ -69,18 +57,18 @@ const About = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="w-full justify-between"
-            onClick={() => handleOpenLink("https://gudpals.community", "Community Forum")}
+            onClick={() => navigate("/community/forum")}
           >
             Community Forum
             <ExternalLink className="h-4 w-4" />
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="w-full justify-between"
-            onClick={() => handleOpenLink("https://gudpals.app/feedback", "Feedback")}
+            onClick={() => navigate("/community/feedback")}
           >
             Send Feedback
             <ExternalLink className="h-4 w-4" />
@@ -96,26 +84,26 @@ const About = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="w-full justify-between"
-            onClick={() => handleOpenLink("https://gudpals.app/privacy", "Privacy Policy")}
+            onClick={() => navigate("/legal/privacy")}
           >
             Privacy Policy
             <ExternalLink className="h-4 w-4" />
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="w-full justify-between"
-            onClick={() => handleOpenLink("https://gudpals.app/terms", "Terms of Service")}
+            onClick={() => navigate("/legal/terms")}
           >
             Terms of Service
             <ExternalLink className="h-4 w-4" />
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="w-full justify-between"
-            onClick={handleContactSupport}
+            onClick={() => navigate("/legal/support")}
           >
             Contact Support
             <ExternalLink className="h-4 w-4" />

@@ -14,7 +14,7 @@ const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [isValidPhone, setIsValidPhone] = useState(false);
-  const { sendOTP } = useAuth();
+  const { loginWithPhone } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -46,7 +46,7 @@ const LoginForm = () => {
     setIsLoading(true);
 
     try {
-      await sendOTP("+91" + phoneNumber);
+      await loginWithPhone("+91" + phoneNumber);
 
       if (rememberMe) {
         localStorage.setItem("gudpals_remember_phone", phoneNumber);
@@ -54,19 +54,16 @@ const LoginForm = () => {
         localStorage.removeItem("gudpals_remember_phone");
       }
 
-      navigate("/verify", {
-        state: {
-          phoneNumber: "+91" + phoneNumber,
-          from: (location.state as any)?.from
-        }
-      });
+      const redirectPath = (location.state as any)?.from || "/";
+      navigate(redirectPath);
+
       toast({
-        title: "OTP Sent",
-        description: "A verification code has been sent to your phone",
+        title: "Login Successful",
+        description: "Welcome to GUDPALS!",
       });
     } catch (error) {
       toast({
-        title: "Error sending OTP",
+        title: "Login Error",
         description: "Please try again later",
         variant: "destructive",
       });
@@ -126,11 +123,11 @@ const LoginForm = () => {
         {isLoading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Sending...
+            Logging in...
           </>
         ) : (
           <>
-            Send OTP
+            Login
             <Phone className="ml-2 h-4 w-4" />
           </>
         )}

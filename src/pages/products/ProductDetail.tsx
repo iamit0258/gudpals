@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ShoppingCart, ArrowLeft, Star, Plus, Minus, Check, MessageSquare, Trash, ChevronLeft, ChevronRight, Share2 } from "lucide-react";
+import { ShoppingCart, ArrowLeft, Star, Plus, Minus, Check, MessageSquare, Trash, ChevronLeft, ChevronRight, Share2, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/context/language/LanguageContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -16,186 +16,89 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 
-const mockProducts = {
-  "1": {
-    id: 1,
-    title_en: "Senior-Friendly Smartphone",
-    title_hi: "सीनियर-फ्रेंडली स्मार्टफोन",
-    description_en: "Our specially designed smartphone features large buttons, simplified interface, and enhanced accessibility features. Perfect for seniors who want to stay connected without the complexity of regular smartphones.",
-    description_hi: "हमारे विशेष रूप से डिज़ाइन किए गए स्मार्टफोन में बड़े बटन, सरल इंटरफेस और बेहतर पहुंच सुविधाएं हैं। उन वरिष्ठ नागरिकों के लिए आदर्श जो नियमित स्मार्टफोन की जटिलता के बिना जुड़े रहना चाहते हैं।",
-    price: 5999,
-    rating: 4.8,
-    reviews: 156,
-    features_en: [
-      "Extra large display and buttons",
-      "Simplified interface with essential functions",
-      "Emergency SOS button",
-      "Long-lasting battery",
-      "Hearing aid compatibility"
-    ],
-    features_hi: [
-      "अतिरिक्त बड़ा डिस्प्ले और बटन",
-      "आवश्यक कार्यों के साथ सरल इंटरफेस",
-      "आपातकालीन SOS बटन",
-      "लंबे समय तक चलने वाली बैटरी",
-      "हियरिंग एड कंपैटिबिलिटी"
-    ],
-    images: [
-      "https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=300&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=300&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1556656793-02715d8dd6f8?q=80&w=300&auto=format&fit=crop"
-    ],
-    colors: [
-      { name: "Black", value: "#000000" },
-      { name: "Silver", value: "#C0C0C0" },
-      { name: "Gold", value: "#FFD700" }
-    ],
-    category: "Electronics",
-    inStock: true
-  },
-  "2": {
-    id: 2,
-    title_en: "Meditation Cushion Set",
-    title_hi: "ध्यान कुशन सेट",
-    description_en: "Created with seniors in mind, this meditation cushion set provides proper support for longer meditation sessions. The set includes a comfortable seat cushion and a support cushion for your knees.",
-    description_hi: "वरिष्ठ नागरिकों को ध्यान में रखकर बनाया गया, यह ध्यान कुशन सेट लंबे ध्यान सत्रों के लिए उचित समर्थन प्रदान करता है। सेट में एक आरामदायक सीट कुशन और आपके घुटनों के लिए एक सहायक कुशन शामिल है।",
-    price: 1499,
-    rating: 4.5,
-    reviews: 89,
-    features_en: [
-      "Ergonomic design for comfortable sitting",
-      "Made with eco-friendly materials",
-      "Easy to clean covers",
-      "Provides proper spine alignment",
-      "Available in calming colors"
-    ],
-    features_hi: [
-      "आरामदायक बैठने के लिए एर्गोनोमिक डिज़ाइन",
-      "पर्यावरण के अनुकूल सामग्री से बना",
-      "आसानी से साफ होने वाले कवर",
-      "उचित रीढ़ संरेखण प्रदान करता है",
-      "शांत रंगों में उपलब्ध"
-    ],
-    images: [
-      "https://images.unsplash.com/photo-1545205597-3d9d02c29597?q=80&w=300&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1591228127791-8e2eaef098d3?q=80&w=300&auto=format&fit=crop"
-    ],
-    colors: [
-      { name: "Blue", value: "#4169E1" },
-      { name: "Purple", value: "#800080" },
-      { name: "Green", value: "#1a671aff" }
-    ],
-    category: "Wellness",
-    inStock: true
-  },
-  "3": {
-    id: 3,
-    title_en: "Arthritis-Friendly Utensils",
-    title_hi: "गठिया के अनुकूल बर्तन",
-    description_en: "These specially designed utensils make eating easier for those with arthritis or limited hand mobility. The ergonomic handles provide a comfortable grip while the lightweight design reduces strain.",
-    description_hi: "ये विशेष रूप से डिज़ाइन किए गए बर्तन गठिया या सीमित हाथ की गतिशीलता वाले लोगों के लिए खाना आसान बनाते हैं। एर्गोनोमिक हैंडल आरामदायक पकड़ प्रदान करते हैं जबकि हल्के डिज़ाइन तनाव को कम करता है।",
-    price: 899,
-    rating: 4.9,
-    reviews: 203,
-    features_en: [
-      "Ergonomic grip design",
-      "Lightweight construction",
-      "Dishwasher safe",
-      "BPA-free materials",
-      "Set includes knife, fork, spoon, and adaptive handles"
-    ],
-    features_hi: [
-      "एर्गोनोमिक ग्रिप डिज़ाइन",
-      "हल्का निर्माण",
-      "डिशवॉशर सेफ",
-      "BPA-मुक्त सामग्री",
-      "सेट में चाकू, कांटा, चम्मच और अनुकूली हैंडल शामिल हैं"
-    ],
-    images: [
-      "https://images.unsplash.com/photo-1630324982388-c15f371bf8c2?q=80&w=300&auto=format&fit=crop"
-    ],
-    colors: [
-      { name: "Grey", value: "#808080" },
-      { name: "Red", value: "#FF0000" }
-    ],
-    category: "Kitchen",
-    inStock: true
-  }
-};
-
-// Sample reviews data
-const sampleReviews = [
-  {
-    id: 1,
-    productId: 1,
-    userName: "Priya Sharma",
-    rating: 5,
-    text: "This smartphone is perfect for my father. The buttons are large and easy to press, and the interface is very simple to understand.",
-    date: "2024-03-15"
-  },
-  {
-    id: 2,
-    productId: 1,
-    userName: "Rajesh Kumar",
-    rating: 4,
-    text: "Very good product. Battery life is excellent. The only downside is that it could use a better camera.",
-    date: "2024-02-28"
-  },
-  {
-    id: 3,
-    productId: 2,
-    userName: "Ananya Patel",
-    rating: 5,
-    text: "These meditation cushions are so comfortable. They have helped me maintain my posture during long meditation sessions.",
-    date: "2024-03-10"
-  }
-];
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/context/ClerkAuthBridge";
 
 const ProductDetail = () => {
   const { id } = useParams();
-  const productId = id;
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t, language } = useLanguage();
+  const [product, setProduct] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [rating, setRating] = useState(5);
   const [reviewText, setReviewText] = useState("");
-  const [reviews, setReviews] = useState(sampleReviews);
+  const [reviews, setReviews] = useState<any[]>([]);
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [cart, setCart] = useState<any[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [editingReview, setEditingReview] = useState<any>(null);
+  const { user } = useAuth();
 
-  // In a real app, you would fetch this data
-  const product = mockProducts[productId as keyof typeof mockProducts];
-
+  // Fetch product data from Supabase
   useEffect(() => {
-    if (product && product.colors && product.colors.length > 0) {
-      setSelectedColor(product.colors[0].name);
-    }
-  }, [product]);
+    const fetchProductData = async () => {
+      if (!id) return;
 
-  // Load cart from localStorage on mount
-  useEffect(() => {
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) {
+      setLoading(true);
       try {
-        setCart(JSON.parse(savedCart));
-      } catch (e) {
-        console.error("Error parsing cart data:", e);
-      }
-    }
-  }, []);
+        // Fetch main product
+        const { data: pData, error: pError } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', parseInt(id))
+          .single();
 
-  // Save cart to localStorage whenever it changes (throttled by requestAnimationFrame)
-  useEffect(() => {
-    const id = requestAnimationFrame(() => {
-      localStorage.setItem('cart', JSON.stringify(cart));
-    });
-    return () => cancelAnimationFrame(id);
-  }, [cart]);
+        if (pError) throw pError;
+        setProduct(pData);
+
+        // Fetch related products (same category or random)
+        const { data: rData } = await supabase
+          .from('products')
+          .select('*')
+          .neq('id', parseInt(id))
+          .limit(2);
+
+        setRelatedProducts(rData || []);
+
+        // Fetch reviews
+        const { data: revData } = await supabase
+          .from('product_reviews')
+          .select('*')
+          .eq('product_id', parseInt(id));
+
+        setReviews(revData || []);
+
+      } catch (error) {
+        console.error("Error fetching product:", error);
+        toast({
+          title: "Error",
+          description: "Could not load product details.",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProductData();
+  }, [id, toast]);
+
+  if (loading) {
+    return (
+      <MobileLayout>
+        <div className="flex flex-col items-center justify-center h-[60vh]">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="mt-4 text-dhayan-gray">Loading product details...</p>
+        </div>
+      </MobileLayout>
+    );
+  }
 
   if (!product) {
     return (
@@ -216,27 +119,23 @@ const ProductDetail = () => {
   const handleAddToCart = () => {
     setIsAddingToCart(true);
 
-    // Simulate network delay
     setTimeout(() => {
       const cartItem = {
         id: product.id,
         title: getLocalizedTitle(),
         price: product.price,
         quantity: quantity,
-        image: product.images[0],
+        image: product.image_url,
         color: selectedColor
       };
 
-      // Check if the product is already in the cart
       const existingItemIndex = cart.findIndex(item => item.id === product.id && item.color === selectedColor);
 
       if (existingItemIndex >= 0) {
-        // Update quantity if already in cart
         const updatedCart = [...cart];
         updatedCart[existingItemIndex].quantity += quantity;
         setCart(updatedCart);
       } else {
-        // Add new item to cart
         setCart([...cart, cartItem]);
       }
 
@@ -270,13 +169,12 @@ const ProductDetail = () => {
   };
 
   const handleBuyNow = () => {
-    // Add current product to cart first and persist immediately
     const cartItem = {
       id: product.id,
       title: getLocalizedTitle(),
       price: product.price,
       quantity: quantity,
-      image: product.images[0],
+      image: product.image_url,
       color: selectedColor
     };
 
@@ -294,7 +192,6 @@ const ProductDetail = () => {
     }
 
     setCart(nextCart);
-    // Persist to localStorage before navigation to avoid race conditions
     localStorage.setItem('cart', JSON.stringify(nextCart));
 
     toast({
@@ -302,7 +199,6 @@ const ProductDetail = () => {
       description: t("preparing_order"),
     });
 
-    // Navigate to checkout
     navigate("/checkout");
   };
 
@@ -326,53 +222,114 @@ const ProductDetail = () => {
     setReviewOpen(true);
   };
 
-  const handleSubmitReview = () => {
-    const newReview = {
-      id: reviews.length + 1,
-      productId: product.id,
-      userName: "You", // In a real app, use the user's name
-      rating: rating,
-      text: reviewText,
-      date: new Date().toISOString().split('T')[0]
-    };
+  const handleSubmitReview = async () => {
+    try {
+      if (!user) {
+        toast({
+          title: "Login Required",
+          description: "Please login to submit a review.",
+          variant: "destructive"
+        });
+        navigate("/login", { state: { from: `/products/${product.id}` } });
+        return;
+      }
 
-    setReviews([...reviews, newReview]);
+      const newReview = {
+        product_id: product.id,
+        user_id: user.uid,
+        user_name: user.displayName || 'Anonymous',
+        rating: rating,
+        comment: reviewText,
+      };
 
-    toast({
-      title: t("review"),
-      description: "Thank you for your review!",
-    });
+      const { error } = await supabase
+        .from('product_reviews')
+        .insert(newReview);
 
-    setReviewOpen(false);
-    setReviewText("");
+      if (error) throw error;
+
+      toast({
+        title: t("review"),
+        description: "Thank you for your review!",
+      });
+
+      setReviews([...reviews, { ...newReview, id: Date.now(), created_at: new Date().toISOString() }]);
+      setReviewOpen(false);
+      setRating(5);
+      setReviewText("");
+      setEditingReview(null);
+
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      toast({
+        title: "Error",
+        description: "Failed to submit review. You may only submit one review per product.",
+        variant: "destructive"
+      });
+    }
   };
 
-  // Format price to Indian Rupees
+  const handleEditReview = (review: any) => {
+    setEditingReview(review);
+    setRating(review.rating);
+    setReviewText(review.comment);
+    setReviewOpen(true);
+  };
+
+  const handleUpdateReview = async () => {
+    if (!editingReview) return;
+    try {
+      const { error } = await supabase
+        .from('product_reviews')
+        .update({ rating, comment: reviewText })
+        .eq('id', editingReview.id);
+
+      if (error) throw error;
+
+      toast({ title: "Review Updated", description: "Your review has been updated." });
+      setReviews(reviews.map(r => r.id === editingReview.id ? { ...r, rating, comment: reviewText } : r));
+      setReviewOpen(false);
+      setRating(5);
+      setReviewText("");
+      setEditingReview(null);
+    } catch (error) {
+      console.error("Error updating review:", error);
+      toast({ title: "Error", description: "Failed to update review.", variant: "destructive" });
+    }
+  };
+
+  const handleDeleteReview = async (reviewId: any) => {
+    try {
+      const { error } = await supabase
+        .from('product_reviews')
+        .delete()
+        .eq('id', reviewId);
+
+      if (error) throw error;
+
+      toast({ title: "Review Deleted", description: "Your review has been removed." });
+      setReviews(reviews.filter(r => r.id !== reviewId));
+    } catch (error) {
+      console.error("Error deleting review:", error);
+      toast({ title: "Error", description: "Failed to delete review.", variant: "destructive" });
+    }
+  };
+
   const formattedPrice = new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
     maximumFractionDigits: 0
   }).format(product.price);
 
-  // Get the correct translations for product title based on language
   const getLocalizedTitle = () => {
-    return language === "en" ? product.title_en : product.title_hi;
-  };
-
-  const getLocalizedFeatures = () => {
-    return language === "en" ? product.features_en : product.features_hi;
+    return language === "hi" && product.name_hi ? product.name_hi : product.name;
   };
 
   const getLocalizedDescription = () => {
-    return language === "en" ? product.description_en : product.description_hi;
+    return language === "hi" && product.description_hi ? product.description_hi : product.description;
   };
 
-  // Filter reviews for this product
-  const productReviews = reviews.filter(review => review.productId === product.id);
-  const displayReviews = showAllReviews ? productReviews : productReviews.slice(0, 2);
-
-  // Get related products (excluding current product)
-  const relatedProducts = Object.values(mockProducts).filter(p => p.id !== product.id);
+  const displayReviews = showAllReviews ? reviews : reviews.slice(0, 2);
 
   return (
     <MobileLayout>
@@ -403,139 +360,60 @@ const ProductDetail = () => {
             </div>
           </div>
 
-          {/* Product Image Gallery */}
-          <div className="bg-gray-50 py-4">
-            <Carousel className="w-full max-w-xs mx-auto">
-              <CarouselContent>
-                {product.images.map((image, index) => (
-                  <CarouselItem key={index}>
-                    <div className="p-1">
-                      <div className="flex aspect-square items-center justify-center p-2">
-                        <img
-                          src={image}
-                          alt={`${getLocalizedTitle()} - View ${index + 1}`}
-                          className="max-h-64 w-full object-contain mix-blend-multiply"
-                        />
-                      </div>
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="left-2" />
-              <CarouselNext className="right-2" />
-            </Carousel>
-            <div className="flex justify-center gap-1 mt-2">
-              {product.images.map((_, index) => (
-                <div key={index} className="w-2 h-2 rounded-full bg-gray-300" />
-              ))}
-            </div>
+          <div className="bg-gray-50 py-4 flex items-center justify-center min-h-[300px]">
+            <img
+              src={product.image_url || "/placeholder.svg"}
+              alt={getLocalizedTitle()}
+              className="max-h-64 object-contain mix-blend-multiply"
+            />
           </div>
 
-          {/* Product Info */}
           <div className="p-4 space-y-6">
             <div>
               <div className="flex justify-between items-start">
                 <h1 className="text-2xl font-bold text-gray-900">{getLocalizedTitle()}</h1>
                 <span className="bg-primary/10 text-primary text-xs px-2.5 py-1 rounded-full font-medium">
-                  {t(product.category.toLowerCase())}
+                  {t(product.category?.toLowerCase() || "general")}
                 </span>
               </div>
 
               <div className="flex items-center mt-2 gap-4">
                 <div className="flex items-center bg-yellow-50 px-2 py-1 rounded-md">
                   <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                  <span className="ml-1 text-sm font-bold text-yellow-700">{product.rating}</span>
+                  <span className="ml-1 text-sm font-bold text-yellow-700">{product.rating || "5.0"}</span>
                 </div>
-                <span className="text-sm text-muted-foreground underline decoration-dotted">{product.reviews} {t("reviews")}</span>
+                {reviews.length > 0 && (
+                  <span className="text-sm text-muted-foreground underline decoration-dotted">{reviews.length} {t("reviews")}</span>
+                )}
               </div>
 
               <div className="mt-4">
                 <h2 className="text-3xl font-bold text-primary">{formattedPrice}</h2>
                 <p className="text-sm text-green-600 mt-1 font-medium flex items-center">
                   <Check className="h-4 w-4 mr-1" />
-                  {product.inStock ? t("in_stock") : t("out_of_stock")}
+                  {product.stock_quantity > 0 ? t("in_stock") : t("out_of_stock")}
                 </p>
               </div>
             </div>
-
-            {/* Color Selection */}
-            {product.colors && product.colors.length > 0 && (
-              <div>
-                <h3 className="font-medium mb-3">Select Color: <span className="text-muted-foreground font-normal">{selectedColor}</span></h3>
-                <div className="flex gap-3">
-                  {product.colors.map((color) => (
-                    <button
-                      key={color.name}
-                      onClick={() => setSelectedColor(color.name)}
-                      className={`w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all ${selectedColor === color.name ? "border-primary ring-2 ring-primary/20 ring-offset-2" : "border-transparent"
-                        }`}
-                      style={{ backgroundColor: color.value }}
-                      aria-label={`Select ${color.name}`}
-                    >
-                      {selectedColor === color.name && (
-                        <Check className={`h-5 w-5 ${['White', 'Silver', 'Yellow'].includes(color.name) ? 'text-black' : 'text-white'}`} />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
 
             <div>
               <h3 className="font-medium mb-2">{t("description")}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{getLocalizedDescription()}</p>
             </div>
 
-            <div>
-              <h3 className="font-medium mb-2">{t("features")}</h3>
-              <ul className="space-y-2">
-                {getLocalizedFeatures().map((feature, index) => (
-                  <li key={index} className="text-sm text-muted-foreground flex items-start bg-gray-50 p-2 rounded-lg">
-                    <span className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center mr-3 flex-shrink-0 mt-0.5">
-                      <Check className="h-3 w-3" />
-                    </span>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Quantity Selector */}
             <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
               <span className="font-medium">{t("quantity")}:</span>
               <div className="flex items-center bg-white border rounded-md shadow-sm">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-9 w-9 p-0 hover:bg-gray-100"
-                  onClick={decreaseQuantity}
-                  disabled={quantity <= 1}
-                >
-                  <Minus className="h-4 w-4" />
-                </Button>
+                <Button variant="ghost" size="sm" className="h-9 w-9 p-0 hover:bg-gray-100" onClick={decreaseQuantity} disabled={quantity <= 1}><Minus className="h-4 w-4" /></Button>
                 <span className="w-10 text-center font-medium">{quantity}</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-9 w-9 p-0 hover:bg-gray-100"
-                  onClick={increaseQuantity}
-                  disabled={quantity >= 10}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
+                <Button variant="ghost" size="sm" className="h-9 w-9 p-0 hover:bg-gray-100" onClick={increaseQuantity} disabled={quantity >= 10}><Plus className="h-4 w-4" /></Button>
               </div>
             </div>
 
-            {/* Reviews Section */}
             <div className="pt-6 border-t">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold text-lg">{t("reviews")} ({productReviews.length})</h3>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleOpenReview}
-                  className="text-xs"
-                >
+                <h3 className="font-bold text-lg">{t("reviews")} ({reviews.length})</h3>
+                <Button variant="outline" size="sm" onClick={handleOpenReview} className="text-xs">
                   <MessageSquare className="h-3 w-3 mr-2" />
                   {t("write_review")}
                 </Button>
@@ -548,85 +426,66 @@ const ProductDetail = () => {
                       <CardContent className="p-4">
                         <div className="flex justify-between items-start mb-2">
                           <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs">
-                              {review.userName.charAt(0)}
-                            </div>
+                            <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs">{(review.user_name || 'U').charAt(0).toUpperCase()}</div>
                             <div>
-                              <span className="font-medium text-sm block">{review.userName}</span>
-                              <span className="text-xs text-muted-foreground">{review.date}</span>
+                              <span className="font-medium text-sm block">{review.user_name || 'User'}</span>
+                              <span className="text-xs text-muted-foreground">{new Date(review.created_at).toLocaleDateString()}</span>
                             </div>
                           </div>
                           <div className="flex">
                             {[...Array(5)].map((_, i) => (
-                              <Star
-                                key={i}
-                                className={`h-3 w-3 ${i < review.rating
-                                  ? "text-yellow-400 fill-yellow-400"
-                                  : "text-gray-300"
-                                  }`}
-                              />
+                              <Star key={i} className={`h-3 w-3 ${i < review.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`} />
                             ))}
                           </div>
                         </div>
-                        <p className="text-sm text-gray-700">{review.text}</p>
+                        <p className="text-sm text-gray-700">{review.comment}</p>
+                        {user && review.user_id === user.uid && (
+                          <div className="flex gap-2 mt-2 pt-2 border-t">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-xs h-7 text-blue-600 hover:bg-blue-50"
+                              onClick={() => handleEditReview(review)}
+                            >
+                              <Pencil className="h-3 w-3 mr-1" />
+                              Edit
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-xs h-7 text-red-600 hover:bg-red-50"
+                              onClick={() => handleDeleteReview(review.id)}
+                            >
+                              <Trash className="h-3 w-3 mr-1" />
+                              Delete
+                            </Button>
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
                   ))}
-
-                  {productReviews.length > 2 && (
-                    <Button
-                      variant="ghost"
-                      className="w-full text-primary text-sm"
-                      onClick={() => setShowAllReviews(!showAllReviews)}
-                    >
-                      {showAllReviews ? "Show Less Reviews" : `View All ${productReviews.length} Reviews`}
-                    </Button>
-                  )}
                 </div>
               ) : (
                 <div className="text-center py-8 bg-gray-50 rounded-lg">
                   <MessageSquare className="h-8 w-8 mx-auto text-gray-300 mb-2" />
-                  <p className="text-sm text-gray-500">No reviews yet. Be the first to review!</p>
+                  <p className="text-sm text-gray-500">No reviews yet.</p>
                 </div>
               )}
             </div>
 
-            {/* Related Products */}
             <div className="pt-6 border-t">
               <h3 className="font-bold text-lg mb-4">You Might Also Like</h3>
               <div className="grid grid-cols-2 gap-4">
-                {relatedProducts.map((relatedProduct) => (
-                  <Card
-                    key={relatedProduct.id}
-                    className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-                    onClick={() => {
-                      navigate(`/products/${relatedProduct.id}`);
-                      window.scrollTo(0, 0);
-                    }}
-                  >
+                {relatedProducts.map((rp) => (
+                  <Card key={rp.id} className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow" onClick={() => { navigate(`/products/${rp.id}`); window.scrollTo(0, 0); }}>
                     <div className="aspect-square bg-gray-100 p-4 flex items-center justify-center">
-                      <img
-                        src={relatedProduct.images[0]}
-                        alt={language === "en" ? relatedProduct.title_en : relatedProduct.title_hi}
-                        className="w-full h-full object-contain mix-blend-multiply"
-                      />
+                      <img src={rp.image_url || "/placeholder.svg"} alt={rp.name} className="w-full h-full object-contain mix-blend-multiply" />
                     </div>
                     <div className="p-3">
-                      <h4 className="font-medium text-sm line-clamp-2 h-10">
-                        {language === "en" ? relatedProduct.title_en : relatedProduct.title_hi}
-                      </h4>
+                      <h4 className="font-medium text-sm line-clamp-2 h-10">{language === "hi" && rp.name_hi ? rp.name_hi : rp.name}</h4>
                       <div className="flex items-center justify-between mt-2">
-                        <span className="font-bold text-primary">
-                          {new Intl.NumberFormat('en-IN', {
-                            style: 'currency',
-                            currency: 'INR',
-                            maximumFractionDigits: 0
-                          }).format(relatedProduct.price)}
-                        </span>
-                        <div className="flex items-center text-xs text-yellow-600">
-                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 mr-1" />
-                          {relatedProduct.rating}
-                        </div>
+                        <span className="font-bold text-primary">₹{rp.price}</span>
+                        <div className="flex items-center text-xs text-yellow-600"><Star className="h-3 w-3 fill-yellow-400 text-yellow-400 mr-1" />4.5</div>
                       </div>
                     </div>
                   </Card>
@@ -698,11 +557,11 @@ const ProductDetail = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setReviewOpen(false)}>
+            <Button variant="outline" onClick={() => { setReviewOpen(false); setEditingReview(null); setRating(5); setReviewText(""); }}>
               {t("close")}
             </Button>
-            <Button onClick={handleSubmitReview} disabled={!reviewText.trim()}>
-              {t("submit_review")}
+            <Button onClick={editingReview ? handleUpdateReview : handleSubmitReview} disabled={!reviewText.trim()}>
+              {editingReview ? "Update Review" : t("submit_review")}
             </Button>
           </DialogFooter>
         </DialogContent>

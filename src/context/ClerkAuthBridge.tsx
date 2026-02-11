@@ -154,6 +154,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }));
 
     // Redirect to sign up if not authenticated
+    // Redirect to sign up if not authenticated
     if (!user) {
       navigate("/register", {
         state: {
@@ -162,6 +163,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           activityName,
           activityId: null // We don't have ID here but it's okay
         }
+      });
+    } else {
+      // If already authenticated, trigger the success flow immediately
+      // This will cause the consuming page (like Employment.tsx) to see the state in useEffect
+      navigate(redirectPath, {
+        state: {
+          registered: true,
+          activityName: activityName
+        },
+        replace: true
       });
     }
   };
