@@ -20,6 +20,29 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
   const location = useLocation();
   const { t } = useLanguage();
 
+<<<<<<< HEAD
+  const navItems = [{
+    name: t("home"),
+    path: "/",
+    icon: Home
+  }, {
+    name: t("sessions"),
+    path: "/sessions",
+    icon: Calendar
+  }, {
+    name: t("friends"),
+    path: "/friends",
+    icon: Users
+  }, {
+    name: t("products"),
+    path: "/products",
+    icon: Package
+  }, {
+    name: t("profile"),
+    path: "/profile",
+    icon: User
+  }];
+=======
 
   const navItems = [
     {
@@ -50,6 +73,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
   ];
 
 
+>>>>>>> my-branch
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
