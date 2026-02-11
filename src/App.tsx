@@ -30,6 +30,7 @@ import ChatRoom from "./pages/chat/ChatRoom";
 import DigitalLiteracy from "./pages/digitalLiteracy/DigitalLiteracy";
 import Travel from "./pages/travel/Travel";
 import Employment from "./pages/employment/Employment";
+import JobApplication from "./pages/employment/JobApplication";
 import Settings from "./pages/settings/Settings";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
@@ -37,6 +38,11 @@ import Verify from "./pages/auth/Verify";
 import ClerkLogin from "./pages/auth/ClerkLogin";
 import ClerkRegister from "./pages/auth/ClerkRegister";
 import Onboarding from "./pages/auth/Onboarding";
+import Forum from "./pages/community/Forum";
+import Feedback from "./pages/community/Feedback";
+import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
+import TermsOfService from "./pages/legal/TermsOfService";
+import ContactSupport from "./pages/legal/ContactSupport";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -82,6 +88,7 @@ const App = () => (
                     <Route path="/digital-literacy" element={<DigitalLiteracy />} />
                     <Route path="/travel" element={<Travel />} />
                     <Route path="/employment" element={<Employment />} />
+                    <Route path="/employment/apply/:id" element={<JobApplication />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
@@ -89,6 +96,16 @@ const App = () => (
                     <Route path="/sign-in" element={<ClerkLogin />} />
                     <Route path="/sign-up" element={<ClerkRegister />} />
                     <Route path="/onboarding" element={<Onboarding />} />
+
+                    {/* Community & Legal Routes */}
+                    <Route path="/community/forum" element={<Forum />} />
+                    <Route path="/community/feedback" element={<Feedback />} />
+                    <Route path="/legal/privacy" element={<PrivacyPolicy />} />
+                    <Route path="/legal/terms" element={<TermsOfService />} />
+                    <Route path="/legal/support" element={<ContactSupport />} />
+
+
+
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>

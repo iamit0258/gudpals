@@ -15,7 +15,7 @@ const Register = () => {
   const location = useLocation();
   const { t } = useLanguage();
   const { toast } = useToast();
-  const { sendOTP } = useAuth();
+  const { loginWithPhone } = useAuth();
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -92,20 +92,14 @@ const Register = () => {
         return;
       }
 
-      await sendOTP("+91" + formData.phone);
+      await loginWithPhone("+91" + formData.phone);
 
-      // Pass state to Verify page
-      navigate("/verify", {
-        state: {
-          phoneNumber: "+91" + formData.phone,
-          isSignup: true,
-          from: (location.state as any)?.from
-        }
-      });
+      const redirectPath = (location.state as any)?.from || "/";
+      navigate(redirectPath);
 
       toast({
-        title: "OTP Sent",
-        description: "A verification code has been sent to your phone",
+        title: "Registration Successful",
+        description: "Welcome to GUDPALS!",
       });
     } catch (error) {
       toast({

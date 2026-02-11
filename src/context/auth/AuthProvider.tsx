@@ -23,7 +23,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 // This component consumes all the separate context values and provides them through the main AuthContext
 const AuthConsumer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isLoading, isAuthenticated } = useAuthState();
-  const { sendOTP, verifyOTP, signOut, updateProfile } = useAuthMethodsHook();
+  const { sendOTP, verifyOTP, loginWithPhone, signOut, updateProfile } = useAuthMethodsHook();
   const { registerForActivity } = useActivity();
 
   // Simple register implementation for demo
@@ -31,10 +31,10 @@ const AuthConsumer: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     console.log("Registering user:", data);
     // For demo purposes, return success after a delay
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
     // Return mock success response
-    return { 
-      error: null, 
+    return {
+      error: null,
       status: "needs_email_verification"
     };
   };
@@ -46,6 +46,7 @@ const AuthConsumer: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         isLoading,
         sendOTP,
         verifyOTP,
+        loginWithPhone,
         signOut,
         updateProfile,
         isAuthenticated,

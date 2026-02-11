@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, CreditCard, Truck, ShieldCheck, CheckCircle, Home, Navigation, Trash, MapPin } from "lucide-react";
+import { ArrowLeft, CreditCard, Truck, ShieldCheck, CheckCircle, Home, Navigation, Trash, MapPin, Package, ShoppingBag, Minus, Plus } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/context/language/LanguageContext";
@@ -17,6 +17,34 @@ import { useAddresses } from "@/hooks/useAddresses";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const checkoutSchema = z.object({
+  paymentMethod: z.enum(["online", "cod"]),
+  addressType: z.enum(["home", "work"]),
+  name: z.string().min(2, "Full name is required"),
+  phone: z.string().min(10, "Valid phone number is required").max(15),
+  houseNo: z.string().min(1, "House/Flat No. is required"),
+  address: z.string().min(5, "Street address is required"),
+  landmark: z.string().optional(),
+  city: z.string().min(2, "City is required"),
+  state: z.string().min(1, "State is required"),
+  pincode: z.string().regex(/^\d{6}$/, "Pincode must be 6 digits")
+});
+
+const indianStates = [
+  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
+  "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand",
+  "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur",
+  "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan",
+  "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh",
+  "Uttarakhand", "West Bengal", "Andaman and Nicobar Islands",
+  "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi",
+  "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry"
+];
+
+type CheckoutValues = z.infer<typeof checkoutSchema>;
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -25,6 +53,7 @@ const Checkout = () => {
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
+  const [completedOrderDetails, setCompletedOrderDetails] = useState<any>(null);
   const { user } = useAuth();
   const { addresses, addAddress } = useAddresses();
   const [saveAddress, setSaveAddress] = useState(true);
@@ -42,14 +71,18 @@ const Checkout = () => {
     }
   }, []);
 
-  const form = useForm({
+  const form = useForm<CheckoutValues>({
+    resolver: zodResolver(checkoutSchema),
     defaultValues: {
       paymentMethod: "online",
       addressType: "home",
       name: "",
       phone: "",
+      houseNo: "",
       address: "",
+      landmark: "",
       city: "",
+      state: "",
       pincode: ""
     }
   });
@@ -68,8 +101,11 @@ const Checkout = () => {
   const fillFormWithAddress = (address: any) => {
     form.setValue("name", address.name || "");
     form.setValue("phone", address.phone || "");
+    form.setValue("houseNo", address.house_no || "");
     form.setValue("address", address.street || "");
+    form.setValue("landmark", address.landmark || "");
     form.setValue("city", address.city || "");
+    form.setValue("state", address.state || "");
     form.setValue("pincode", address.pincode || "");
     form.setValue("addressType", address.type || "home");
   };
@@ -82,8 +118,11 @@ const Checkout = () => {
         addressType: "home",
         name: "",
         phone: "",
+        houseNo: "",
         address: "",
+        landmark: "",
         city: "",
+        state: "",
         pincode: ""
       });
       setSaveAddress(true);
@@ -102,7 +141,7 @@ const Checkout = () => {
 
   const calculateDeliveryFee = () => {
     const subtotal = calculateSubtotal();
-    return subtotal > 1000 ? 0 : 40;
+    return subtotal >= 499 ? 0 : 40;
   };
 
   const calculateTotal = () => {
@@ -135,6 +174,14 @@ const Checkout = () => {
     }
   };
 
+  const handleUpdateQuantity = (id: number, delta: number) => {
+    const updated = cartItems.map(item =>
+      item.id === id ? { ...item, quantity: Math.max(1, Math.min(10, item.quantity + delta)) } : item
+    );
+    setCartItems(updated);
+    localStorage.setItem('cart', JSON.stringify(updated));
+  };
+
   const handleSubmit = async (data: any) => {
     if (cartItems.length === 0) {
       toast({
@@ -150,10 +197,12 @@ const Checkout = () => {
     // Save address if requested and it's a new address (or manually checked)
     if (saveAddress && selectedAddressId === "new") {
       addAddress({
-        name: data.name, // Using name as address name for now, or we could ask for a label
+        name: data.name,
         street: data.address,
+        house_no: data.houseNo,
+        landmark: data.landmark,
         city: data.city,
-        state: "India", // Defaulting as it's not in the form explicitly
+        state: data.state,
         pincode: data.pincode,
         isDefault: addresses.length === 0,
         phone: data.phone,
@@ -198,22 +247,55 @@ const Checkout = () => {
         }
       } else {
         // Cash on delivery - process order directly
-        setOrderComplete(true);
 
-        // Store the order in localStorage for demo purposes
-        const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
-        const newOrder = {
-          id: Date.now(),
-          items: cartItems,
-          address: data,
-          total: calculateTotal(),
-          status: 'Processing',
-          date: new Date().toISOString(),
-          paymentMethod: 'Cash on Delivery'
+        // Prepare order data
+        const orderData = {
+          user_id: user?.uid || 'guest',
+          total_amount: calculateTotal(),
+          status: 'pending',
+          payment_method: 'Cash on Delivery',
+          items: cartItems.map(item => ({ id: item.id, title: item.title, price: item.price, quantity: item.quantity })),
+          shipping_address: { name: data.name, phone: data.phone, houseNo: data.houseNo, address: data.address, landmark: data.landmark, city: data.city, state: data.state, pincode: data.pincode },
+          payment_intent_id: `COD-${Date.now()}`
         };
 
-        orderHistory.push(newOrder);
-        localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
+        // Insert into Supabase
+        const { data: orderResponse, error: orderError } = await supabase
+          .from('orders')
+          .insert(orderData)
+          .select()
+          .single();
+
+        if (orderError) throw orderError;
+
+        // Insert items into order_items table
+        if (cartItems.length > 0) {
+          const orderItems = cartItems.map(item => ({
+            order_id: orderResponse.id,
+            product_id: item.id,
+            product_name: item.title,
+            product_price: item.price,
+            price_at_purchase: item.price,
+            quantity: item.quantity
+          }));
+
+          const { error: itemsError } = await supabase
+            .from('order_items')
+            .insert(orderItems);
+
+          if (itemsError) throw itemsError;
+        }
+
+        // Store completed order details for confirmation page
+        setCompletedOrderDetails({
+          id: orderResponse.id,
+          items: cartItems.map(item => ({ title: item.title, price: item.price, quantity: item.quantity })),
+          total: calculateTotal(),
+          address: { name: data.name, phone: data.phone, address: data.address, city: data.city, pincode: data.pincode },
+          paymentMethod: 'Cash on Delivery'
+        });
+
+        setOrderComplete(true);
 
         // Clear cart after successful order
         localStorage.setItem('cart', JSON.stringify([]));
@@ -235,33 +317,124 @@ const Checkout = () => {
     }
   };
 
+  // Estimated delivery date (3-5 business days)
+  const getEstimatedDelivery = () => {
+    const today = new Date();
+    const minDate = new Date(today);
+    minDate.setDate(today.getDate() + 3);
+    const maxDate = new Date(today);
+    maxDate.setDate(today.getDate() + 5);
+    const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' };
+    return `${minDate.toLocaleDateString('en-IN', opts)} - ${maxDate.toLocaleDateString('en-IN', opts)}`;
+  };
+
   if (orderComplete) {
     return (
       <MobileLayout>
-        <div className="p-4 flex flex-col items-center justify-center min-h-[60vh] text-center">
-          <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
-            <CheckCircle className="h-8 w-8 text-green-600" />
+        <div className="p-4 pb-24">
+          {/* Success Header */}
+          <div className="flex flex-col items-center text-center mb-6 pt-4">
+            <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-3 animate-bounce">
+              <CheckCircle className="h-8 w-8 text-green-600" />
+            </div>
+            <h1 className="text-2xl font-bold text-green-700">{t("order_successful")}</h1>
+            <p className="text-muted-foreground text-sm mt-1">{t("order_confirmation_message")}</p>
           </div>
-          <h1 className="text-2xl font-bold mb-2">{t("order_successful")}</h1>
-          <p className="text-muted-foreground mb-6">
-            {t("order_confirmation_message")}
-          </p>
-          <p className="text-sm mb-8">
-            {t("order_confirmation_email")}
-          </p>
-          <Button
-            className="mb-2 w-full max-w-xs bg-primary hover:bg-dhayan-teal-dark text-white"
-            onClick={() => navigate("/products")}
-          >
-            {t("continue_shopping")}
-          </Button>
-          <Button
-            variant="outline"
-            className="w-full max-w-xs"
-            onClick={() => navigate("/")}
-          >
-            {t("go_to_home")}
-          </Button>
+
+          {completedOrderDetails && (
+            <>
+              {/* Order ID */}
+              <Card className="mb-3 border-green-100 bg-green-50/50">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Package className="h-4 w-4 text-green-600" />
+                      <span className="text-sm font-medium">Order ID</span>
+                    </div>
+                    <span className="text-sm font-mono text-green-700">{completedOrderDetails.id?.substring(0, 8).toUpperCase()}</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Items */}
+              <Card className="mb-3">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <ShoppingBag className="h-4 w-4 text-primary" />
+                    <h3 className="font-medium text-sm">Items Ordered</h3>
+                  </div>
+                  <div className="space-y-2">
+                    {completedOrderDetails.items.map((item: any, idx: number) => (
+                      <div key={idx} className="flex justify-between items-center text-sm py-1 border-b last:border-0">
+                        <div>
+                          <span className="font-medium">{item.title}</span>
+                          <span className="text-muted-foreground ml-1">x{item.quantity}</span>
+                        </div>
+                        <span className="font-medium">₹{item.price * item.quantity}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-between items-center mt-3 pt-2 border-t font-bold">
+                    <span>Total</span>
+                    <span className="text-primary">₹{completedOrderDetails.total}</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Delivery Info */}
+              <Card className="mb-3">
+                <CardContent className="p-4">
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-2">
+                      <Truck className="h-4 w-4 text-blue-500 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium">Estimated Delivery</p>
+                        <p className="text-sm text-muted-foreground">{getEstimatedDelivery()}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <CreditCard className="h-4 w-4 text-purple-500 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium">Payment Method</p>
+                        <p className="text-sm text-muted-foreground">{completedOrderDetails.paymentMethod}</p>
+                      </div>
+                    </div>
+                    {completedOrderDetails.address && completedOrderDetails.address.name && (
+                      <div className="flex items-start gap-2">
+                        <MapPin className="h-4 w-4 text-red-500 mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium">Shipping To</p>
+                          <p className="text-sm text-muted-foreground">
+                            {completedOrderDetails.address.name}, {completedOrderDetails.address.address}
+                            {completedOrderDetails.address.city && `, ${completedOrderDetails.address.city}`}
+                            {completedOrderDetails.address.pincode && ` - ${completedOrderDetails.address.pincode}`}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
+
+          {/* Action Buttons */}
+          <div className="space-y-2 mt-6">
+            <Button
+              className="w-full bg-primary hover:bg-primary/90"
+              onClick={() => navigate("/profile")}
+            >
+              <Package className="h-4 w-4 mr-2" />
+              View My Orders
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => navigate("/products")}
+            >
+              {t("continue_shopping")}
+            </Button>
+          </div>
         </div>
       </MobileLayout>
     );
@@ -303,15 +476,33 @@ const Checkout = () => {
                         <h3 className="font-medium text-sm line-clamp-1">{item.title}</h3>
                         <div className="flex justify-between items-center mt-1">
                           <p className="font-bold text-primary">{formatPrice(item.price)}</p>
-                          <div className="flex items-center">
-                            <span className="text-sm mr-3">x{item.quantity}</span>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 w-7 p-0"
+                              onClick={() => handleUpdateQuantity(item.id, -1)}
+                              disabled={item.quantity <= 1}
+                            >
+                              <Minus className="h-3 w-3" />
+                            </Button>
+                            <span className="text-sm w-6 text-center font-medium">{item.quantity}</span>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 w-7 p-0"
+                              onClick={() => handleUpdateQuantity(item.id, 1)}
+                              disabled={item.quantity >= 10}
+                            >
+                              <Plus className="h-3 w-3" />
+                            </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-8 w-8 p-0 text-red-500 hover:bg-red-50 hover:text-red-600"
+                              className="h-7 w-7 p-0 text-red-500 hover:bg-red-50 hover:text-red-600 ml-1"
                               onClick={() => handleRemoveItem(item.id)}
                             >
-                              <Trash className="h-4 w-4" />
+                              <Trash className="h-3.5 w-3.5" />
                             </Button>
                           </div>
                         </div>
@@ -333,7 +524,7 @@ const Checkout = () => {
               <span>{formatPrice(calculateSubtotal())}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">{t("delivery_fee")}</span>
+              <span className="text-muted-foreground">{t("shipping_fee")}</span>
               <span>{calculateDeliveryFee() === 0 ? t("free") : formatPrice(calculateDeliveryFee())}</span>
             </div>
             <div className="border-t pt-2 mt-2 flex justify-between font-medium">
@@ -451,37 +642,137 @@ const Checkout = () => {
                   )}
                 />
 
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="text-sm font-medium">{t("full_name")}</label>
-                      <Input {...form.register("name")} />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-sm font-medium">{t("phone_number")}</label>
-                      <Input {...form.register("phone")} />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium">{t("address")}</label>
-                    <Textarea
-                      {...form.register("address")}
-                      className="resize-none"
-                      rows={2}
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("full_name")}</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("phone_number")}</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="e.g. 9876543210" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="text-sm font-medium">{t("city")}</label>
-                      <Input {...form.register("city")} />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-sm font-medium">{t("pincode")}</label>
-                      <Input {...form.register("pincode")} />
-                    </div>
+                    <FormField
+                      control={form.control}
+                      name="houseNo"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>House / Flat No.</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="e.g. Flat 402" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="landmark"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Landmark (Optional)</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="e.g. Near Park" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
+
+                  <FormField
+                    control={form.control}
+                    name="address"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Street Address / Area</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            {...field}
+                            className="resize-none"
+                            rows={2}
+                            placeholder="Street name, locality, etc."
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormField
+                      control={form.control}
+                      name="city"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("city")}</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="pincode"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("pincode")}</FormLabel>
+                          <FormControl>
+                            <Input {...field} maxLength={6} placeholder="6 digits" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="state"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>State</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select state" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {indianStates.map((state) => (
+                              <SelectItem key={state} value={state}>
+                                {state}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
                   {selectedAddressId === "new" && (
                     <div className="flex items-center space-x-2 mt-2">

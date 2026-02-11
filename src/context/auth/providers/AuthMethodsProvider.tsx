@@ -13,15 +13,17 @@ interface AuthMethodsProviderProps {
 interface AuthMethodsContextType {
   sendOTP: (phoneNumber: string) => Promise<any>;
   verifyOTP: (phoneNumber: string, otp: string) => Promise<any>;
+  loginWithPhone: (phoneNumber: string) => Promise<any>;
   signOut: () => Promise<any>;
   updateProfile: (data: any) => Promise<any>;
 }
 
 export const AuthMethodsContext = React.createContext<AuthMethodsContextType>({
-  sendOTP: async () => {},
-  verifyOTP: async () => {},
-  signOut: async () => {},
-  updateProfile: async () => {},
+  sendOTP: async () => { },
+  verifyOTP: async () => { },
+  loginWithPhone: async () => { },
+  signOut: async () => { },
+  updateProfile: async () => { },
 });
 
 export const AuthMethodsProvider: React.FC<AuthMethodsProviderProps> = ({ children }) => {
@@ -37,13 +39,14 @@ export const AuthMethodsProvider: React.FC<AuthMethodsProviderProps> = ({ childr
   };
 
   // Import authentication methods from separate file
-  const { sendOTP, verifyOTP, signOut, updateProfile } = useAuthMethodsHook();
+  const { sendOTP, verifyOTP, loginWithPhone, signOut, updateProfile } = useAuthMethodsHook();
 
   return (
     <AuthMethodsContext.Provider
       value={{
         sendOTP,
         verifyOTP,
+        loginWithPhone,
         signOut,
         updateProfile,
       }}

@@ -16,12 +16,13 @@ export interface AuthContextType {
   isLoading: boolean;
   sendOTP: (phoneNumber: string) => Promise<any>;
   verifyOTP: (phoneNumber: string, otp: string) => Promise<any>;
+  loginWithPhone: (phoneNumber: string) => Promise<any>;
   signOut: () => Promise<any>;
   updateProfile: (data: Partial<User>) => Promise<any>;
   isAuthenticated: boolean;
   registerForActivity: (
-    activityType: ActivityType, 
-    activityName: string, 
+    activityType: ActivityType,
+    activityName: string,
     redirectPath: string
   ) => void;
   register: (data: RegisterData) => Promise<{ error: any | null; status: string | null }>;
