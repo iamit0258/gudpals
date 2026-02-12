@@ -116,6 +116,22 @@ export const nivaIntents: Intent[] = [
         keywords: ["astrology", "horoscope", "stars", "zodiac"],
         route: "/astrology",
         response: "Opening astrology section."
+    },
+    // E-commerce Intents (New)
+    {
+        keywords: ["where is my order", "track my order", "order status", "track package", "delivery status", "मेरा ऑर्डर कहां है"],
+        route: "/check-order-status", // Internal route/signal
+        response: "Checking your latest order status..."
+    },
+    {
+        keywords: ["what is in my cart", "cart items", "show cart", "cart status", "check cart", "कार्ट में क्या है"],
+        route: "/check-cart", // Internal route/signal
+        response: "Checking your cart..."
+    },
+    {
+        keywords: ["checkout", "buy now", "place order", "payment", "buy", "खरीदें"],
+        route: "/checkout",
+        response: "Taking you to checkout to complete your purchase."
     }
 ];
 

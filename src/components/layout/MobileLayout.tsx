@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import LanguageSwitcher from "@/components/common/LanguageSwitcher";
 import { useLanguage } from "@/context/language/LanguageContext";
 
+
 interface MobileLayoutProps {
   children: React.ReactNode;
   hideNavigation?: boolean;
@@ -15,31 +16,37 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
   children,
   hideNavigation = false
 }) => {
+
   const location = useLocation();
   const { t } = useLanguage();
 
-  const navItems = [{
-    name: t("home"),
-    path: "/",
-    icon: Home
-  }, {
-    name: t("sessions"),
-    path: "/sessions",
-    icon: Calendar
-  }, {
-    name: t("friends"),
-    path: "/friends",
-    icon: Users
-  }, {
-    name: t("products"),
-    path: "/products",
-    icon: Package
-  }, {
-    name: t("profile"),
-    path: "/profile",
-    icon: User
-  }];
-
+  const navItems = [
+    {
+      name: t("home"),
+      path: "/",
+      icon: Home
+    },
+    {
+      name: t("sessions"),
+      path: "/sessions",
+      icon: Calendar
+    },
+    {
+      name: t("friends"),
+      path: "/friends",
+      icon: Users
+    },
+    {
+      name: t("products"),
+      path: "/products",
+      icon: Package
+    },
+    {
+      name: t("profile"),
+      path: "/profile",
+      icon: User
+    }
+  ];
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Desktop Navigation */}

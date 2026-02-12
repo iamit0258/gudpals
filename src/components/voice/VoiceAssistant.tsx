@@ -9,6 +9,7 @@ import { hybridVoiceService } from '@/services/hybridVoiceService';
 import MobileVoiceAssistant from './MobileVoiceAssistant';
 import { findIntent } from './nivaIntents';
 import { useLanguage } from '@/context/language/LanguageContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface VoiceAssistantProps {
     className?: string;
@@ -87,6 +88,68 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
         }
     };
 
+    const checkOrderStatus = async () => {
+        try {
+            // Get user ID from local session or auth context (simplified here provided we rely on supabase client)
+            const { data: { user } } = await supabase.auth.getUser();
+
+            if (!user) {
+                const msg = t("login_required") || "Please log in to check your orders.";
+                speak(msg);
+                navigate("/sign-in");
+                return;
+            }
+
+            // Fetch latest order
+            const { data: orders, error } = await supabase
+                .from('orders')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false })
+                .limit(1);
+
+            if (error) throw error;
+
+            if (!orders || orders.length === 0) {
+                speak("You don't have any recent orders.");
+                return;
+            }
+
+            const latestOrder = orders[0];
+            const status = latestOrder.status || "processing";
+            // Construct message: "Your order placed on [Date] is currently [Status]"
+            const date = new Date(latestOrder.created_at).toLocaleDateString();
+            const message = `Your order from ${date} is currently ${status}.`;
+
+            speak(message);
+
+        } catch (error) {
+            console.error("Error checking order:", error);
+            speak("I couldn't check your order status right now.");
+        }
+    };
+
+    const checkCartStatus = () => {
+        try {
+            const cartJson = localStorage.getItem('cart');
+            const cart = cartJson ? JSON.parse(cartJson) : [];
+
+            if (cart.length === 0) {
+                speak("Your cart is empty.");
+            } else {
+                const itemCount = cart.reduce((acc: any, item: any) => acc + item.quantity, 0);
+                const total = cart.reduce((acc: any, item: any) => acc + (item.price * item.quantity), 0);
+
+                const itemWord = itemCount === 1 ? "item" : "items";
+                const message = `You have ${itemCount} ${itemWord} in your cart, totaling ${total} rupees. Should I proceed to checkout?`;
+                speak(message);
+            }
+        } catch (error) {
+            console.error("Error checking cart:", error);
+            speak("I couldn't check your cart.");
+        }
+    };
+
     const requestMicrophonePermission = async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -106,6 +169,11 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
     };
 
     const startListening = async () => {
+        if (isListening || isSpeaking || isProcessingRef.current) {
+            console.log('Voice assistant already active, ignoring start request');
+            return;
+        }
+
         // Check microphone permission
         if (micPermission !== 'granted') {
             const granted = await requestMicrophonePermission();
@@ -138,7 +206,7 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
 
                     if (typeof error === 'string') {
                         if (error === 'no-speech') errorMessage = "No speech detected. Try speaking closer to the mic.";
-                        else if (error === 'network') errorMessage = "Network error. Please check your connection.";
+                        else if (error === 'network') errorMessage = "Chrome's speech service is unreachable. Please check your internet or disable your VPN/Proxy.";
                         else if (error === 'not-allowed') errorMessage = "Microphone access denied. Please allow permissions.";
                         else errorMessage = `Voice Error: ${error}`;
                     }
@@ -194,6 +262,19 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
                 setIsSpeaking(true);
                 await hybridVoiceService.speakWithBrowser(intent.response);
                 setIsSpeaking(false);
+
+                // Handle special e-commerce routes
+                if (intent.route === '/check-order-status') {
+                    // Check order status logic
+                    checkOrderStatus();
+                    return;
+                }
+
+                if (intent.route === '/check-cart') {
+                    // Check cart logic
+                    checkCartStatus();
+                    return;
+                }
 
                 // Then navigate
                 if (intent.route) {
@@ -326,74 +407,87 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
             />
         );
     }
-
     return (
         <div className={cn("fixed bottom-4 right-4 z-50", className)}>
             <div className="flex flex-col items-end gap-2">
                 {/* Current message display */}
                 {currentMessage && isSpeaking && (
-                    <div className="bg-primary text-white px-4 py-2 rounded-lg shadow-lg max-w-xs text-sm animate-pulse">
-                        <div className="flex items-center gap-2">
-                            <Volume2 className="h-4 w-4" />
-                            <span>{currentMessage}</span>
+                    <div className="bg-primary/95 backdrop-blur text-white px-4 py-3 rounded-2xl shadow-xl max-w-xs text-sm animate-in slide-in-from-bottom-2 duration-300 border border-white/20">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-white/20 p-1.5 rounded-full animate-pulse">
+                                <Volume2 className="h-4 w-4" />
+                            </div>
+                            <span className="font-medium leading-relaxed">{currentMessage}</span>
                         </div>
                     </div>
                 )}
 
                 {/* Control buttons */}
-                <div className="flex gap-2">
-                    <Button
-                        onClick={showHelp}
-                        size="sm"
-                        variant="outline"
-                        className="bg-white shadow-lg hover:bg-primary hover:text-white transition-colors focus-ring"
-                        title="Get help"
-                        aria-label="Get voice command help"
-                    >
-                        <HelpCircle className="h-4 w-4" />
-                    </Button>
+                <div className="flex gap-3 items-center">
 
-                    <Button
-                        onClick={toggleVoiceAssistant}
-                        size="sm"
-                        variant="outline"
-                        className={cn(
-                            "bg-white shadow-lg transition-colors focus-ring",
-                            isEnabled ? "hover:bg-primary hover:text-white" : "bg-gray-200 text-gray-500"
-                        )}
-                        title={isEnabled ? "Disable voice assistant" : "Enable voice assistant"}
-                        aria-label={isEnabled ? "Disable voice assistant" : "Enable voice assistant"}
-                    >
-                        {isEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-                    </Button>
+                    <div className={cn(
+                        "flex gap-2 transition-all duration-300",
+                        isListening ? "opacity-0 w-0 overflow-hidden" : "opacity-100 w-auto"
+                    )}>
+                        <Button
+                            onClick={showHelp}
+                            size="icon"
+                            variant="secondary"
+                            className="h-10 w-10 bg-white/90 shadow-lg hover:bg-white hover:scale-105 transition-all rounded-full border border-gray-100"
+                            title="Get help"
+                        >
+                            <HelpCircle className="h-5 w-5 text-primary" />
+                        </Button>
+
+                        <Button
+                            onClick={toggleVoiceAssistant}
+                            size="icon"
+                            variant="secondary"
+                            className={cn(
+                                "h-10 w-10 shadow-lg transition-all rounded-full border border-gray-100",
+                                isEnabled ? "bg-white/90 hover:bg-white hover:scale-105 text-primary" : "bg-gray-100 text-gray-400"
+                            )}
+                            title={isEnabled ? "Disable voice" : "Enable voice"}
+                        >
+                            {isEnabled ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
+                        </Button>
+                    </div>
 
                     <Button
                         onClick={isListening ? stopListening : startListening}
                         disabled={!isEnabled}
                         size="lg"
                         className={cn(
-                            "shadow-lg transition-all duration-200 focus-ring",
+                            "h-14 w-14 rounded-full shadow-xl transition-all duration-300 focus-ring relative overflow-hidden",
                             isListening
-                                ? "bg-red-500 hover:bg-red-600 animate-pulse"
-                                : "bg-primary hover:bg-primary/90",
-                            !isEnabled && "opacity-50 cursor-not-allowed"
+                                ? "bg-red-500 hover:bg-red-600 scale-110"
+                                : "bg-gradient-to-r from-primary to-primary/80 hover:scale-105",
+                            !isEnabled && "opacity-50 grayscale cursor-not-allowed"
                         )}
-                        title={isListening ? "Stop listening" : "Start listening"}
-                        aria-label={isListening ? "Stop listening" : "Start listening"}
                     >
-                        {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                        {isListening ? (
+                            <div className="flex items-center justify-center w-full h-full">
+                                <span className="absolute inset-0 bg-red-400 animate-ping opacity-75 rounded-full"></span>
+                                <MicOff className="h-6 w-6 relative z-10" />
+                            </div>
+                        ) : (
+                            <Mic className="h-6 w-6" />
+                        )}
                     </Button>
                 </div>
 
                 {/* Microphone permission warning */}
-                {micPermission === 'denied' && (
-                    <div className="bg-yellow-100 text-yellow-800 px-3 py-2 rounded-lg text-xs max-w-xs">
-                        Microphone access is required for voice commands. Please allow access in your browser settings.
-                    </div>
-                )}
-            </div>
-        </div>
+                {
+                    micPermission === 'denied' && (
+                        <div className="bg-red-50 text-red-600 px-4 py-2 rounded-xl text-xs max-w-xs border border-red-100 shadow-sm font-medium">
+                            Microphone access is required. Please allow in settings.
+                        </div>
+                    )
+                }
+            </div >
+        </div >
     );
 };
 
 export default VoiceAssistant;
+

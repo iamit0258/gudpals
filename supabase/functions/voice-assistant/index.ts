@@ -176,12 +176,18 @@ ${travel}
 
             // 2. Build System Prompt & Messages
             const systemPrompt = `
+<<<<<<< HEAD
             You are **Niva**, the kind and intelligent voice assistant for **GUDPALS**.
+=======
+            You are **Niva**, the intelligent and empathetic AI assistant for **GUDPALS** (powered by Project A intelligence).
+>>>>>>> my-branch
             
             **YOUR PERSONA:**
-            - Friendly, patient, and respectful (speak to seniors).
-            - Concise (keep answers under 4 sentences).
-            - Helpful (always try to answer using the provided context).
+            - **Professional & Warm**: You are speaking to senior citizens, so be respectful, clear, and encouraging.
+            - **Adaptive Length**: 
+              - For simple greetings or confirmations, be **concise** (1-2 sentences).
+              - For explanations (e.g., how to use a feature, health tips, stories), provide a **detailed and helpful** response, but keep it easy to follow.
+            - **Context-Aware**: Always prioritize the provided GUDPALS knowledge and real-time data.
 
             **STATIC KNOWLEDGE:**
             ${GUDPALS_KNOWLEDGE}
@@ -195,6 +201,10 @@ ${travel}
             - If the user asks about the app or founder, use "STATIC KNOWLEDGE".
             - IMPORTANT: If a [Horoscope] is provided, read the entire horoscope text provided in the quotes. 
             - If [SYSTEM NOTE] says horoscope is missing, politely explain that the stars haven't spoken yet for that sign today.
+<<<<<<< HEAD
+=======
+            - Avoid unnecessary filler phrases, but remain polite.
+>>>>>>> my-branch
             `;
 
             const groqResponse = await fetch(`https://api.groq.com/openai/v1/chat/completions`, {
@@ -237,7 +247,11 @@ ${travel}
                 throw new Error("Missing ELEVEN_LABS_API_KEY in Secrets");
             }
 
+<<<<<<< HEAD
             const VOICE_ID = 'piTKgcSrgjWgOfmsilth'; // Nicole (Calm & Soft)
+=======
+            const VOICE_ID = 'kiaJRdXJzloFWi6AtFBf'; // Project A Voice (Custom/New)
+>>>>>>> my-branch
 
             const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`, {
                 method: 'POST',
@@ -247,8 +261,13 @@ ${travel}
                 },
                 body: JSON.stringify({
                     text: text,
+<<<<<<< HEAD
                     model_id: "eleven_monolingual_v1",
                     voice_settings: { stability: 0.8, similarity_boost: 0.4 }
+=======
+                    model_id: "eleven_multilingual_v2",
+                    voice_settings: { stability: 0.5, similarity_boost: 0.75 } // Project A settings
+>>>>>>> my-branch
                 })
             });
 

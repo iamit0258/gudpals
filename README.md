@@ -1,38 +1,17 @@
+# GUDPALS 🧘‍♂️✨
 
-# Welcome to your GUDPALS project
+GUDPALS is a senior-centric, AI-powered digital platform designed to promote social connection, digital inclusion, and overall well-being among senior citizens.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🚀 Vision
+The platform addresses the growing issue of loneliness and social isolation faced by elderly users by offering a simple, English & Hindi, and accessibility-first digital experience.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 🛠 Features
+- **Niva (AI Assistant)**: A voice-enabled companion for seamless navigation and help.
+- **Interactive Sessions**: Live video sessions for Yoga, Digital Literacy, Tambola, and more.
+- **Employment Hub**: Part-time opportunities tailored for seniors.
+- **Travel & Astrology**: Specially curated senior-friendly packages and daily horoscopes.
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-- 
-
+## ⚖️ License
+**Proprietary License**  
+Copyright (c) 2025 Amit Kumar Kuswaha. All rights reserved.  
+Unauthorized copying of this file, via any medium, is strictly prohibited. Proprietary and confidential. For more details, see the [LICENSE](LICENSE) file.

@@ -30,34 +30,9 @@ const Astrology = () => {
   const [selectedSign, setSelectedSign] = useState<string | null>(null);
   const navigate = useNavigate();
   const [horoscope, setHoroscope] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-
-  const astrologers: Astrologer[] = [
-    {
-      id: "1",
-      name: "Ravi Sharma",
-      specialty: t("vedic_astrology"),
-      experience: `20+ ${t("years_exp")}`,
-      rating: 4.8,
-      initials: "RS",
-      isPremium: false,
-      price: null,
-      availability: t("available_now"),
-      languages: [t("hindi"), t("english")]
-    },
-    {
-      id: "2",
-      name: "Neha Sharma",
-      specialty: t("tarot_reading"),
-      experience: `15+ ${t("years_exp")}`,
-      rating: 4.7,
-      initials: "NS",
-      isPremium: true,
-      price: 599,
-      availability: t("available_in") + " 30 mins",
-      languages: [t("hindi"), t("gujarati"), t("english")]
-    },
-  ];
+  const [astrologers, setAstrologers] = useState<any[]>([]);
+  const [loadingAstrologers, setLoadingAstrologers] = useState(true);
+  const [loadingHoroscope, setLoadingHoroscope] = useState(false);
 
   const zodiacSigns = [
     { key: "Aries", name: t("aries"), dates: "Mar 21 - Apr 19" },
@@ -74,21 +49,34 @@ const Astrology = () => {
     { key: "Pisces", name: t("pisces"), dates: "Feb 19 - Mar 20" }
   ];
 
-  const handleConsult = (astrologer: Astrologer) => {
-    if (astrologer.isPremium) {
-      localStorage.setItem('selectedAstrologer', JSON.stringify(astrologer));
-      navigate("/astrology/payment");
-    } else {
-      localStorage.setItem('selectedAstrologer', JSON.stringify(astrologer));
-      navigate("/astrology/chat");
-    }
-  };
+  // Fetch astrologers from Supabase
+  React.useEffect(() => {
+    const fetchAstrologers = async () => {
+      try {
+        setLoadingAstrologers(true);
+        const { data, error } = await supabase
+          .from('astrologers')
+          .select('*')
+          .eq('is_available', true);
 
+        if (error) throw error;
+        setAstrologers(data || []);
+      } catch (error) {
+        console.error("Error fetching astrologers:", error);
+      } finally {
+        setLoadingAstrologers(false);
+      }
+    };
+
+    fetchAstrologers();
+  }, []);
+
+  // Fetch horoscope when sign changes
   React.useEffect(() => {
     const fetchHoroscope = async () => {
       if (!selectedSign) return;
 
-      setLoading(true);
+      setLoadingHoroscope(true);
       try {
         // @ts-ignore
         const { data, error } = await supabase
@@ -107,23 +95,32 @@ const Astrology = () => {
           variant: "destructive",
         });
       } finally {
-        setLoading(false);
+        setLoadingHoroscope(false);
       }
     };
 
     fetchHoroscope();
-  }, [selectedSign]);
+  }, [selectedSign, toast]);
 
   const selectZodiacSign = (sign: string) => {
     setSelectedSign(sign);
-    // Toast is now handled by the fetch success/loading state implicitly or we can keep it
+  };
+
+  const handleConsult = (astrologer: any) => {
+    const isPremium = !!astrologer.rate_per_minute;
+    localStorage.setItem('selectedAstrologer', JSON.stringify(astrologer));
+    if (isPremium) {
+      navigate("/astrology/payment");
+    } else {
+      navigate("/astrology/chat");
+    }
   };
 
   return (
     <MobileLayout>
       <div className="relative bg-gradient-to-br from-green-900 via-green-800 to-teal-800 text-white p-6">
         <div className="absolute top-0 left-0 w-full h-full opacity-10">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KIca8Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIiBmaWxsPSJ3aGl0ZSIgLz4KPC9zdmc+')] bg-repeat"></div>
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KIca8Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIiBmaWxsPSJ3aGl0ZSIgLz4KPC9zdmN+')] bg-repeat"></div>
         </div>
         <div className="relative z-10">
           <h1 className="text-3xl font-bold mb-2 flex items-center">
@@ -161,7 +158,7 @@ const Astrology = () => {
           </h2>
           <Card className="border-green-200 bg-white/80 backdrop-blur-sm">
             <CardContent className="p-4">
-              {loading ? (
+              {loadingHoroscope ? (
                 <div className="flex justify-center p-4">{t("loading")}...</div>
               ) : horoscope ? (
                 <>
@@ -197,84 +194,90 @@ const Astrology = () => {
       <section className="p-4">
         <h2 className="text-xl font-semibold mb-4">{t("our_astrologers")}</h2>
         <div className="space-y-4">
-          {astrologers.map((astrologer) => (
-            <Card key={astrologer.id} className="overflow-hidden border-none shadow-md">
-              <CardContent className="p-0">
-                <div className="flex items-center p-4">
-                  <div className="relative mr-4">
-                    <div className="h-16 w-16 rounded-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-green-500 to-teal-600 text-white font-bold text-xl">
-                      {astrologer.initials}
+          {loadingAstrologers ? (
+            <div className="text-center py-10 text-gray-500">Loading astrologers...</div>
+          ) : astrologers.length === 0 ? (
+            <div className="text-center py-10 text-gray-500">No astrologers available.</div>
+          ) : (
+            astrologers.map((astrologer) => {
+              const name = astrologer.full_name || "Astrologer";
+              const specializationStr = Array.isArray(astrologer.specialization) ? astrologer.specialization.join(", ") : astrologer.specialization;
+              const isPremium = !!astrologer.rate_per_minute;
+              const initials = name.split(" ").map(n => n[0]).join("");
+
+              return (
+                <Card key={astrologer.id} className="overflow-hidden border-none shadow-md">
+                  <CardContent className="p-0">
+                    <div className="flex items-center p-4">
+                      <div className="relative mr-4">
+                        <div className="h-16 w-16 rounded-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-green-500 to-teal-600 text-white font-bold text-xl">
+                          {astrologer.image_url ? (
+                            <img src={astrologer.image_url} alt={name} className="w-full h-full object-cover" />
+                          ) : (
+                            initials
+                          )}
+                        </div>
+                        <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5">
+                          <div className={`h-3 w-3 rounded-full ${astrologer.is_available ? "bg-green-500" : "bg-amber-500"}`}></div>
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-medium text-lg flex items-center">
+                          {name}
+                          {isPremium ? (
+                            <Badge className="ml-2 bg-gradient-to-r from-amber-500 to-amber-600">
+                              {t("premium")}
+                            </Badge>
+                          ) : (
+                            <Badge className="ml-2 bg-gradient-to-r from-green-500 to-green-600">
+                              {t("free_label")}
+                            </Badge>
+                          )}
+                        </h3>
+                        <p className="text-sm text-gray-600">{specializationStr}</p>
+                        <div className="flex items-center mt-1 text-sm">
+                          <Star className="h-4 w-4 text-amber-500 mr-1" />
+                          <span>{astrologer.rating || "4.5"}</span>
+                          <span className="mx-2">•</span>
+                          <span>{astrologer.experience_years}+ {t("years_exp")}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5">
-                      <div className={`h-3 w-3 rounded-full ${astrologer.availability.includes("now")
-                        ? "bg-green-500"
-                        : "bg-amber-500"
-                        }`}></div>
+                    <div className="px-4 pb-2">
+                      <div className="flex items-center justify-between text-sm mb-3">
+                        <div className="flex items-center text-gray-600">
+                          <Clock className="h-4 w-4 mr-1" />
+                          <span>{astrologer.is_available ? t("available_now") : t("available_in") + " 30 mins"}</span>
+                        </div>
+                        <div>
+                          {isPremium ? (
+                            <div className="font-semibold text-gray-800">₹{astrologer.rate_per_minute}</div>
+                          ) : (
+                            <div className="text-green-600 font-semibold">{t("free_label")}</div>
+                          )}
+                        </div>
+                      </div>
+                      <Button
+                        className={`w-full mb-4 ${isPremium ? 'bg-amber-500 hover:bg-amber-600' : 'bg-green-600 hover:bg-green-700'}`}
+                        onClick={() => handleConsult(astrologer)}
+                      >
+                        {isPremium ? (
+                          <>
+                            <DollarSign className="h-4 w-4 mr-1" />
+                            {t("book_consultation")}
+                          </>
+                        ) : (
+                          <>
+                            <MessageSquare className="h-4 w-4 mr-1" />
+                            {t("chat_now")}
+                          </>
+                        )}
+                      </Button>
                     </div>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-medium text-lg flex items-center">
-                      {astrologer.name}
-                      {astrologer.isPremium ? (
-                        <Badge className="ml-2 bg-gradient-to-r from-amber-500 to-amber-600">
-                          {t("premium")}
-                        </Badge>
-                      ) : (
-                        <Badge className="ml-2 bg-gradient-to-r from-green-500 to-green-600">
-                          {t("free_label")}
-                        </Badge>
-                      )}
-                    </h3>
-                    <p className="text-sm text-gray-600">{astrologer.specialty}</p>
-                    <div className="flex items-center mt-1 text-sm">
-                      <Star className="h-4 w-4 text-amber-500 mr-1" />
-                      <span>{astrologer.rating}</span>
-                      <span className="mx-2">•</span>
-                      <span>{astrologer.experience}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="px-4 pb-2">
-                  <div className="flex gap-2 flex-wrap mb-2 text-xs">
-                    {astrologer.languages.map(lang => (
-                      <Badge key={lang} variant="outline" className="bg-gray-50">
-                        {lang}
-                      </Badge>
-                    ))}
-                  </div>
-                  <div className="flex items-center justify-between text-sm mb-3">
-                    <div className="flex items-center text-gray-600">
-                      <Clock className="h-4 w-4 mr-1" />
-                      <span>{astrologer.availability.includes("now") ? t("available_now") : t("available_in") + " 30 mins"}</span>
-                    </div>
-                    <div>
-                      {astrologer.isPremium ? (
-                        <div className="font-semibold text-gray-800">₹{astrologer.price}</div>
-                      ) : (
-                        <div className="text-green-600 font-semibold">{t("free_label")}</div>
-                      )}
-                    </div>
-                  </div>
-                  <Button
-                    className={`w-full mb-4 ${astrologer.isPremium ? 'bg-amber-500 hover:bg-amber-600' : 'bg-green-600 hover:bg-green-700'}`}
-                    onClick={() => handleConsult(astrologer)}
-                  >
-                    {astrologer.isPremium ? (
-                      <>
-                        <DollarSign className="h-4 w-4 mr-1" />
-                        {t("book_consultation")}
-                      </>
-                    ) : (
-                      <>
-                        <MessageSquare className="h-4 w-4 mr-1" />
-                        {t("chat_now")}
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  </CardContent>
+                </Card>
+              );
+            }))}
         </div>
       </section>
     </MobileLayout>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MessageCircle, Phone, Video, Search } from "lucide-react";
+import { MessageCircle, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/context/language/LanguageContext";
@@ -94,22 +94,6 @@ const Connections = () => {
     navigate(`/chat/${userId}`);
   };
 
-  const handleVoiceCall = (name: any) => {
-    const displayName = typeof name === 'object' ? (language === 'en' ? name.en : name.hi) : name;
-    toast({
-      title: t("calling"),
-      description: `${t("voice_calling")} ${displayName}...`,
-    });
-  };
-
-  const handleVideoCall = (name: any) => {
-    const displayName = typeof name === 'object' ? (language === 'en' ? name.en : name.hi) : name;
-    toast({
-      title: t("video_calling"),
-      description: `${t("video_calling")} ${displayName}...`,
-    });
-  };
-
   const filteredConnections = connections.filter(connection => {
     const nameToCheck = typeof connection.name === 'object'
       ? (language === 'en' ? connection.name.en : connection.name.hi)
@@ -182,22 +166,6 @@ const Connections = () => {
                     onClick={() => handleMessage(connection.id)}
                   >
                     <MessageCircle className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-dhayan-purple hover:bg-dhayan-purple/10 rounded-full h-9 w-9 p-0"
-                    onClick={() => handleVoiceCall(connection.name)}
-                  >
-                    <Phone className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-dhayan-orange hover:bg-dhayan-orange/10 rounded-full h-9 w-9 p-0"
-                    onClick={() => handleVideoCall(connection.name)}
-                  >
-                    <Video className="h-4 w-4" />
                   </Button>
                 </div>
               </div>

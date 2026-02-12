@@ -5,12 +5,14 @@ export interface Address {
   id: string;
   name: string;
   street: string;
+  house_no?: string;
+  landmark?: string;
   city: string;
   state: string;
   pincode: string;
   isDefault: boolean;
-  phone?: string; // Added phone as it's used in checkout
-  type?: 'home' | 'work' | 'other'; // Added type for better categorization
+  phone?: string;
+  type?: 'home' | 'work' | 'other';
 }
 
 export const useAddresses = () => {

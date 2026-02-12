@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { UserButton } from "@clerk/clerk-react";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, ChevronRight, User, Type, Globe, ShoppingBag, CreditCard, MapPin, Bell, Shield, HelpCircle, Info, MessageSquare, Settings } from "lucide-react";
+import { LogOut, ChevronRight, User, Type, Globe, ShoppingBag, CreditCard, MapPin, Bell, Shield, HelpCircle, Info, MessageSquare, Settings, Plus, Heart, LayoutDashboard } from "lucide-react";
 import { useAuth } from "@/context/ClerkAuthBridge";
 import { useLanguage } from "@/context/language/LanguageContext";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,12 +28,16 @@ const Profile = () => {
   const { user, signOut, updateProfile } = useAuth();
   const { t, language, setLanguage } = useLanguage();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [astrologyChats, setAstrologyChats] = useState<any>({});
   const [isUpdating, setIsUpdating] = useState(false);
-  const [activeTab, setActiveTab] = useState("profile");
+
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "profile");
+  const [activeSection, setActiveSection] = useState(searchParams.get("section") || "orders");
+
 
   // Settings state
   const [textSize, setTextSize] = useState("medium");
@@ -70,7 +75,25 @@ const Profile = () => {
       setBio(profileData.bio || bio);
       setInterestTags(profileData.interests || interestTags);
     }
-  }, []);
+  }, [user]);
+
+  // Sync state with URL params
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    const section = searchParams.get("section");
+    if (tab && tab !== activeTab) setActiveTab(tab);
+    if (section && section !== activeSection) setActiveSection(section);
+  }, [searchParams]);
+
+  const handleTabChange = (val: string) => {
+    setActiveTab(val);
+    setSearchParams({ tab: val, section: activeSection });
+  };
+
+  const handleSectionChange = (val: string) => {
+    setActiveSection(val);
+    setSearchParams({ tab: activeTab, section: val });
+  };
 
   if (!user) {
     return (
@@ -255,7 +278,7 @@ const Profile = () => {
   return (
     <MobileLayout>
       <div className="p-4 space-y-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="settings">Account Settings</TabsTrigger>
@@ -264,54 +287,91 @@ const Profile = () => {
           <TabsContent value="profile" className="space-y-6">
             <h1 className="text-2xl font-bold">My Profile</h1>
 
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-start">
-                  <Avatar className="h-16 w-16 mr-4 bg-emerald-600">
-                    <AvatarImage src={user.photoURL || ""} />
-                    <AvatarFallback className="text-white text-xl bg-gradient-to-br from-blue-500 to-purple-600">
-                      {user.displayName ? user.displayName[0].toUpperCase() : "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <h2 className="text-xl font-semibold">{user.displayName || "User"}</h2>
-                    <p className="text-gray-600">{user.email || user.phoneNumber || "No contact info"}</p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-xs"
-                        onClick={handleEditProfile}
-                      >
-                        <User className="h-3 w-3 mr-1" />
-                        Edit Profile
-                      </Button>
-                      <UserButton
-                        appearance={{
-                          elements: {
-                            avatarBox: "w-8 h-8"
-                          }
-                        }}
-                      />
-                    </div>
+            <Card className="border-none shadow-md bg-gradient-to-br from-white to-dhayan-gray-light/10 overflow-hidden">
+              <CardContent className="p-0">
+                <div className="relative h-24 bg-gradient-to-r from-emerald-500/20 via-primary/20 to-dhayan-purple/20">
+                  <div className="absolute top-4 right-4 z-10">
+                    <UserButton
+                      afterSignOutUrl="/"
+                      appearance={{
+                        elements: {
+                          avatarBox: "w-10 h-10 border-2 border-white shadow-sm ring-2 ring-primary/20"
+                        }
+                      }}
+                    />
                   </div>
                 </div>
 
-                <p className="mt-4 text-sm text-gray-600">{bio}</p>
+                <div className="px-6 pb-6 -mt-10 relative">
+                  <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+                    <Avatar className="h-24 w-24 border-4 border-white shadow-xl bg-white shadow-black/5 ring-1 ring-black/5">
+                      <AvatarImage src={user.photoURL || ""} />
+                      <AvatarFallback className="text-white text-3xl font-bold bg-gradient-to-br from-primary to-dhayan-purple">
+                        {user.displayName ? user.displayName[0].toUpperCase() : "U"}
+                      </AvatarFallback>
+                    </Avatar>
 
-                <div className="mt-3">
-                  <h3 className="text-sm font-medium text-gray-500 mb-2">
-                    Interests
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {interestTags.map((tag, index) => (
-                      <span
-                        key={index}
-                        className="px-2 py-1 bg-blue-50 text-blue-600 rounded-md text-xs"
+                    <div className="flex-1 space-y-1 mb-1">
+                      <h2 className="text-2xl font-bold tracking-tight text-dhayan-purple-dark">
+                        {user.displayName || "User"}
+                      </h2>
+                      <div className="flex items-center text-dhayan-gray text-sm">
+                        <Globe className="h-3 w-3 mr-1.5 opacity-60" />
+                        <span>{user.email || user.phoneNumber || "No contact info"}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+
+                      <Button
+                        variant="default"
+                        size="sm"
+                        className="rounded-full px-4 h-9 bg-primary hover:bg-primary/90 shadow-sm"
+                        onClick={handleEditProfile}
                       >
-                        {tag}
-                      </span>
-                    ))}
+                        <Settings className="h-3.5 w-3.5 mr-2" />
+                        Edit Profile
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="mt-8 space-y-4">
+                    <div className="space-y-2">
+                      <h3 className="text-xs font-bold uppercase tracking-widest text-dhayan-gray/50 flex items-center">
+                        <Type className="h-3 w-3 mr-2" />
+                        About Me
+                      </h3>
+                      <p className="text-sm text-dhayan-purple-dark/80 leading-relaxed italic">
+                        {bio || "Keep your profile updated to help others know you better!"}
+                      </p>
+                    </div>
+
+                    <div className="space-y-3">
+                      <h3 className="text-xs font-bold uppercase tracking-widest text-dhayan-gray/50 flex items-center">
+                        <Heart className="h-3 w-3 mr-2" />
+                        Passions & Interests
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {interestTags.length > 0 ? interestTags.map((tag, index) => (
+                          <span
+                            key={index}
+                            className="px-3 py-1.5 bg-white border border-dhayan-purple/10 text-primary rounded-full text-[11px] font-semibold shadow-sm hover:border-primary/30 hover:bg-primary/5 transition-all cursor-default"
+                          >
+                            {tag}
+                          </span>
+                        )) : (
+                          <span className="text-xs text-dhayan-gray italic">Add some interests to find your gudpals!</span>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleEditProfile}
+                          className="h-7 w-7 p-0 rounded-full hover:bg-primary/10 text-primary"
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -413,17 +473,19 @@ const Profile = () => {
           <TabsContent value="settings" className="space-y-6">
             <h1 className="text-2xl font-bold">Account Settings</h1>
 
-            <Tabs defaultValue="orders" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="orders" className="text-xs">Orders</TabsTrigger>
-                <TabsTrigger value="payment" className="text-xs">Payment</TabsTrigger>
-                <TabsTrigger value="shipping" className="text-xs">Shipping</TabsTrigger>
-              </TabsList>
-              <TabsList className="grid w-full grid-cols-3 mt-2">
-                <TabsTrigger value="notifications" className="text-xs">Notifications</TabsTrigger>
-                <TabsTrigger value="privacy" className="text-xs">Privacy</TabsTrigger>
-                <TabsTrigger value="about" className="text-xs">About</TabsTrigger>
-              </TabsList>
+            <Tabs value={activeSection} onValueChange={handleSectionChange} className="w-full">
+              <div className="p-1 bg-dhayan-gray-light/10 rounded-xl mb-6">
+                <TabsList className="grid w-full grid-cols-3 bg-transparent h-auto p-0 gap-1">
+                  <TabsTrigger value="orders" className="text-xs py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">Orders</TabsTrigger>
+                  <TabsTrigger value="payment" className="text-xs py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">Payment</TabsTrigger>
+                  <TabsTrigger value="shipping" className="text-xs py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">Shipping</TabsTrigger>
+                </TabsList>
+                <TabsList className="grid w-full grid-cols-3 bg-transparent h-auto p-0 gap-1 mt-1">
+                  <TabsTrigger value="notifications" className="text-xs py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">Notifications</TabsTrigger>
+                  <TabsTrigger value="privacy" className="text-xs py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">Privacy</TabsTrigger>
+                  <TabsTrigger value="about" className="text-xs py-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">About</TabsTrigger>
+                </TabsList>
+              </div>
 
               <TabsContent value="orders" className="mt-4">
                 <MyOrders />
@@ -540,17 +602,17 @@ const Profile = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Interests</label>
+              <label className="text-xs font-bold uppercase tracking-widest text-dhayan-gray/50">Interests</label>
               <div className="flex flex-wrap gap-2 mb-2">
                 {interestTags.map((tag, index) => (
-                  <div key={index} className="bg-blue-50 text-blue-600 text-xs rounded-md px-2 py-1 flex items-center">
+                  <div key={index} className="bg-primary/5 text-primary text-[11px] font-semibold rounded-full px-3 py-1 flex items-center border border-primary/10 shadow-sm transition-all hover:bg-primary/10">
                     {tag}
                     <button
-                      className="ml-1 text-blue-400 hover:text-blue-600"
+                      className="ml-1.5 text-primary/40 hover:text-primary transition-colors h-4 w-4 flex items-center justify-center rounded-full hover:bg-primary/10"
                       onClick={() => handleRemoveInterest(tag)}
                       disabled={isUpdating}
                     >
-                      ×
+                      <Plus className="h-2.5 w-2.5 rotate-45" />
                     </button>
                   </div>
                 ))}

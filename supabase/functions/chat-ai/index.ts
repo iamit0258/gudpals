@@ -16,7 +16,7 @@ function systemPromptFor(lang: Lang) {
 
 async function withRetries<T>(fn: () => Promise<T>, retries = 3) {
   let attempt = 0, delay = 400;
-  for (;;) {
+  for (; ;) {
     try { return await fn(); }
     catch (e) {
       attempt++;
