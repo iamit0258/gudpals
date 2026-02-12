@@ -73,85 +73,78 @@ const FeaturedSessions = () => {
   return (
     <ScrollArea className="-mx-4 px-4 md:mx-0 md:px-0">
       <div className="flex md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-4">
-<<<<<<< HEAD
-  {
-    featuredSessions.map((session) => {
-      // Format the time
-=======
         {sessions.map((session: any) => {
           const title = language === "hi" && session.title_hi ? session.title_hi : session.title;
           const instructor = language === "hi" && session.instructor_hi ? session.instructor_hi : session.instructor;
           const category = language === "hi" && session.category_hi ? session.category_hi : session.category;
+          const time = session.start_time ? new Date(session.start_time).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit'
+          }) : "8:00 AM";
 
->>>>>>> my-branch
-      const time = session.start_time ? new Date(session.start_time).toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit'
-      }) : "8:00 AM";
+          let dateText = "Today";
+          if (session.start_time) {
+            const sessionDate = new Date(session.start_time);
+            const today = new Date();
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
 
-      let dateText = "Today";
-      if (session.start_time) {
-        const sessionDate = new Date(session.start_time);
-        const today = new Date();
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
+            if (sessionDate.toDateString() === today.toDateString()) {
+              dateText = t("today");
+            } else if (sessionDate.toDateString() === tomorrow.toDateString()) {
+              dateText = t("tomorrow");
+            } else {
+              dateText = sessionDate.toLocaleDateString();
+            }
+          }
 
-        if (sessionDate.toDateString() === today.toDateString()) {
-          dateText = t("today");
-        } else if (sessionDate.toDateString() === tomorrow.toDateString()) {
-          dateText = t("tomorrow");
-        } else {
-          dateText = sessionDate.toLocaleDateString();
+          return (
+            <Card
+              key={session.id}
+              className="w-64 md:w-full flex-shrink-0 md:flex-shrink overflow-hidden cursor-pointer transition-transform hover:scale-105"
+            >
+              <div className="relative h-32">
+                <img
+                  src={session.image_url || "https://images.unsplash.com/photo-1616699002805-0741e1e4a9c5?q=80&w=300&auto=format&fit=crop"}
+                  alt={title}
+                  className="object-cover w-full h-full"
+                />
+                <Badge
+                  className={`absolute top-2 left-2 ${getCategoryColor(category)}`}
+                  variant="outline"
+                >
+                  {category}
+                </Badge>
+              </div>
+              <CardContent className="p-4">
+                <h3 className="font-semibold mb-1">{title}</h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  {t("by")} {instructor}
+                </p>
+                <div className="flex items-center text-xs text-muted-foreground">
+                  <Clock className="h-3 w-3 mr-1" />
+                  <span className="mr-3">{time}</span>
+                  <Calendar className="h-3 w-3 mr-1" />
+                  <span>{dateText}</span>
+                </div>
+                <div className="flex items-center text-xs text-muted-foreground mt-1 mb-3">
+                  <Users className="h-3 w-3 mr-1" />
+                  <span>{session.participants || 15} {t("participants")}</span>
+                </div>
+                <Button
+                  size="sm"
+                  className="w-full bg-primary hover:bg-dhayan-teal-dark text-white"
+                  onClick={() => handleSessionRegister(session)}
+                >
+                  {t("register")}
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        })
         }
-      }
-
-      return (
-        <Card
-          key={session.id}
-          className="w-64 md:w-full flex-shrink-0 md:flex-shrink overflow-hidden cursor-pointer transition-transform hover:scale-105"
-        >
-          <div className="relative h-32">
-            <img
-              src={session.image_url || "https://images.unsplash.com/photo-1616699002805-0741e1e4a9c5?q=80&w=300&auto=format&fit=crop"}
-              alt={title}
-              className="object-cover w-full h-full"
-            />
-            <Badge
-              className={`absolute top-2 left-2 ${getCategoryColor(category)}`}
-              variant="outline"
-            >
-              {category}
-            </Badge>
-          </div>
-          <CardContent className="p-4">
-            <h3 className="font-semibold mb-1">{title}</h3>
-            <p className="text-sm text-muted-foreground mb-3">
-              {t("by")} {instructor}
-            </p>
-            <div className="flex items-center text-xs text-muted-foreground">
-              <Clock className="h-3 w-3 mr-1" />
-              <span className="mr-3">{time}</span>
-              <Calendar className="h-3 w-3 mr-1" />
-              <span>{dateText}</span>
-            </div>
-            <div className="flex items-center text-xs text-muted-foreground mt-1 mb-3">
-              <Users className="h-3 w-3 mr-1" />
-              <span>{session.participants || 15} {t("participants")}</span>
-            </div>
-            <Button
-              size="sm"
-              className="w-full bg-primary hover:bg-dhayan-teal-dark text-white"
-              onClick={() => handleSessionRegister(session)}
-            >
-              {t("register")}
-            </Button>
-          </CardContent>
-        </Card>
-      );
-    })
-  }
       </div >
-  <ScrollBar orientation="horizontal" />
+      <ScrollBar orientation="horizontal" />
     </ScrollArea >
   );
 };
