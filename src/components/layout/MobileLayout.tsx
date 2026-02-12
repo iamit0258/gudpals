@@ -21,6 +21,8 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
   const { t } = useLanguage();
 
 <<<<<<< HEAD
+=======
+<<<<<<< HEAD
   const navItems = [{
     name: t("home"),
     path: "/",
@@ -44,6 +46,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
   }];
 =======
 
+>>>>>>> my-branch
   const navItems = [
     {
       name: t("home"),
@@ -72,9 +75,12 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
     }
   ];
 
+<<<<<<< HEAD
+=======
 
 >>>>>>> my-branch
 
+>>>>>>> my-branch
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Desktop Navigation */}
