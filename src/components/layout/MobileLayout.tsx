@@ -20,33 +20,6 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
   const location = useLocation();
   const { t } = useLanguage();
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-  const navItems = [{
-    name: t("home"),
-    path: "/",
-    icon: Home
-  }, {
-    name: t("sessions"),
-    path: "/sessions",
-    icon: Calendar
-  }, {
-    name: t("friends"),
-    path: "/friends",
-    icon: Users
-  }, {
-    name: t("products"),
-    path: "/products",
-    icon: Package
-  }, {
-    name: t("profile"),
-    path: "/profile",
-    icon: User
-  }];
-=======
-
->>>>>>> my-branch
   const navItems = [
     {
       name: t("home"),
@@ -74,13 +47,6 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
       icon: User
     }
   ];
-
-<<<<<<< HEAD
-=======
-
->>>>>>> my-branch
-
->>>>>>> my-branch
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Desktop Navigation */}
