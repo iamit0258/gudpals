@@ -419,7 +419,7 @@ const translations = {
 
     // Voice Assistant
     listening: "सुन रहा है",
-    speak_now: "अब बोलें... (अंग्रेजी)",
+    speak_now: "अब बोलें...",
     thinking: "सोच रहा है",
     asking_niva: "निवा से पूछ रहा है...",
     checking_stars: "का राशिफल",

@@ -16,7 +16,8 @@ const SessionLive = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [session, setSession] = useState<any>(null);
-    const isAdmin = user?.email === "mevarun.arcade@gmail.com";
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [canLive, setCanLive] = useState(false);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -81,6 +82,23 @@ const SessionLive = () => {
             } catch (error) {
                 console.error("Error fetching session:", error);
             } finally {
+                // Check if user is admin and has live permissions
+                if (user?.id) {
+                    try {
+                        const { data: adminData } = await supabase
+                            .from('admin_users')
+                            .select('role, can_start_live_session')
+                            .eq('id', user.id)
+                            .maybeSingle();
+
+                        if (adminData) {
+                            setIsAdmin(true);
+                            setCanLive(adminData.can_start_live_session);
+                        }
+                    } catch (e) {
+                        console.error("Error checking admin status:", e);
+                    }
+                }
                 setLoading(false);
             }
         };
@@ -108,7 +126,7 @@ const SessionLive = () => {
 
     // Use the token provided by user for demo purposes if not in DB
     // In production, this should come from your backend generation logic
-    const DEMO_TOKEN = "007eJxTYDhUbxjGzFDtf2lNk+m+NQ1VfwS6vurOP3142vN6aeY0I2UFBkNLw6TElCRzozQzUxOjFGMLS4vkVKNUExNTC7MkC/NEu7zmzIZARgbzbTmsjAwQCOJzM+RklqUWpxYXZ+bnMTAAAOVpISY=";
+    const DEMO_TOKEN = "007eJxTYHDzaDtg+3devum7ibfnh+Qm8PdeSfarVpmQvXQJW/fq2U8VGAwtDZMSU5LMjdLMTE2MUowtLC2SU41STUxMLcySLMwTK7P7MxsCGRmSazMYGRkgEMTnZsjJLEstTi0uzszPY2AAAFmXIpc=";
     const channelName = session.agora_channel || "livesession";
     const token = session.agora_token || DEMO_TOKEN;
     console.log("SessionLive: Agora config:", { channelName, token, isUsingDemoToken: !session.agora_token });
@@ -136,7 +154,7 @@ const SessionLive = () => {
                 <div className="flex-1 flex flex-col gap-4 min-h-0">
                     {/* Video Area */}
                     <div className="flex-1 bg-black rounded-lg overflow-hidden min-h-[200px]">
-                        {isAdmin ? (
+                        {(isAdmin && canLive) ? (
                             <AdminStartLive
                                 sessionId={session.id}
                                 channelName={channelName}

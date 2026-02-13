@@ -18,7 +18,7 @@ const ZODIAC_SIGNS = [
 
 // --- KNOWLEDGE BASE ---
 const GUDPALS_KNOWLEDGE = `
-About GUDPALS:
+About GUDPALS (English):
 - **Mission**: To reduce loneliness and help senior citizens stay socially connected, active, and mentally engaged.
 - **Founder**: Amit (Final year B.Tech student).
 - **Core Features**:
@@ -29,6 +29,17 @@ About GUDPALS:
   5. **Travel**: Senior-friendly travel packages.
   6. **Astrology**: Daily horoscopes.
 - **Supported Languages**: English and Hindi.
+
+गुडपाल्स के बारे में (Hindi):
+- **मिशन**: वरिष्ठ नागरिकों के अकेलेपन को कम करना और उन्हें सामाजिक रूप से जोड़े रखना।
+- **संस्थापक**: अमित (बी.टेक अंतिम वर्ष के छात्र)।
+- **मुख्य विशेषताएं**:
+  1. **सत्र**: लाइव और इंटरैक्टिव वीडियो सत्र (योग, डिजिटल साक्षरता, तंबोला, कुकिंग)।
+  2. **मित्र चैट**: अपने आस-पास के अन्य वरिष्ठ नागरिकों से जुड़ें।
+  3. **वॉयस असिस्टेंट (निवा)**: आप! ऐप को चलाने में मदद करने वाली एक समझदार साथी।
+  4. **रोजगार**: बुजुर्गों के लिए उपयुक्त अंशकालिक नौकरियां।
+  5. **यात्रा**: वरिष्ठ नागरिकों के लिए अनुकूल यात्रा पैकेज।
+  6. **ज्योतिष**: दैनिक राशिफल।
 `;
 
 // --- HELPER FUNCTIONS ---
@@ -105,18 +116,29 @@ serve(async (req) => {
 
             // 0. Manual "Fast Path" for common questions (Bypasses AI for speed/reliability)
             const lowerMsg = message.toLowerCase();
-            if (lowerMsg.includes('who created') || lowerMsg.includes('founder') || lowerMsg.includes('developer')) {
-                return new Response(JSON.stringify({ reply: "GUDPALS was created by Amit, a final year B.Tech student." }), {
+            const isHindi = language === 'hi';
+
+            if (lowerMsg.includes('who created') || lowerMsg.includes('founder') || lowerMsg.includes('developer') || lowerMsg.includes('किसने बनाया') || lowerMsg.includes('संस्थापक')) {
+                const reply = isHindi
+                    ? "गुडपाल्स को अमित द्वारा बनाया गया है, जो बी.टेक के अंतिम वर्ष के छात्र हैं।"
+                    : "GUDPALS was created by Amit, a final year B.Tech student.";
+                return new Response(JSON.stringify({ reply }), {
                     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                 });
             }
-            if (lowerMsg.includes('what is gudpals') || lowerMsg.includes('about gudpals')) {
-                return new Response(JSON.stringify({ reply: "GUDPALS is a web application designed to help senior citizens stay socially connected, learn new skills, and find employment." }), {
+            if (lowerMsg.includes('what is gudpals') || lowerMsg.includes('about gudpals') || lowerMsg.includes('गुडपाल्स क्या है')) {
+                const reply = isHindi
+                    ? "गुडपाल्स वरिष्ठ नागरिकों के लिए एक मंच है जो उन्हें जोड़ने, नई चीजें सीखने और रोजगार खोजने में मदद करता है।"
+                    : "GUDPALS is a web application designed to help senior citizens stay socially connected, learn new skills, and find employment.";
+                return new Response(JSON.stringify({ reply }), {
                     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                 });
             }
-            if (lowerMsg.includes('mission') || lowerMsg.includes('purpose')) {
-                return new Response(JSON.stringify({ reply: "Our mission is to reduce loneliness and help senior citizens lead active, engaged lives." }), {
+            if (lowerMsg.includes('mission') || lowerMsg.includes('purpose') || lowerMsg.includes('लक्ष्य')) {
+                const reply = isHindi
+                    ? "हमारा मिशन वरिष्ठ नागरिकों के अकेलेपन को कम करना और उन्हें एक सक्रिय और खुशहाल जीवन जीने में मदद करना है।"
+                    : "Our mission is to reduce loneliness and help senior citizens lead active, engaged lives.";
+                return new Response(JSON.stringify({ reply }), {
                     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                 });
             }
@@ -193,6 +215,8 @@ ${travel}
             ${horoscopeContext}
 
             **INSTRUCTIONS:**
+            - **VERY IMPORTANT: YOU MUST RESPOND IN THE REQUESTED LANGUAGE: ${language === 'hi' ? 'HINDI' : 'ENGLISH'}.**
+            - If the language is HINDI, your tone should be warm, respectful (use 'aap', 'ji'), and purely in Hindi script.
             - If the user asks about sessions/jobs/travel, use the "REAL-TIME CONTEXT" to answer specifically.
             - If the user asks about the app or founder, use "STATIC KNOWLEDGE".
             - IMPORTANT: If a [Horoscope] is provided, read the entire horoscope text provided in the quotes. 
@@ -240,7 +264,7 @@ ${travel}
                 throw new Error("Missing ELEVEN_LABS_API_KEY in Secrets");
             }
 
-            const VOICE_ID = 'kiaJRdXJzloFWi6AtFBf'; // Project A Voice (Custom/New)
+            const VOICE_ID = 'AZnzlk1Xhk8N6X6K8S2R'; // Nicole (Standard Calm Voice - Free API Friendly)
 
             const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`, {
                 method: 'POST',

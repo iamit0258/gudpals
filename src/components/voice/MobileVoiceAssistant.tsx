@@ -52,12 +52,12 @@ const MobileVoiceAssistant: React.FC<MobileVoiceAssistantProps> = ({
 
     const handleMainAction = useCallback(() => {
         trackClick('main_button');
-        if (isListening) {
+        if (isListening || isSpeaking) {
             onStopListening();
         } else {
             onStartListening();
         }
-    }, [isListening, onStartListening, onStopListening, trackClick]);
+    }, [isListening, isSpeaking, onStartListening, onStopListening, trackClick]);
 
     const handleToggleMinimize = useCallback(() => {
         setIsMinimized(!isMinimized);
@@ -77,7 +77,7 @@ const MobileVoiceAssistant: React.FC<MobileVoiceAssistantProps> = ({
                     size="sm"
                     className={cn(
                         "rounded-full h-12 w-12 shadow-lg transition-all duration-200",
-                        isListening ? "animate-pulse" : "",
+                        isListening ? "ring-2 ring-primary ring-offset-2" : "",
                         isEnabled ? "bg-primary hover:bg-primary/90" : "bg-gray-400"
                     )}
                     disabled={!isEnabled}
@@ -126,13 +126,13 @@ const MobileVoiceAssistant: React.FC<MobileVoiceAssistantProps> = ({
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             {isListening && (
-                                <Badge variant="default" className="animate-pulse">
+                                <Badge variant="default">
                                     <Mic className="h-3 w-3 mr-1" />
                                     Listening
                                 </Badge>
                             )}
                             {isSpeaking && (
-                                <Badge variant="secondary" className="animate-pulse">
+                                <Badge variant="secondary">
                                     <Volume2 className="h-3 w-3 mr-1" />
                                     Speaking
                                 </Badge>
@@ -224,12 +224,12 @@ const MobileVoiceAssistant: React.FC<MobileVoiceAssistantProps> = ({
                             size="sm"
                             className={cn(
                                 "flex-2 transition-all duration-200",
-                                isListening
-                                    ? "bg-red-500 hover:bg-red-600 animate-pulse"
+                                isListening || isSpeaking
+                                    ? "bg-red-500 hover:bg-red-600"
                                     : "bg-primary hover:bg-primary/90"
                             )}
                         >
-                            {isListening ? (
+                            {isListening || isSpeaking ? (
                                 <>
                                     <MicOff className="h-4 w-4 mr-2" />
                                     Stop

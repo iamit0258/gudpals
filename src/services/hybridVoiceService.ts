@@ -12,7 +12,14 @@ export class HybridVoiceService {
       this.recognition = new SpeechRecognition();
       this.recognition.continuous = false; // Stop after one sentence/command
       this.recognition.interimResults = false;
-      this.recognition.lang = 'en-US'; // Default to English, can be changed
+      this.setSpeechLanguage('en'); // Default
+    }
+  }
+
+  setSpeechLanguage(lang: string): void {
+    if (this.recognition) {
+      this.recognition.lang = lang === 'hi' ? 'hi-IN' : 'en-US';
+      console.log('Speech recognition language set to:', this.recognition.lang);
     }
   }
 
@@ -158,11 +165,11 @@ export class HybridVoiceService {
       if (voices.length === 0) {
         window.speechSynthesis.onvoiceschanged = () => {
           voices = window.speechSynthesis.getVoices();
-          this.setFemaleVoice(utterance, voices);
+          this.setFemaleVoice(utterance, voices, text);
           window.speechSynthesis.speak(utterance);
         };
       } else {
-        this.setFemaleVoice(utterance, voices);
+        this.setFemaleVoice(utterance, voices, text);
         window.speechSynthesis.speak(utterance);
       }
 
@@ -177,9 +184,20 @@ export class HybridVoiceService {
     });
   }
 
-  private setFemaleVoice(utterance: SpeechSynthesisUtterance, voices: SpeechSynthesisVoice[]) {
+  private setFemaleVoice(utterance: SpeechSynthesisUtterance, voices: SpeechSynthesisVoice[], text?: string) {
+    // Detect if text is Hindi (basic check for Devanagari range)
+    const isHindi = text ? /[\u0900-\u097F]/.test(text) : false;
+
+    // Always set language for the utterance to help browser default matching
+    utterance.lang = isHindi ? 'hi-IN' : 'en-US';
+
     // Priority list for female voices
-    const preferredVoices = [
+    const preferredVoices = isHindi ? [
+      "Google हिन्दी",
+      "Microsoft Kalpana",
+      "Microsoft Hemkala",
+      "Hindi India"
+    ] : [
       "Microsoft Zira", // Windows
       "Google US English", // Chrome
       "Samantha", // MacOS
@@ -188,19 +206,21 @@ export class HybridVoiceService {
 
     const selectedVoice = voices.find(voice =>
       preferredVoices.some(preferred => voice.name.includes(preferred)) ||
-      voice.name.toLowerCase().includes('female')
+      (isHindi ? (voice.lang.includes('hi') || voice.lang.includes('Hindi')) : voice.name.toLowerCase().includes('female'))
     );
 
     if (selectedVoice) {
-      console.log('Selected voice:', selectedVoice.name);
+      console.log('Selected voice:', selectedVoice.name, selectedVoice.lang);
       utterance.voice = selectedVoice;
+      // Ensure the utterance language matches the selected voice
+      if (selectedVoice.lang) utterance.lang = selectedVoice.lang;
     } else {
-      console.log('No female voice found, using default');
+      console.error('CRITICAL: No Hindi voice found on this system. Browser fallback may fail or sound incorrect.');
     }
 
     // Adjust rate/pitch for Niva persona
-    utterance.rate = 0.9; // Slightly slower
-    utterance.pitch = 0.9; // Slightly lower (calmer)
+    utterance.rate = 0.9;
+    utterance.pitch = 0.9;
   }
 
   stopAudio(): void {
