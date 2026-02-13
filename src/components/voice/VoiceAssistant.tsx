@@ -36,6 +36,14 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
         return cleanup;
     }, []);
 
+    // Sync language with app context
+    useEffect(() => {
+        if (language) {
+            setDetectedLanguage(language);
+            hybridVoiceService.setSpeechLanguage(language);
+        }
+    }, [language]);
+
     const initializeVoiceAssistant = async () => {
         if (isInitializedRef.current) return;
 
@@ -226,7 +234,7 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
 
             toast({
                 title: t("listening"),
-                description: t("speak_now"),
+                description: language === 'hi' ? "अब बोलें..." : t("speak_now"),
             });
 
         } catch (error) {
@@ -256,11 +264,12 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
 
             if (intent) {
                 console.log('Intent matched:', intent);
-                setCurrentMessage(intent.response);
+                const response = (language === 'hi' && intent.responseHi) ? intent.responseHi : intent.response;
+                setCurrentMessage(response);
 
                 // Speak confirmation instantly using Browser TTS (faster for navigation)
                 setIsSpeaking(true);
-                await hybridVoiceService.speakWithBrowser(intent.response);
+                await hybridVoiceService.speakWithBrowser(response);
                 setIsSpeaking(false);
 
                 // Handle special e-commerce routes
@@ -357,9 +366,12 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
         }
     };
 
-    const stopListening = async () => {
+    const handleStop = async () => {
         hybridVoiceService.stopListening();
+        hybridVoiceService.stopAudio();
         setIsListening(false);
+        setIsSpeaking(false);
+        console.log('Voice assistant stopped manually');
     };
 
 
@@ -375,8 +387,8 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
         } else {
             hybridVoiceService.stopAudio();
             setIsSpeaking(false);
-            if (isListening) {
-                stopListening();
+            if (isListening || isSpeaking) {
+                handleStop();
             }
             toast({
                 title: t("voice_disabled"),
@@ -401,7 +413,7 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
                 currentMessage={currentMessage}
                 micPermission={micPermission}
                 onStartListening={startListening}
-                onStopListening={stopListening}
+                onStopListening={handleStop}
                 onToggleEnabled={toggleVoiceAssistant}
                 onShowHelp={showHelp}
             />
@@ -454,20 +466,20 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ className }) => {
                     </div>
 
                     <Button
-                        onClick={isListening ? stopListening : startListening}
+                        onClick={isListening || isSpeaking ? handleStop : startListening}
                         disabled={!isEnabled}
                         size="lg"
                         className={cn(
                             "h-14 w-14 rounded-full shadow-xl transition-all duration-300 focus-ring relative overflow-hidden",
-                            isListening
+                            (isListening || isSpeaking)
                                 ? "bg-red-500 hover:bg-red-600 scale-110"
                                 : "bg-gradient-to-r from-primary to-primary/80 hover:scale-105",
                             !isEnabled && "opacity-50 grayscale cursor-not-allowed"
                         )}
                     >
-                        {isListening ? (
+                        {isListening || isSpeaking ? (
                             <div className="flex items-center justify-center w-full h-full">
-                                <span className="absolute inset-0 bg-red-400 animate-ping opacity-75 rounded-full"></span>
+                                {isListening && <span className="absolute inset-0 bg-red-400 opacity-20 rounded-full"></span>}
                                 <MicOff className="h-6 w-6 relative z-10" />
                             </div>
                         ) : (
